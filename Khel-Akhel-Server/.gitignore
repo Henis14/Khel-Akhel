@@ -1,0 +1,62 @@
+# Build output
+**/bin/
+**/obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# NuGet
+packages/
+
+# Test results
+TestResults/
+*.trx
+
+# Coverage
+coverage/
+*.coverage
+*.coveragexml
+
+# Logs
+*.log
+logs/
+
+# Publish
+publish/
+PublishOutput/
+
+# Temporary
+*.tmp
+*.temp
+
+# Local configuration
+appsettings.Local.json
+appsettings.Development.Local.json
+
+# Secrets
+secrets/
+*.secret
+*.secrets
+
+# Certificates/private keys
+*.pfx
+*.p12
+*.key
+
+# Local database
+*.mdf
+*.ndf
+*.ldf
+*.bak
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,6 @@
+@Khel_Akhel_Server_HostAddress = http://localhost:5272
+
+GET {{Khel_Akhel_Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
