@@ -1,0 +1,15 @@
+.product-category-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.order-badge {
+  background-color: var(--admin-surface-alt);
+  padding: 0.2rem 0.45rem;
+  border-radius: 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--admin-primary);
+}

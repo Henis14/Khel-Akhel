@@ -1,0 +1,64 @@
+<div class="user-register-wrapper">
+  <div class="register-card card">
+    <h2>Create Customer Account</h2>
+    <p class="subtitle">Register to shop on Khel-Akhel E-Commerce</p>
+
+    @if (errorMessage) {
+      <div class="alert alert-danger">
+        {{ errorMessage }}
+      </div>
+    }
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+      <div class="form-row">
+        <div class="form-group col">
+          <label>First Name *</label>
+          <input type="text" class="form-control" formControlName="firstName" />
+          @if (f['firstName'].touched && f['firstName'].invalid) {
+            <div class="invalid-feedback">First name is required.</div>
+          }
+        </div>
+
+        <div class="form-group col">
+          <label>Last Name *</label>
+          <input type="text" class="form-control" formControlName="lastName" />
+          @if (f['lastName'].touched && f['lastName'].invalid) {
+            <div class="invalid-feedback">Last name is required.</div>
+          }
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Email Address *</label>
+        <input type="email" class="form-control" formControlName="email" placeholder="you@example.com" />
+        @if (f['email'].touched && f['email'].invalid) {
+          <div class="invalid-feedback">Valid email address is required.</div>
+        }
+      </div>
+
+      <div class="form-group">
+        <label>Mobile Number *</label>
+        <input type="text" class="form-control" formControlName="mobileNo" placeholder="10-digit mobile number" />
+        @if (f['mobileNo'].touched && f['mobileNo'].invalid) {
+          <div class="invalid-feedback">Valid 10-digit mobile number is required.</div>
+        }
+      </div>
+
+      <div class="form-group">
+        <label>Password *</label>
+        <input type="password" class="form-control" formControlName="password" placeholder="At least 8 chars (uppercase, lowercase, number, special)" />
+        @if (f['password'].touched && f['password'].invalid) {
+          <div class="invalid-feedback">Password must be at least 8 characters long and contain uppercase, lowercase, number, and special character.</div>
+        }
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block" [disabled]="loading || registerForm.invalid">
+        Register
+      </button>
+
+      <div class="login-link">
+        Already have an account? <a routerLink="/login">Sign in</a>
+      </div>
+    </form>
+  </div>
+</div>

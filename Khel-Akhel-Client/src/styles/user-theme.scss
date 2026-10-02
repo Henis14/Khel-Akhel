@@ -1,0 +1,18 @@
+/* Khel-Akhel User Theme Styles */
+:root {
+  --user-primary: #1976d2;
+  --user-primary-dark: #115293;
+  --user-accent: #ff9800;
+  --user-bg: #f4f6f8;
+  --user-surface: #ffffff;
+  --user-text-primary: #212121;
+  --user-text-secondary: #666666;
+  --user-border: #e2e8f0;
+}
+
+.user-layout-container {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: var(--user-text-primary);
+  background-color: var(--user-bg);
+  min-height: 100vh;
+}

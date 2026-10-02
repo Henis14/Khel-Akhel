@@ -1,0 +1,43 @@
+.unauthorized-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+}
+
+.error-card {
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+  padding: 2.5rem;
+
+  .error-code {
+    font-size: 4rem;
+    font-weight: 800;
+    color: #dc3545;
+    line-height: 1;
+    margin-bottom: 1rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    color: #0f0f0f;
+  }
+
+  p {
+    color: #4b4b4b;
+    font-size: 0.95rem;
+    margin-bottom: 1.75rem;
+  }
+
+  .actions {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+}

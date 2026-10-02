@@ -9,9 +9,11 @@ namespace Khel_Akhel_Server.Models
         public string AddressLine1 { get; set; } = string.Empty;
         public string? AddressLine2 { get; set; }
         public string? Landmark { get; set; }
+        public long CountryId { get; set; }
+        public long StateId { get; set; }
         public string City { get; set; } = string.Empty;
-        public string State { get; set; } = string.Empty;
-        public string Country { get; set; } = string.Empty;
+        public string? State { get; set; }
+        public string? Country { get; set; }
         public string Pincode { get; set; } = string.Empty;
         public bool IsDefault { get; set; }
     }
@@ -26,6 +28,8 @@ namespace Khel_Akhel_Server.Models
         public string? AddressLine1 { get; set; }
         public string? AddressLine2 { get; set; }
         public string? Landmark { get; set; }
+        public long? CountryId { get; set; }
+        public long? StateId { get; set; }
         public string? City { get; set; }
         public string? State { get; set; }
         public string? Country { get; set; }
@@ -43,6 +47,8 @@ namespace Khel_Akhel_Server.Models
         public string AddressLine1 { get; set; } = string.Empty;
         public string AddressLine2 { get; set; } = string.Empty;
         public string Landmark { get; set; } = string.Empty;
+        public long CountryId { get; set; }
+        public long StateId { get; set; }
         public string City { get; set; } = string.Empty;
         public string State { get; set; } = string.Empty;
         public string Country { get; set; } = string.Empty;

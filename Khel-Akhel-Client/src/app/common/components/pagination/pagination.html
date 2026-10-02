@@ -1,0 +1,35 @@
+@if (totalRecords > 0) {
+  <div class="pagination-container">
+    <div class="pagination-info">
+      Showing {{ startRecord }} to {{ endRecord }} of {{ totalRecords }} entries
+    </div>
+    <div class="pagination-controls">
+      <button
+        class="btn btn-secondary btn-sm"
+        [disabled]="pageIndex === 1"
+        (click)="onPageClick(pageIndex - 1)"
+      >
+        Previous
+      </button>
+
+      @for (page of pages; track page) {
+        <button
+          class="btn btn-sm"
+          [class.btn-primary]="page === pageIndex"
+          [class.btn-secondary]="page !== pageIndex"
+          (click)="onPageClick(page)"
+        >
+          {{ page }}
+        </button>
+      }
+
+      <button
+        class="btn btn-secondary btn-sm"
+        [disabled]="pageIndex === totalPages"
+        (click)="onPageClick(pageIndex + 1)"
+      >
+        Next
+      </button>
+    </div>
+  </div>
+}

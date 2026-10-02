@@ -1,0 +1,273 @@
+<div class="add-product-page">
+  <!-- Page Header & Breadcrumbs -->
+  <div class="page-header">
+    <app-breadcrumb [items]="breadcrumbs"></app-breadcrumb>
+    <h1>Add New Product</h1>
+    <p class="subtitle">Create a new product item in the inventory. SKU code will be verified automatically.</p>
+  </div>
+
+  <!-- Alert Messages -->
+  <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+    <i class="bi bi-check-circle-fill me-2"></i> {{ successMessage }}
+  </div>
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ errorMessage }}
+  </div>
+
+  <form [formGroup]="productForm" (ngSubmit)="onSubmit()">
+    <div class="form-layout-stack">
+      
+      <!-- Card 1: Product Information -->
+      <div class="card form-card">
+        <div class="card-header-box">
+          <div class="header-icon-avatar blue">
+            <i class="bi bi-box-seam fs-4"></i>
+          </div>
+          <div>
+            <h3>Product Information</h3>
+            <p>Add the basic information for this product.</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="form-grid-2">
+            
+            <!-- Category -->
+            <div class="form-field">
+              <label class="form-label required">Product Category</label>
+              <select
+                class="form-select"
+                formControlName="encryptedCategoryId"
+                [class.is-invalid]="productForm.get('encryptedCategoryId')?.touched && productForm.get('encryptedCategoryId')?.invalid"
+              >
+                <option value="" disabled selected>Select Category</option>
+                <option *ngFor="let cat of categories" [value]="cat.encryptedCategoryId">
+                  {{ cat.categoryName }}
+                </option>
+              </select>
+              <div class="invalid-feedback" *ngIf="productForm.get('encryptedCategoryId')?.touched && productForm.get('encryptedCategoryId')?.invalid">
+                Product category is required.
+              </div>
+            </div>
+
+            <!-- SKU Code -->
+            <div class="form-field">
+              <label class="form-label required">SKU Code</label>
+              <input
+                type="text"
+                class="form-control"
+                formControlName="sku"
+                placeholder="e.g. PROD-CRIC-001"
+                [class.is-invalid]="productForm.get('sku')?.touched && productForm.get('sku')?.invalid"
+              />
+              <div class="invalid-feedback" *ngIf="productForm.get('sku')?.touched && productForm.get('sku')?.invalid">
+                Valid SKU (alphanumeric, max 30 chars) is required.
+              </div>
+            </div>
+
+            <!-- Product Name -->
+            <div class="form-field">
+              <label class="form-label required">Product Name</label>
+              <input
+                type="text"
+                class="form-control"
+                formControlName="productName"
+                placeholder="Enter product name"
+                [class.is-invalid]="productForm.get('productName')?.touched && productForm.get('productName')?.invalid"
+              />
+              <div class="invalid-feedback" *ngIf="productForm.get('productName')?.touched && productForm.get('productName')?.invalid">
+                Product name is required.
+              </div>
+            </div>
+
+            <!-- Short Description -->
+            <div class="form-field">
+              <label class="form-label">Short Description</label>
+              <input
+                type="text"
+                class="form-control"
+                formControlName="shortDescription"
+                placeholder="Brief 1-line summary"
+              />
+            </div>
+
+            <!-- Full Description (Full Width) -->
+            <div class="form-field full-width">
+              <label class="form-label">Full Description</label>
+              <textarea
+                class="form-control text-area"
+                rows="4"
+                formControlName="description"
+                placeholder="Detailed product specification..."
+              ></textarea>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Pricing & Costing -->
+      <div class="card form-card">
+        <div class="card-header-box">
+          <div class="header-icon-avatar green">
+            <i class="bi bi-tag-fill fs-4"></i>
+          </div>
+          <div>
+            <h3>Pricing & Costing</h3>
+            <p>Set Maximum Retail Price (MRP) and actual Selling Price.</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="form-grid-2">
+            <!-- MRP -->
+            <div class="form-field">
+              <label class="form-label required">Maximum Retail Price (MRP ₹)</label>
+              <div class="price-input-wrapper">
+                <span class="currency-symbol">₹</span>
+                <input
+                  type="number"
+                  step="0.01"
+                  class="form-control price-control"
+                  formControlName="mrp"
+                  placeholder="0.00"
+                  [class.is-invalid]="productForm.get('mrp')?.touched && productForm.get('mrp')?.invalid"
+                />
+              </div>
+              <div class="invalid-feedback" *ngIf="productForm.get('mrp')?.touched && productForm.get('mrp')?.invalid">
+                Valid MRP is required.
+              </div>
+            </div>
+
+            <!-- Selling Price -->
+            <div class="form-field">
+              <label class="form-label required">Selling Price (₹)</label>
+              <div class="price-input-wrapper">
+                <span class="currency-symbol">₹</span>
+                <input
+                  type="number"
+                  step="0.01"
+                  class="form-control price-control"
+                  formControlName="sellingPrice"
+                  placeholder="0.00"
+                  [class.is-invalid]="(productForm.get('sellingPrice')?.touched && productForm.get('sellingPrice')?.invalid) || productForm.errors?.['sellingPriceExceedsMrp']"
+                />
+              </div>
+              <div class="invalid-feedback" *ngIf="productForm.get('sellingPrice')?.touched && productForm.get('sellingPrice')?.invalid">
+                Valid Selling Price is required.
+              </div>
+              <div class="invalid-feedback" *ngIf="productForm.errors?.['sellingPriceExceedsMrp']">
+                Selling price cannot be greater than MRP.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Badges & Visibility -->
+      <div class="card form-card">
+        <div class="card-header-box">
+          <div class="header-icon-avatar purple">
+            <i class="bi bi-stars fs-4"></i>
+          </div>
+          <div>
+            <h3>Badges & Visibility</h3>
+            <p>Select display tags and promotion flags for this product.</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="badges-checkbox-grid">
+            <label class="checkbox-card" for="isFeatured">
+              <input class="checkbox-input" type="checkbox" id="isFeatured" formControlName="isFeatured">
+              <span class="checkbox-label">Featured Product</span>
+            </label>
+            <label class="checkbox-card" for="isNewArrival">
+              <input class="checkbox-input" type="checkbox" id="isNewArrival" formControlName="isNewArrival">
+              <span class="checkbox-label">New Arrival</span>
+            </label>
+            <label class="checkbox-card" for="isBestSeller">
+              <input class="checkbox-input" type="checkbox" id="isBestSeller" formControlName="isBestSeller">
+              <span class="checkbox-label">Best Seller</span>
+            </label>
+            <label class="checkbox-card" for="isTrending">
+              <input class="checkbox-input" type="checkbox" id="isTrending" formControlName="isTrending">
+              <span class="checkbox-label">Trending</span>
+            </label>
+            <label class="checkbox-card" for="isCustomerFavourite">
+              <input class="checkbox-input" type="checkbox" id="isCustomerFavourite" formControlName="isCustomerFavourite">
+              <span class="checkbox-label">Customer Favourite</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4: Product Images Upload -->
+      <div class="card form-card">
+        <div class="card-header-box">
+          <div class="header-icon-avatar orange">
+            <i class="bi bi-images fs-4"></i>
+          </div>
+          <div>
+            <h3>Product Images</h3>
+            <p>Select up to 10 product images (JPG, PNG, WEBP, max 5MB each). First image will automatically be set as Default.</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="image-upload-zone">
+            <input
+              type="file"
+              #fileInput
+              multiple
+              accept="image/jpeg,image/png,image/webp"
+              (change)="onFileSelected($event)"
+              class="d-none"
+            />
+            
+            <button
+              type="button"
+              class="btn btn-outline-primary upload-trigger-btn"
+              (click)="fileInput.click()"
+              [disabled]="submitting || isUploadingImages || selectedFiles.length >= maxImages"
+            >
+              <i class="bi bi-cloud-arrow-up fs-5 me-2"></i>
+              <span>Select Product Images ({{ selectedFiles.length }}/{{ maxImages }})</span>
+            </button>
+            <span class="upload-hint">Supported formats: .jpg, .jpeg, .png, .webp (Max 5MB per file)</span>
+          </div>
+
+          <!-- Selected Previews Grid -->
+          <div class="preview-grid mt-3" *ngIf="imagePreviews.length > 0">
+            <div class="preview-card" *ngFor="let prev of imagePreviews; let i = index">
+              <div class="preview-img-wrapper">
+                <img [src]="prev.url" [alt]="prev.file.name" class="preview-img" />
+                <span class="badge badge-default-tag" *ngIf="i === 0">Default</span>
+                <button
+                  type="button"
+                  class="btn-remove-img"
+                  (click)="removeSelectedImage(i)"
+                  title="Remove image"
+                  [disabled]="submitting || isUploadingImages"
+                >
+                  <i class="bi bi-x-lg"></i>
+                </button>
+              </div>
+              <span class="preview-filename" [title]="prev.file.name">{{ prev.file.name }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Actions Footer -->
+      <div class="form-actions-bar">
+        <button type="button" class="btn btn-cancel" (click)="goBack()" [disabled]="submitting || isUploadingImages">Cancel</button>
+        <button type="submit" class="btn btn-primary" [disabled]="submitting || isUploadingImages">
+          @if (submitting || isUploadingImages) {
+            <span class="btn-spinner"></span>
+            <span>{{ isUploadingImages ? 'Uploading Images...' : 'Saving Product...' }}</span>
+          } @else {
+            <span>Save & Publish Product</span>
+          }
+        </button>
+      </div>
+
+    </div>
+  </form>
+</div>

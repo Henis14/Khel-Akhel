@@ -82,19 +82,24 @@ namespace Khel_Akhel_Server.Controllers.Customer
                     );
                 }
 
-                // Trim inputs
+                // Trim inputs (Do NOT trim password!)
                 request.FirstName = request.FirstName?.Trim() ?? string.Empty;
                 request.LastName = request.LastName?.Trim() ?? string.Empty;
                 request.Email = request.Email?.Trim() ?? string.Empty;
                 request.MobileNo = request.MobileNo?.Trim() ?? string.Empty;
-                request.Password = request.Password?.Trim() ?? string.Empty;
 
                 var errors = new List<string>();
 
                 if (string.IsNullOrWhiteSpace(request.FirstName))
                     errors.Add("First name is required.");
+                else if (!ValidationHelper.IsValidName(request.FirstName))
+                    errors.Add("First name must be 2-50 alphabetic characters.");
+
                 if (string.IsNullOrWhiteSpace(request.LastName))
                     errors.Add("Last name is required.");
+                else if (!ValidationHelper.IsValidName(request.LastName))
+                    errors.Add("Last name must be 2-50 alphabetic characters.");
+
                 if (string.IsNullOrWhiteSpace(request.Email))
                     errors.Add("Email is required.");
                 else if (!ValidationHelper.IsValidEmail(request.Email))
@@ -105,10 +110,12 @@ namespace Khel_Akhel_Server.Controllers.Customer
                 else if (!ValidationHelper.IsValidMobile(request.MobileNo))
                     errors.Add("Invalid mobile number format.");
 
-                if (string.IsNullOrWhiteSpace(request.Password))
+                if (string.IsNullOrEmpty(request.Password))
                     errors.Add("Password is required.");
-                else if (request.Password.Length < 6)
-                    errors.Add("Password must be at least 6 characters long.");
+                else if (!ValidationHelper.IsValidPassword(request.Password))
+                    errors.Add(
+                        "Password must be at least 8 characters long and contain uppercase, lowercase, number, and special character."
+                    );
 
                 if (errors.Any())
                 {
@@ -127,12 +134,12 @@ namespace Khel_Akhel_Server.Controllers.Customer
                     );
                 }
 
-                // Check Duplicate Email
+                // Check Duplicate Email (Case-insensitive)
                 string checkEmailQuery =
                     @"
                     SELECT COUNT(1)
                     FROM drs_customer_mst WITH (NOLOCK)
-                    WHERE Email = @Email AND IsDeleted = 0";
+                    WHERE LOWER(Email) = LOWER(@Email) AND IsDeleted = 0";
 
                 int emailExists = Convert.ToInt32(
                     _db.ExecuteScalar(
@@ -195,35 +202,62 @@ namespace Khel_Akhel_Server.Controllers.Customer
                     );
                 }
 
-                // Hash Password & Insert
+                // Hash Password & Insert with Auto-generated Account_no
                 string passwordHash = PasswordHelper.HashPassword(request.Password);
 
-                string insertQuery =
-                    @"
-                    INSERT INTO drs_customer_mst
-                    (FirstName, LastName, Email, MobileNo, PasswordHash, IsAdmin, IsEmailVerified, IsMobileVerified, IsActive, IsDeleted, CreatedDate)
-                    OUTPUT INSERTED.ID
-                    VALUES
-                    (@FirstName, @LastName, @Email, @MobileNo, @PasswordHash, 0, 0, 0, 1, 0, GETDATE())";
+                using SqlConnection con = _db.GetOpenConnection();
+                using SqlTransaction tx = con.BeginTransaction();
 
-                object? result = _db.ExecuteScalar(
-                    insertQuery,
-                    new[]
+                string accountNo;
+                long customerId;
+
+                try
+                {
+                    string genAccountNoQuery =
+                        "SELECT 'DRC' + RIGHT('000000' + CAST(NEXT VALUE FOR dbo.Seq_CustomerAccount AS VARCHAR(6)), 6);";
+                    using SqlCommand genCmd = new(genAccountNoQuery, con, tx);
+                    accountNo = Convert.ToString(genCmd.ExecuteScalar()) ?? string.Empty;
+
+                    if (!System.Text.RegularExpressions.Regex.IsMatch(accountNo, @"^DRC[0-9]{6}$"))
                     {
-                        new SqlParameter("@FirstName", request.FirstName),
-                        new SqlParameter("@LastName", request.LastName),
-                        new SqlParameter("@Email", request.Email),
-                        new SqlParameter("@MobileNo", request.MobileNo),
-                        new SqlParameter("@PasswordHash", passwordHash),
+                        tx.Rollback();
+                        throw new InvalidOperationException(
+                            $"Invalid generated Account_no format: {accountNo}"
+                        );
                     }
-                );
 
-                long customerId = Convert.ToInt64(result);
+                    string insertQuery =
+                        @"
+                        INSERT INTO drs_customer_mst
+                        (Account_no, FirstName, LastName, Email, MobileNo, PasswordHash, IsAdmin, IsEmailVerified, IsMobileVerified, IsActive, IsDeleted, CreatedDate)
+                        OUTPUT INSERTED.ID
+                        VALUES
+                        (@AccountNo, @FirstName, @LastName, @Email, @MobileNo, @PasswordHash, 0, 0, 0, 1, 0, GETDATE())";
+
+                    using SqlCommand insertCmd = new(insertQuery, con, tx);
+                    insertCmd.Parameters.AddWithValue("@AccountNo", accountNo);
+                    insertCmd.Parameters.AddWithValue("@FirstName", request.FirstName);
+                    insertCmd.Parameters.AddWithValue("@LastName", request.LastName);
+                    insertCmd.Parameters.AddWithValue("@Email", request.Email);
+                    insertCmd.Parameters.AddWithValue("@MobileNo", request.MobileNo);
+                    insertCmd.Parameters.AddWithValue("@PasswordHash", passwordHash);
+
+                    customerId = Convert.ToInt64(insertCmd.ExecuteScalar());
+
+                    tx.Commit();
+                }
+                catch
+                {
+                    tx.Rollback();
+                    throw;
+                }
+
                 string encryptedId = _encryption.Encrypt(customerId);
 
                 var responseData = new CustomerResponse
                 {
                     EncryptedId = encryptedId,
+                    AccountNo = accountNo,
                     FirstName = request.FirstName,
                     LastName = request.LastName,
                     Email = request.Email,
@@ -374,6 +408,12 @@ namespace Khel_Akhel_Server.Controllers.Customer
                 string newMobileNo =
                     request.MobileNo != null ? request.MobileNo.Trim() : oldMobileNo;
 
+                if (request.FirstName != null && !ValidationHelper.IsValidName(newFirstName))
+                    errors.Add("First name must be 2-50 alphabetic characters.");
+
+                if (request.LastName != null && !ValidationHelper.IsValidName(newLastName))
+                    errors.Add("Last name must be 2-50 alphabetic characters.");
+
                 if (request.Email != null && !ValidationHelper.IsValidEmail(newEmail))
                     errors.Add("Invalid email format.");
 
@@ -397,14 +437,14 @@ namespace Khel_Akhel_Server.Controllers.Customer
                     );
                 }
 
-                // Uniqueness Check for Email if changed
+                // Uniqueness Check for Email if changed (Case-insensitive)
                 if (!string.Equals(oldEmail, newEmail, StringComparison.OrdinalIgnoreCase))
                 {
                     string checkEmail =
                         @"
                         SELECT COUNT(1)
                         FROM drs_customer_mst WITH (NOLOCK)
-                        WHERE Email = @Email AND ID <> @ID AND IsDeleted = 0";
+                        WHERE LOWER(Email) = LOWER(@Email) AND ID <> @ID AND IsDeleted = 0";
 
                     int dupEmail = Convert.ToInt32(
                         _db.ExecuteScalar(
@@ -768,7 +808,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
 
                 string query =
                     @"
-                    SELECT TOP 1 ID, FirstName, LastName, Email, MobileNo, IsAdmin, IsEmailVerified, IsMobileVerified, IsActive, CreatedDate
+                    SELECT TOP 1 ID, Account_no, FirstName, LastName, Email, MobileNo, IsAdmin, IsEmailVerified, IsMobileVerified, IsActive, CreatedDate
                     FROM drs_customer_mst WITH (NOLOCK)
                     WHERE ID = @ID AND IsDeleted = 0";
 
@@ -798,6 +838,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                 var customerResponse = new CustomerResponse
                 {
                     EncryptedId = _encryption.Encrypt(Convert.ToInt64(row["ID"])),
+                    AccountNo = row["Account_no"].ToString() ?? "",
                     FirstName = row["FirstName"].ToString() ?? "",
                     LastName = row["LastName"].ToString() ?? "",
                     Email = row["Email"].ToString() ?? "",
@@ -842,13 +883,23 @@ namespace Khel_Akhel_Server.Controllers.Customer
         }
         #endregion
 
-        #region 5. GetAllCustomer [GET]
+        #region 5. GetAllCustomer [GET / POST]
         [Authorize(Roles = "Admin")]
         [HttpGet("list")]
-        public IActionResult GetAllCustomer([FromQuery] CustomerListRequest request)
+        [HttpPost("list")]
+        public IActionResult GetAllCustomer(
+            [FromQuery] CustomerListRequest? queryRequest,
+            [FromBody] CustomerListRequest? bodyRequest
+        )
         {
             Logs.Info("GetAllCustomer API started");
             var sw = Stopwatch.StartNew();
+
+            var request =
+                (HttpMethods.IsPost(Request.Method) ? bodyRequest : queryRequest)
+                ?? queryRequest
+                ?? bodyRequest
+                ?? new CustomerListRequest();
 
             try
             {
@@ -869,7 +920,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                 if (!string.IsNullOrWhiteSpace(search))
                 {
                     whereClause +=
-                        " AND (FirstName LIKE @Search OR LastName LIKE @Search OR Email LIKE @Search OR MobileNo LIKE @Search)";
+                        " AND (Account_no LIKE @Search OR FirstName LIKE @Search OR LastName LIKE @Search OR Email LIKE @Search OR MobileNo LIKE @Search)";
                     parameters.Add(new SqlParameter("@Search", $"%{search}%"));
                 }
 
@@ -887,7 +938,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
 
                 string listQuery =
                     $@"
-                    SELECT ID, FirstName, LastName, Email, MobileNo, IsAdmin, IsEmailVerified, IsMobileVerified, IsActive, CreatedDate
+                    SELECT ID, Account_no, FirstName, LastName, Email, MobileNo, IsAdmin, IsEmailVerified, IsMobileVerified, IsActive, CreatedDate
                     FROM drs_customer_mst WITH (NOLOCK)
                     {whereClause}
                     ORDER BY ID DESC
@@ -902,6 +953,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                         new CustomerResponse
                         {
                             EncryptedId = _encryption.Encrypt(Convert.ToInt64(row["ID"])),
+                            AccountNo = row["Account_no"].ToString() ?? "",
                             FirstName = row["FirstName"].ToString() ?? "",
                             LastName = row["LastName"].ToString() ?? "",
                             Email = row["Email"].ToString() ?? "",

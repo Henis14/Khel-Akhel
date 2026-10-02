@@ -60,6 +60,35 @@ namespace Khel_Akhel_Server.BL.Common
             return new SqlConnection(GetConnectionString());
         }
 
+        private static SqlParameter CloneParameter(SqlParameter p)
+        {
+            return new SqlParameter
+            {
+                ParameterName = p.ParameterName,
+                Value = p.Value ?? DBNull.Value,
+                SqlDbType = p.SqlDbType,
+                Direction = p.Direction,
+                Size = p.Size,
+                Precision = p.Precision,
+                Scale = p.Scale,
+                IsNullable = p.IsNullable,
+            };
+        }
+
+        private static void AddParametersToCommand(SqlCommand cmd, SqlParameter[]? parameters)
+        {
+            if (parameters != null)
+            {
+                foreach (var p in parameters)
+                {
+                    if (p != null)
+                    {
+                        cmd.Parameters.Add(CloneParameter(p));
+                    }
+                }
+            }
+        }
+
         public DataTable ExecuteQuery(string query, SqlParameter[]? parameters = null)
         {
             ValidateQuerySafety(query);
@@ -70,10 +99,7 @@ namespace Khel_Akhel_Server.BL.Common
                 using SqlConnection con = GetConnection();
                 using SqlCommand cmd = new SqlCommand(query, con);
 
-                if (parameters != null)
-                {
-                    cmd.Parameters.AddRange(parameters);
-                }
+                AddParametersToCommand(cmd, parameters);
 
                 using SqlDataAdapter da = new SqlDataAdapter(cmd);
                 DataTable dt = new DataTable();
@@ -102,10 +128,7 @@ namespace Khel_Akhel_Server.BL.Common
 
                 using SqlCommand cmd = new SqlCommand(query, con);
 
-                if (parameters != null)
-                {
-                    cmd.Parameters.AddRange(parameters);
-                }
+                AddParametersToCommand(cmd, parameters);
 
                 int result = cmd.ExecuteNonQuery();
 
@@ -132,10 +155,7 @@ namespace Khel_Akhel_Server.BL.Common
 
                 using SqlCommand cmd = new SqlCommand(query, con);
 
-                if (parameters != null)
-                {
-                    cmd.Parameters.AddRange(parameters);
-                }
+                AddParametersToCommand(cmd, parameters);
 
                 object? result = cmd.ExecuteScalar();
 
@@ -159,6 +179,73 @@ namespace Khel_Akhel_Server.BL.Common
             return con;
         }
 
+        public async Task<SqlConnection> GetOpenConnectionAsync()
+        {
+            var con = new SqlConnection(GetConnectionString());
+            await con.OpenAsync();
+
+            return con;
+        }
+
+        public async Task<DataTable> ExecuteQueryAsync(
+            string query,
+            SqlParameter[]? parameters = null
+        )
+        {
+            ValidateQuerySafety(query);
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+
+            try
+            {
+                using SqlConnection con = await GetOpenConnectionAsync();
+                using SqlCommand cmd = new SqlCommand(query, con);
+
+                AddParametersToCommand(cmd, parameters);
+
+                using SqlDataReader reader = await cmd.ExecuteReaderAsync();
+                DataTable dt = new DataTable();
+                dt.Load(reader);
+
+                sw.Stop();
+                return dt;
+            }
+            catch (Exception ex)
+            {
+                sw.Stop();
+                Logs.Error("Database ExecuteQueryAsync failed", ex);
+                throw;
+            }
+        }
+
+        public async Task<object?> ExecuteScalarAsync(
+            string query,
+            SqlParameter[]? parameters = null
+        )
+        {
+            ValidateQuerySafety(query);
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+
+            try
+            {
+                using SqlConnection con = await GetOpenConnectionAsync();
+                using SqlCommand cmd = new SqlCommand(query, con);
+
+                AddParametersToCommand(cmd, parameters);
+
+                object? result = await cmd.ExecuteScalarAsync();
+
+                sw.Stop();
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                sw.Stop();
+                Logs.Error("Database ExecuteScalarAsync failed", ex);
+                throw;
+            }
+        }
+
         public DataTable ExecuteStoredProcedure(string spName, SqlParameter[]? parameters = null)
         {
             ValidateQuerySafety(spName);
@@ -171,10 +258,7 @@ namespace Khel_Akhel_Server.BL.Common
 
                 cmd.CommandType = CommandType.StoredProcedure;
 
-                if (parameters != null)
-                {
-                    cmd.Parameters.AddRange(parameters);
-                }
+                AddParametersToCommand(cmd, parameters);
 
                 using SqlDataAdapter da = new SqlDataAdapter(cmd);
                 DataTable dt = new DataTable();

@@ -1,0 +1,104 @@
+.products-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.filter-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+
+  .search-box {
+    position: relative;
+    flex: 1;
+    max-width: 420px;
+
+    .search-icon {
+      position: absolute;
+      left: 0.85rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--admin-text-muted);
+    }
+
+    .form-control {
+      padding-left: 2.4rem;
+    }
+  }
+
+  .filter-select {
+    width: 220px;
+  }
+}
+
+.product-link {
+  font-weight: 600;
+  color: var(--admin-text-primary);
+  text-decoration: none;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: var(--admin-primary);
+  }
+}
+
+.code-badge {
+  background-color: var(--admin-surface-alt);
+  padding: 0.2rem 0.45rem;
+  border-radius: 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8125rem;
+  color: var(--admin-text-secondary);
+
+  &.secondary {
+    background-color: #f1f5f9;
+    color: #475569;
+  }
+}
+
+.category-pill {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--admin-text-secondary);
+}
+
+.stock-qty {
+  font-weight: 600;
+
+  &.low-stock {
+    color: var(--admin-status-danger);
+    background-color: var(--admin-status-danger-bg);
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+  }
+}
+
+.badge-checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+
+  .checkbox-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.75rem;
+    background-color: var(--admin-surface-alt);
+    border: 1px solid var(--admin-border);
+    border-radius: var(--admin-radius-sm);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s ease;
+
+    &:has(input:checked) {
+      background-color: var(--admin-primary-soft);
+      border-color: var(--admin-primary);
+      color: var(--admin-primary);
+      font-weight: 600;
+    }
+  }
+}

@@ -1,4 +1,4 @@
-﻿namespace Khel_Akhel_Server.BL.Common
+namespace Khel_Akhel_Server.BL.Common
 {
     public class DateTimeFormat
     {

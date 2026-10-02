@@ -1,0 +1,35 @@
+<div class="user-layout-container">
+  <!-- Header Navbar -->
+  <header class="user-navbar">
+    <div class="container nav-content">
+      <a routerLink="/" class="brand">Khel-Akhel</a>
+
+      <nav class="nav-links">
+        <a routerLink="/" class="nav-link">Home</a>
+        <a routerLink="/products" class="nav-link">Products</a>
+      </nav>
+
+      <div class="auth-actions">
+        @if (authService.isAuthenticated()) {
+          <span class="user-badge">{{ authService.currentUser()?.email }}</span>
+          <button class="btn btn-secondary btn-sm" (click)="logout()">Logout</button>
+        } @else {
+          <a routerLink="/login" class="btn btn-secondary btn-sm">Login</a>
+          <a routerLink="/register" class="btn btn-primary btn-sm">Register</a>
+        }
+      </div>
+    </div>
+  </header>
+
+  <!-- Page Main Body -->
+  <main class="container user-content">
+    <router-outlet></router-outlet>
+  </main>
+
+  <!-- Footer -->
+  <footer class="user-footer">
+    <div class="container footer-content">
+      <p>&copy; 2026 Khel-Akhel E-Commerce. All rights reserved.</p>
+    </div>
+  </footer>
+</div>

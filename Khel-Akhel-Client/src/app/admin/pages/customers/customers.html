@@ -1,0 +1,236 @@
+<div class="customers-page">
+  <div class="page-header">
+    <app-breadcrumb [items]="breadcrumbs"></app-breadcrumb>
+    <div class="header-content">
+      <div>
+        <h1>Customers</h1>
+        <p class="subtitle">Manage customer accounts, roles, and status</p>
+      </div>
+      <div class="page-actions">
+        <a class="btn btn-primary" [routerLink]="['/admin/customers/add']">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>Add Customer</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  @if (successMessage) {
+    <div class="alert alert-success">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+      <span>{{ successMessage }}</span>
+    </div>
+  }
+
+  @if (errorMessage) {
+    <div class="alert alert-danger">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span>{{ errorMessage }}</span>
+    </div>
+  }
+
+  <!-- Search & Filter Bar -->
+  <div class="filter-card card">
+    <div class="search-box">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input
+        type="text"
+        class="form-control"
+        placeholder="Search by name, email, or mobile..."
+        [value]="searchQuery"
+        (input)="onSearch($any($event.target).value)"
+      />
+    </div>
+  </div>
+
+  <!-- Data Table Card -->
+  <div class="table-card card">
+    @if (loading) {
+      <app-loader text="Loading customers..."></app-loader>
+    } @else {
+      <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Account No</th>
+            <th>Customer</th>
+            <th>Email</th>
+            <th>Mobile</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Created Date</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of customers; track c.encryptedId) {
+            <tr>
+              <td><code class="account-code">{{ c.accountNo || '-' }}</code></td>
+              <td>
+                <div class="user-cell">
+                  <div class="user-avatar">{{ (c.firstName[0] || 'C') + (c.lastName[0] || '') }}</div>
+                  <a [routerLink]="['/admin/customers', c.encryptedId]" class="user-name">
+                    {{ c.firstName }} {{ c.lastName }}
+                  </a>
+                </div>
+              </td>
+              <td>{{ c.email }}</td>
+              <td>{{ c.mobileNo }}</td>
+              <td>
+                <span class="badge" [class.badge-info]="c.isAdmin" [class.badge-secondary]="!c.isAdmin">
+                  {{ c.isAdmin ? 'Admin' : 'Customer' }}
+                </span>
+              </td>
+              <td>
+                <span class="badge" [class.badge-success]="c.isActive" [class.badge-danger]="!c.isActive">
+                  {{ c.isActive ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td class="text-muted">{{ c.createdDate }}</td>
+              <td class="text-right actions-cell">
+                <a class="btn btn-outline btn-sm" [routerLink]="['/admin/customers', c.encryptedId]">View</a>
+                <button class="btn btn-secondary btn-sm" (click)="openEditModal(c)">Edit</button>
+                <button
+                  class="btn btn-sm"
+                  [class.btn-secondary]="c.isActive"
+                  [class.btn-outline]="!c.isActive"
+                  (click)="confirmToggleActive(c)"
+                >
+                  {{ c.isActive ? 'Deactivate' : 'Activate' }}
+                </button>
+                <button class="btn btn-danger btn-sm" (click)="confirmDelete(c)">Delete</button>
+              </td>
+            </tr>
+          }
+          @if (customers.length === 0) {
+            <tr>
+              <td colspan="8">
+                <div class="empty-state">
+                  <div class="empty-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="9" cy="7" r="4"></circle>
+                    </svg>
+                  </div>
+                  <h3 class="empty-title">No customers found</h3>
+                  <p class="empty-subtitle">
+                    {{ searchQuery ? 'No customer accounts match your search query.' : 'Get started by creating your first customer account.' }}
+                  </p>
+                  @if (!searchQuery) {
+                    <a class="btn btn-primary btn-sm" [routerLink]="['/admin/customers/add']">+ Add Customer</a>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (totalRecords > 0) {
+      <app-pagination
+        [pageIndex]="pageIndex"
+        [pageSize]="pageSize"
+        [totalRecords]="totalRecords"
+        (pageChange)="onPageChange($event)"
+      ></app-pagination>
+    }
+    }
+  </div>
+
+  <!-- Create/Edit Modal -->
+  @if (isModalOpen) {
+    <div class="modal-backdrop">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>{{ isEditMode ? 'Edit Customer' : 'Add New Customer' }}</h3>
+          <button class="close-btn" (click)="closeModal()">✕</button>
+        </div>
+
+        <form [formGroup]="customerForm" (ngSubmit)="saveCustomer()">
+          <div class="modal-body">
+            <div class="form-row">
+              <div class="form-group col">
+                <label>First Name <span class="required-star">*</span></label>
+                <input type="text" class="form-control" formControlName="firstName" placeholder="John" />
+                @if (customerForm.get('firstName')?.touched && customerForm.get('firstName')?.invalid) {
+                  <div class="invalid-feedback">First name (2-50 characters) is required.</div>
+                }
+              </div>
+
+              <div class="form-group col">
+                <label>Last Name <span class="required-star">*</span></label>
+                <input type="text" class="form-control" formControlName="lastName" placeholder="Doe" />
+                @if (customerForm.get('lastName')?.touched && customerForm.get('lastName')?.invalid) {
+                  <div class="invalid-feedback">Last name (2-50 characters) is required.</div>
+                }
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Email Address <span class="required-star">*</span></label>
+              <input type="email" class="form-control" formControlName="email" placeholder="john.doe@example.com" />
+              @if (customerForm.get('email')?.touched && customerForm.get('email')?.invalid) {
+                <div class="invalid-feedback">Valid email address is required.</div>
+              }
+            </div>
+
+            <div class="form-group">
+              <label>Mobile Number <span class="required-star">*</span></label>
+              <input type="text" class="form-control" formControlName="mobileNo" placeholder="10-digit mobile number" />
+              @if (customerForm.get('mobileNo')?.touched && customerForm.get('mobileNo')?.invalid) {
+                <div class="invalid-feedback">Valid 10-digit mobile number starting with 6-9 is required.</div>
+              }
+            </div>
+
+            @if (!isEditMode) {
+              <div class="form-group">
+                <label>Password <span class="required-star">*</span></label>
+                <input type="password" class="form-control" formControlName="password" placeholder="At least 8 characters" />
+                @if (customerForm.get('password')?.touched && customerForm.get('password')?.invalid) {
+                  <div class="invalid-feedback">Password must be at least 8 characters with uppercase, lowercase, number, and special character.</div>
+                }
+              </div>
+            }
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" [disabled]="formSubmitting" (click)="closeModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="formSubmitting || customerForm.invalid">
+              @if (formSubmitting) {
+                <span class="btn-spinner"></span>
+                <span>Saving...</span>
+              } @else {
+                <span>Save Customer</span>
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Confirmation Dialog -->
+  <app-confirmation-dialog
+    [isOpen]="isConfirmOpen"
+    [title]="confirmTitle"
+    [message]="confirmMessage"
+    [isDanger]="true"
+    [isSubmitting]="isActionSubmitting"
+    (confirm)="onConfirmAction()"
+    (cancel)="onCancelAction()"
+  ></app-confirmation-dialog>
+</div>

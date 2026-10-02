@@ -23,7 +23,8 @@ namespace Khel_Akhel_Server.Controllers.Product
         public ProductStockController(
             DbHelper db,
             IUrlEncryptionService encryption,
-            IAuditService audit)
+            IAuditService audit
+        )
         {
             _db = db;
             _encryption = encryption;
@@ -54,7 +55,9 @@ namespace Khel_Akhel_Server.Controllers.Product
 
         #region 6.1 AddStockByproductId
         [HttpPost("add")]
-        public async Task<IActionResult> AddStockByproductId([FromBody] ProductStockAddRequest? request)
+        public async Task<IActionResult> AddStockByproductId(
+            [FromBody] ProductStockAddRequest? request
+        )
         {
             Logs.Info("AddStockByproductId API started");
             var sw = Stopwatch.StartNew();
@@ -64,55 +67,82 @@ namespace Khel_Akhel_Server.Controllers.Product
                 if (request == null || string.IsNullOrWhiteSpace(request.EncryptedProductId))
                 {
                     sw.Stop();
-                    Logs.Warning("AddStockByproductId rejected | Null request body or missing product ID");
-                    return BadRequest(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 400,
-                        Message = "VALIDATION_FAILED",
-                        Errors = new List<string> { "Product ID is required." }
-                    });
+                    Logs.Warning(
+                        "AddStockByproductId rejected | Null request body or missing product ID"
+                    );
+                    return BadRequest(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "VALIDATION_FAILED",
+                            Errors = new List<string> { "Product ID is required." },
+                        }
+                    );
                 }
 
-                if (!_encryption.TryDecrypt(request.EncryptedProductId, out long productId) || productId <= 0)
+                if (
+                    !_encryption.TryDecrypt(request.EncryptedProductId, out long productId)
+                    || productId <= 0
+                )
                 {
                     sw.Stop();
-                    return BadRequest(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 400,
-                        Message = "INVALID_REQUEST",
-                        Errors = new List<string> { "Invalid or tampered encrypted product ID." }
-                    });
+                    return BadRequest(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "INVALID_REQUEST",
+                            Errors = new List<string>
+                            {
+                                "Invalid or tampered encrypted product ID.",
+                            },
+                        }
+                    );
                 }
 
                 if (request.Quantity <= 0)
                 {
                     sw.Stop();
-                    Logs.Warning($"AddStockByproductId rejected | Invalid quantity: {request.Quantity}");
-                    return BadRequest(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 400,
-                        Message = "VALIDATION_FAILED",
-                        Errors = new List<string> { "Quantity to add must be greater than zero." }
-                    });
+                    Logs.Warning(
+                        $"AddStockByproductId rejected | Invalid quantity: {request.Quantity}"
+                    );
+                    return BadRequest(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "VALIDATION_FAILED",
+                            Errors = new List<string>
+                            {
+                                "Quantity to add must be greater than zero.",
+                            },
+                        }
+                    );
                 }
 
                 // Verify Product Exists
-                string checkProductQuery = @"SELECT COUNT(1) FROM drs_product_mst WITH (NOLOCK) WHERE ID = @ID AND IsDeleted = 0 AND IsActive = 1";
-                int productExists = Convert.ToInt32(_db.ExecuteScalar(checkProductQuery, new[] { new SqlParameter("@ID", productId) }) ?? 0);
+                string checkProductQuery =
+                    @"SELECT COUNT(1) FROM drs_product_mst WITH (NOLOCK) WHERE ID = @ID AND IsDeleted = 0 AND IsActive = 1";
+                int productExists = Convert.ToInt32(
+                    _db.ExecuteScalar(
+                        checkProductQuery,
+                        new[] { new SqlParameter("@ID", productId) }
+                    ) ?? 0
+                );
 
                 if (productExists == 0)
                 {
                     sw.Stop();
-                    return NotFound(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 404,
-                        Message = "PRODUCT_NOT_FOUND",
-                        Errors = new List<string> { "Product not found or inactive." }
-                    });
+                    return NotFound(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 404,
+                            Message = "PRODUCT_NOT_FOUND",
+                            Errors = new List<string> { "Product not found or inactive." },
+                        }
+                    );
                 }
 
                 using SqlConnection con = _db.GetOpenConnection();
@@ -121,7 +151,8 @@ namespace Khel_Akhel_Server.Controllers.Product
                 try
                 {
                     // Check if stock record exists for product
-                    string selectStockQuery = @"SELECT TOP 1 ID, AvailableQty, ReservedQty FROM drs_product_stock_mst WITH (UPDLOCK, ROWLOCK) WHERE product_id = @ProductId AND IsDeleted = 0";
+                    string selectStockQuery =
+                        @"SELECT TOP 1 ID, AvailableQty, ReservedQty FROM drs_product_stock_mst WITH (UPDLOCK, ROWLOCK) WHERE product_id = @ProductId AND IsDeleted = 0";
                     using SqlCommand selectCmd = new(selectStockQuery, con, tx);
                     selectCmd.Parameters.AddWithValue("@ProductId", productId);
 
@@ -139,7 +170,8 @@ namespace Khel_Akhel_Server.Controllers.Product
                         oldAvailable = Convert.ToInt32(sRow["AvailableQty"]);
                         newAvailable = oldAvailable + request.Quantity;
 
-                        string updateStock = @"UPDATE drs_product_stock_mst SET AvailableQty = @AvailableQty, ModifiedDate = GETDATE() WHERE ID = @ID";
+                        string updateStock =
+                            @"UPDATE drs_product_stock_mst SET AvailableQty = @AvailableQty, ModifiedDate = GETDATE() WHERE ID = @ID";
                         using SqlCommand uCmd = new(updateStock, con, tx);
                         uCmd.Parameters.AddWithValue("@AvailableQty", newAvailable);
                         uCmd.Parameters.AddWithValue("@ID", stockId);
@@ -150,7 +182,8 @@ namespace Khel_Akhel_Server.Controllers.Product
                         oldAvailable = 0;
                         newAvailable = request.Quantity;
 
-                        string insertStock = @"
+                        string insertStock =
+                            @"
                             INSERT INTO drs_product_stock_mst (product_id, AvailableQty, ReservedQty, IsActive, IsDeleted, CreatedDate)
                             VALUES (@ProductId, @AvailableQty, 0, 1, 0, GETDATE());
                             SELECT CAST(SCOPE_IDENTITY() AS BIGINT);";
@@ -169,27 +202,35 @@ namespace Khel_Akhel_Server.Controllers.Product
                         "AddStockByproductId",
                         "drs_product_stock_mst",
                         stockId,
-                        System.Text.Json.JsonSerializer.Serialize(new { AvailableQty = oldAvailable }),
-                        System.Text.Json.JsonSerializer.Serialize(new { AvailableQty = newAvailable, AddedQty = request.Quantity }),
+                        System.Text.Json.JsonSerializer.Serialize(
+                            new { AvailableQty = oldAvailable }
+                        ),
+                        System.Text.Json.JsonSerializer.Serialize(
+                            new { AvailableQty = newAvailable, AddedQty = request.Quantity }
+                        ),
                         GetClientIpAddress(),
                         GetUserAgent()
                     );
 
                     sw.Stop();
-                    Logs.Info($"AddStockByproductId completed | ProductId:{productId} Added:{request.Quantity} Total:{newAvailable}");
+                    Logs.Info(
+                        $"AddStockByproductId completed | ProductId:{productId} Added:{request.Quantity} Total:{newAvailable}"
+                    );
 
-                    return Ok(new ApiResponse
-                    {
-                        Success = true,
-                        StatusCode = 200,
-                        Message = "STOCK_ADDED",
-                        Data = new
+                    return Ok(
+                        new ApiResponse
                         {
-                            EncryptedProductId = request.EncryptedProductId,
-                            AddedQuantity = request.Quantity,
-                            TotalAvailableQuantity = newAvailable
+                            Success = true,
+                            StatusCode = 200,
+                            Message = "STOCK_ADDED",
+                            Data = new
+                            {
+                                EncryptedProductId = request.EncryptedProductId,
+                                AddedQuantity = request.Quantity,
+                                TotalAvailableQuantity = newAvailable,
+                            },
                         }
-                    });
+                    );
                 }
                 catch
                 {
@@ -201,20 +242,25 @@ namespace Khel_Akhel_Server.Controllers.Product
             {
                 sw.Stop();
                 Logs.Error("Exception occurred in AddStockByproductId API", ex);
-                return StatusCode(500, new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 500,
-                    Message = "SERVER_ERROR",
-                    Errors = new List<string> { "An internal server error occurred." }
-                });
+                return StatusCode(
+                    500,
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 500,
+                        Message = "SERVER_ERROR",
+                        Errors = new List<string> { "An internal server error occurred." },
+                    }
+                );
             }
         }
         #endregion
 
         #region 6.2 UpdateStockByproductId [PATCH]
         [HttpPatch("update")]
-        public async Task<IActionResult> UpdateStockByproductId([FromBody] ProductStockUpdateRequest? request)
+        public async Task<IActionResult> UpdateStockByproductId(
+            [FromBody] ProductStockUpdateRequest? request
+        )
         {
             Logs.Info("UpdateStockByproductId API started");
             var sw = Stopwatch.StartNew();
@@ -224,39 +270,55 @@ namespace Khel_Akhel_Server.Controllers.Product
                 if (request == null || string.IsNullOrWhiteSpace(request.EncryptedProductId))
                 {
                     sw.Stop();
-                    Logs.Warning("UpdateStockByproductId rejected | Null request body or missing product ID");
-                    return BadRequest(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 400,
-                        Message = "VALIDATION_FAILED",
-                        Errors = new List<string> { "Product ID is required." }
-                    });
+                    Logs.Warning(
+                        "UpdateStockByproductId rejected | Null request body or missing product ID"
+                    );
+                    return BadRequest(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "VALIDATION_FAILED",
+                            Errors = new List<string> { "Product ID is required." },
+                        }
+                    );
                 }
 
-                if (!_encryption.TryDecrypt(request.EncryptedProductId, out long productId) || productId <= 0)
+                if (
+                    !_encryption.TryDecrypt(request.EncryptedProductId, out long productId)
+                    || productId <= 0
+                )
                 {
                     sw.Stop();
-                    return BadRequest(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 400,
-                        Message = "INVALID_REQUEST",
-                        Errors = new List<string> { "Invalid or tampered encrypted product ID." }
-                    });
+                    return BadRequest(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "INVALID_REQUEST",
+                            Errors = new List<string>
+                            {
+                                "Invalid or tampered encrypted product ID.",
+                            },
+                        }
+                    );
                 }
 
                 if (request.AvailableQuantity < 0 || request.ReservedQuantity < 0)
                 {
                     sw.Stop();
-                    Logs.Warning($"UpdateStockByproductId rejected | Negative quantity: Available:{request.AvailableQuantity} Reserved:{request.ReservedQuantity}");
-                    return BadRequest(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 400,
-                        Message = "VALIDATION_FAILED",
-                        Errors = new List<string> { "Stock quantities cannot be negative." }
-                    });
+                    Logs.Warning(
+                        $"UpdateStockByproductId rejected | Negative quantity: Available:{request.AvailableQuantity} Reserved:{request.ReservedQuantity}"
+                    );
+                    return BadRequest(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "VALIDATION_FAILED",
+                            Errors = new List<string> { "Stock quantities cannot be negative." },
+                        }
+                    );
                 }
 
                 using SqlConnection con = _db.GetOpenConnection();
@@ -264,7 +326,8 @@ namespace Khel_Akhel_Server.Controllers.Product
 
                 try
                 {
-                    string selectStockQuery = @"SELECT TOP 1 ID, AvailableQty, ReservedQty FROM drs_product_stock_mst WITH (UPDLOCK, ROWLOCK) WHERE product_id = @ProductId AND IsDeleted = 0";
+                    string selectStockQuery =
+                        @"SELECT TOP 1 ID, AvailableQty, ReservedQty FROM drs_product_stock_mst WITH (UPDLOCK, ROWLOCK) WHERE product_id = @ProductId AND IsDeleted = 0";
                     using SqlCommand selectCmd = new(selectStockQuery, con, tx);
                     selectCmd.Parameters.AddWithValue("@ProductId", productId);
 
@@ -282,7 +345,8 @@ namespace Khel_Akhel_Server.Controllers.Product
                         oldAvailable = Convert.ToInt32(sRow["AvailableQty"]);
                         oldReserved = Convert.ToInt32(sRow["ReservedQty"]);
 
-                        string updateStock = @"UPDATE drs_product_stock_mst SET AvailableQty = @AvailableQty, ReservedQty = @ReservedQty, ModifiedDate = GETDATE() WHERE ID = @ID";
+                        string updateStock =
+                            @"UPDATE drs_product_stock_mst SET AvailableQty = @AvailableQty, ReservedQty = @ReservedQty, ModifiedDate = GETDATE() WHERE ID = @ID";
                         using SqlCommand uCmd = new(updateStock, con, tx);
                         uCmd.Parameters.AddWithValue("@AvailableQty", request.AvailableQuantity);
                         uCmd.Parameters.AddWithValue("@ReservedQty", request.ReservedQuantity);
@@ -291,7 +355,8 @@ namespace Khel_Akhel_Server.Controllers.Product
                     }
                     else
                     {
-                        string insertStock = @"
+                        string insertStock =
+                            @"
                             INSERT INTO drs_product_stock_mst (product_id, AvailableQty, ReservedQty, IsActive, IsDeleted, CreatedDate)
                             VALUES (@ProductId, @AvailableQty, @ReservedQty, 1, 0, GETDATE());
                             SELECT CAST(SCOPE_IDENTITY() AS BIGINT);";
@@ -311,27 +376,39 @@ namespace Khel_Akhel_Server.Controllers.Product
                         "UpdateStockByproductId",
                         "drs_product_stock_mst",
                         stockId,
-                        System.Text.Json.JsonSerializer.Serialize(new { AvailableQty = oldAvailable, ReservedQty = oldReserved }),
-                        System.Text.Json.JsonSerializer.Serialize(new { AvailableQty = request.AvailableQuantity, ReservedQty = request.ReservedQuantity }),
+                        System.Text.Json.JsonSerializer.Serialize(
+                            new { AvailableQty = oldAvailable, ReservedQty = oldReserved }
+                        ),
+                        System.Text.Json.JsonSerializer.Serialize(
+                            new
+                            {
+                                AvailableQty = request.AvailableQuantity,
+                                ReservedQty = request.ReservedQuantity,
+                            }
+                        ),
                         GetClientIpAddress(),
                         GetUserAgent()
                     );
 
                     sw.Stop();
-                    Logs.Info($"UpdateStockByproductId completed | ProductId:{productId} Available:{request.AvailableQuantity}");
+                    Logs.Info(
+                        $"UpdateStockByproductId completed | ProductId:{productId} Available:{request.AvailableQuantity}"
+                    );
 
-                    return Ok(new ApiResponse
-                    {
-                        Success = true,
-                        StatusCode = 200,
-                        Message = "STOCK_UPDATED",
-                        Data = new
+                    return Ok(
+                        new ApiResponse
                         {
-                            EncryptedProductId = request.EncryptedProductId,
-                            AvailableQuantity = request.AvailableQuantity,
-                            ReservedQuantity = request.ReservedQuantity
+                            Success = true,
+                            StatusCode = 200,
+                            Message = "STOCK_UPDATED",
+                            Data = new
+                            {
+                                EncryptedProductId = request.EncryptedProductId,
+                                AvailableQuantity = request.AvailableQuantity,
+                                ReservedQuantity = request.ReservedQuantity,
+                            },
                         }
-                    });
+                    );
                 }
                 catch
                 {
@@ -343,41 +420,49 @@ namespace Khel_Akhel_Server.Controllers.Product
             {
                 sw.Stop();
                 Logs.Error("Exception occurred in UpdateStockByproductId API", ex);
-                return StatusCode(500, new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 500,
-                    Message = "SERVER_ERROR",
-                    Errors = new List<string> { "An internal server error occurred." }
-                });
+                return StatusCode(
+                    500,
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 500,
+                        Message = "SERVER_ERROR",
+                        Errors = new List<string> { "An internal server error occurred." },
+                    }
+                );
             }
         }
         #endregion
 
-        #region 6.3 GetAllProductStock [GET]
+        #region 6.3 GetAllProductStock [GET / POST]
         [HttpGet("list")]
-        public IActionResult GetAllProductStock([FromQuery] ProductStockListRequest request)
+        [HttpPost("list")]
+        public IActionResult GetAllProductStock([FromQuery] ProductStockListRequest? queryRequest, [FromBody] ProductStockListRequest? bodyRequest)
         {
             Logs.Info("GetAllProductStock API started");
             var sw = Stopwatch.StartNew();
 
+            var request = (HttpMethods.IsPost(Request.Method) ? bodyRequest : queryRequest) ?? queryRequest ?? bodyRequest ?? new ProductStockListRequest();
+
             try
             {
                 int pageIndex = request.PageIndex < 1 ? 1 : request.PageIndex;
-                int pageSize = request.PageSize < 1 ? 10 : (request.PageSize > 100 ? 100 : request.PageSize);
+                int pageSize =
+                    request.PageSize < 1 ? 10 : (request.PageSize > 100 ? 100 : request.PageSize);
                 int offset = (pageIndex - 1) * pageSize;
 
                 var parameters = new List<SqlParameter>
                 {
                     new SqlParameter("@Offset", offset),
-                    new SqlParameter("@PageSize", pageSize)
+                    new SqlParameter("@PageSize", pageSize),
                 };
 
                 string whereClause = "WHERE p.IsDeleted = 0";
 
                 if (!string.IsNullOrWhiteSpace(request.Search))
                 {
-                    whereClause += " AND (p.ProductName LIKE @Search OR p.ProductCode LIKE @Search OR p.SKU LIKE @Search)";
+                    whereClause +=
+                        " AND (p.ProductName LIKE @Search OR p.ProductCode LIKE @Search OR p.SKU LIKE @Search)";
                     parameters.Add(new SqlParameter("@Search", $"%{request.Search.Trim()}%"));
                 }
 
@@ -386,10 +471,14 @@ namespace Khel_Akhel_Server.Controllers.Product
                     whereClause += " AND ISNULL(s.AvailableQty, 0) <= 5";
                 }
 
-                string countQuery = $"SELECT COUNT(1) FROM drs_product_mst p WITH (NOLOCK) LEFT JOIN drs_product_stock_mst s WITH (NOLOCK) ON s.product_id = p.ID AND s.IsDeleted = 0 {whereClause}";
-                int totalRecords = Convert.ToInt32(_db.ExecuteScalar(countQuery, parameters.ToArray()) ?? 0);
+                string countQuery =
+                    $"SELECT COUNT(1) FROM drs_product_mst p WITH (NOLOCK) LEFT JOIN drs_product_stock_mst s WITH (NOLOCK) ON s.product_id = p.ID AND s.IsDeleted = 0 {whereClause}";
+                int totalRecords = Convert.ToInt32(
+                    _db.ExecuteScalar(countQuery, parameters.ToArray()) ?? 0
+                );
 
-                string listQuery = $@"
+                string listQuery =
+                    $@"
                     SELECT s.ID AS StockId, p.ID AS ProductId, p.ProductName, p.ProductCode, p.SKU, ISNULL(s.AvailableQty, 0) AS AvailableQty, ISNULL(s.ReservedQty, 0) AS ReservedQty, ISNULL(s.IsActive, 1) AS IsActive, p.CreatedDate
                     FROM drs_product_mst p WITH (NOLOCK)
                     LEFT JOIN drs_product_stock_mst s WITH (NOLOCK) ON s.product_id = p.ID AND s.IsDeleted = 0
@@ -402,21 +491,26 @@ namespace Khel_Akhel_Server.Controllers.Product
                 var stockList = new List<ProductStockResponse>();
                 foreach (DataRow row in dt.Rows)
                 {
-                    long stockId = row["StockId"] != DBNull.Value ? Convert.ToInt64(row["StockId"]) : 0;
+                    long stockId =
+                        row["StockId"] != DBNull.Value ? Convert.ToInt64(row["StockId"]) : 0;
                     long productId = Convert.ToInt64(row["ProductId"]);
 
-                    stockList.Add(new ProductStockResponse
-                    {
-                        EncryptedStockId = stockId > 0 ? _encryption.Encrypt(stockId) : "",
-                        EncryptedProductId = _encryption.Encrypt(productId),
-                        ProductName = row["ProductName"].ToString() ?? "",
-                        ProductCode = row["ProductCode"].ToString() ?? "",
-                        SKU = row["SKU"].ToString() ?? "",
-                        AvailableQty = Convert.ToInt32(row["AvailableQty"]),
-                        ReservedQty = Convert.ToInt32(row["ReservedQty"]),
-                        IsActive = Convert.ToBoolean(row["IsActive"]),
-                        CreatedDate = DateTimeFormat.Format(Convert.ToDateTime(row["CreatedDate"]))
-                    });
+                    stockList.Add(
+                        new ProductStockResponse
+                        {
+                            EncryptedStockId = stockId > 0 ? _encryption.Encrypt(stockId) : "",
+                            EncryptedProductId = _encryption.Encrypt(productId),
+                            ProductName = row["ProductName"].ToString() ?? "",
+                            ProductCode = row["ProductCode"].ToString() ?? "",
+                            SKU = row["SKU"].ToString() ?? "",
+                            AvailableQty = Convert.ToInt32(row["AvailableQty"]),
+                            ReservedQty = Convert.ToInt32(row["ReservedQty"]),
+                            IsActive = Convert.ToBoolean(row["IsActive"]),
+                            CreatedDate = DateTimeFormat.Format(
+                                Convert.ToDateTime(row["CreatedDate"])
+                            ),
+                        }
+                    );
                 }
 
                 var responseData = new ProductStockListResponse
@@ -424,31 +518,38 @@ namespace Khel_Akhel_Server.Controllers.Product
                     Stocks = stockList,
                     TotalRecords = totalRecords,
                     PageIndex = pageIndex,
-                    PageSize = pageSize
+                    PageSize = pageSize,
                 };
 
                 sw.Stop();
-                Logs.Info($"GetAllProductStock completed | Count:{stockList.Count} TotalRecords:{totalRecords}");
+                Logs.Info(
+                    $"GetAllProductStock completed | Count:{stockList.Count} TotalRecords:{totalRecords}"
+                );
 
-                return Ok(new ApiResponse
-                {
-                    Success = true,
-                    StatusCode = 200,
-                    Message = "SUCCESS",
-                    Data = responseData
-                });
+                return Ok(
+                    new ApiResponse
+                    {
+                        Success = true,
+                        StatusCode = 200,
+                        Message = "SUCCESS",
+                        Data = responseData,
+                    }
+                );
             }
             catch (Exception ex)
             {
                 sw.Stop();
                 Logs.Error("Exception occurred in GetAllProductStock API", ex);
-                return StatusCode(500, new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 500,
-                    Message = "SERVER_ERROR",
-                    Errors = new List<string> { "An internal server error occurred." }
-                });
+                return StatusCode(
+                    500,
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 500,
+                        Message = "SERVER_ERROR",
+                        Errors = new List<string> { "An internal server error occurred." },
+                    }
+                );
             }
         }
         #endregion

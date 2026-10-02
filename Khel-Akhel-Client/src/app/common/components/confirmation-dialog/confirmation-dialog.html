@@ -1,0 +1,29 @@
+@if (isOpen) {
+  <div class="modal-backdrop">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>{{ title }}</h3>
+      </div>
+      <div class="modal-body">
+        <p>{{ message }}</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" [disabled]="isSubmitting" (click)="onCancel()">{{ cancelText }}</button>
+        <button
+          class="btn"
+          [class.btn-danger]="isDanger"
+          [class.btn-primary]="!isDanger"
+          [disabled]="isSubmitting"
+          (click)="onConfirm()"
+        >
+          @if (isSubmitting) {
+            <span class="btn-spinner"></span>
+            <span>Processing...</span>
+          } @else {
+            <span>{{ confirmText }}</span>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

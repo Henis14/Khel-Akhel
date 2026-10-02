@@ -19,10 +19,7 @@ namespace Khel_Akhel_Server.Controllers.Product
         private readonly IUrlEncryptionService _encryption;
         private readonly IAuditService _audit;
 
-        public ProductController(
-            DbHelper db,
-            IUrlEncryptionService encryption,
-            IAuditService audit)
+        public ProductController(DbHelper db, IUrlEncryptionService encryption, IAuditService audit)
         {
             _db = db;
             _encryption = encryption;
@@ -65,29 +62,35 @@ namespace Khel_Akhel_Server.Controllers.Product
                 {
                     sw.Stop();
                     Logs.Warning("ProductCreate rejected | Reason: Null request body");
-                    return BadRequest(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 400,
-                        Message = "REQUEST_BODY_REQUIRED",
-                        Errors = new List<string> { "Request body cannot be null." }
-                    });
+                    return BadRequest(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "REQUEST_BODY_REQUIRED",
+                            Errors = new List<string> { "Request body cannot be null." },
+                        }
+                    );
                 }
 
-                if (!_encryption.TryDecrypt(request.EncryptedCategoryId, out long categoryId) || categoryId <= 0)
+                if (
+                    !_encryption.TryDecrypt(request.EncryptedCategoryId, out long categoryId)
+                    || categoryId <= 0
+                )
                 {
                     sw.Stop();
-                    return BadRequest(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 400,
-                        Message = "INVALID_REQUEST",
-                        Errors = new List<string> { "Invalid or tampered category ID." }
-                    });
+                    return BadRequest(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "INVALID_REQUEST",
+                            Errors = new List<string> { "Invalid or tampered category ID." },
+                        }
+                    );
                 }
 
                 request.ProductName = request.ProductName?.Trim() ?? string.Empty;
-                request.ProductCode = request.ProductCode?.Trim() ?? string.Empty;
                 request.SKU = request.SKU?.Trim() ?? string.Empty;
                 request.ShortDescription = request.ShortDescription?.Trim() ?? string.Empty;
                 request.Description = request.Description?.Trim() ?? string.Empty;
@@ -96,97 +99,102 @@ namespace Khel_Akhel_Server.Controllers.Product
 
                 if (string.IsNullOrWhiteSpace(request.ProductName))
                     errors.Add("Product name is required.");
-                if (string.IsNullOrWhiteSpace(request.ProductCode))
-                    errors.Add("Product code is required.");
+                else if (!ValidationHelper.IsValidProductName(request.ProductName))
+                    errors.Add("Product name must be between 2 and 200 characters.");
+
                 if (string.IsNullOrWhiteSpace(request.SKU))
                     errors.Add("SKU is required.");
+                else if (!ValidationHelper.IsValidSku(request.SKU))
+                    errors.Add(
+                        "SKU must be 3-50 alphanumeric characters (hyphens and underscores allowed)."
+                    );
+
                 if (request.MRP < 0)
                     errors.Add("MRP cannot be negative.");
+                else if (decimal.Round(request.MRP, 2) != request.MRP)
+                    errors.Add("MRP cannot have more than 2 decimal places.");
+
                 if (request.SellingPrice < 0)
                     errors.Add("Selling price cannot be negative.");
-                if (request.SellingPrice > request.MRP)
+                else if (decimal.Round(request.SellingPrice, 2) != request.SellingPrice)
+                    errors.Add("Selling price cannot have more than 2 decimal places.");
+                else if (request.SellingPrice > request.MRP)
                     errors.Add("Selling price cannot be greater than MRP.");
 
                 if (errors.Any())
                 {
                     sw.Stop();
-                    Logs.Warning($"ProductCreate validation failed | Errors:{string.Join(", ", errors)}");
-                    return BadRequest(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 400,
-                        Message = "VALIDATION_FAILED",
-                        Errors = errors
-                    });
+                    Logs.Warning(
+                        $"ProductCreate validation failed | Errors:{string.Join(", ", errors)}"
+                    );
+                    return BadRequest(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "VALIDATION_FAILED",
+                            Errors = errors,
+                        }
+                    );
                 }
 
                 // Verify Category Exists
-                string checkCategoryQuery = @"
+                string checkCategoryQuery =
+                    @"
                     SELECT COUNT(1)
                     FROM drs_product_category_mst WITH (NOLOCK)
                     WHERE ID = @CategoryID AND IsDeleted = 0 AND IsActive = 1";
 
-                int categoryExists = Convert.ToInt32(_db.ExecuteScalar(checkCategoryQuery, new[]
-                {
-                    new SqlParameter("@CategoryID", categoryId)
-                }) ?? 0);
+                int categoryExists = Convert.ToInt32(
+                    _db.ExecuteScalar(
+                        checkCategoryQuery,
+                        new[] { new SqlParameter("@CategoryID", categoryId) }
+                    ) ?? 0
+                );
 
                 if (categoryExists == 0)
                 {
                     sw.Stop();
-                    return BadRequest(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 400,
-                        Message = "CATEGORY_NOT_FOUND",
-                        Errors = new List<string> { "Specified product category does not exist or is inactive." }
-                    });
-                }
-
-                // Check Duplicate ProductCode
-                string checkCodeQuery = @"
-                    SELECT COUNT(1)
-                    FROM drs_product_mst WITH (NOLOCK)
-                    WHERE ProductCode = @ProductCode AND IsDeleted = 0";
-
-                int codeExists = Convert.ToInt32(_db.ExecuteScalar(checkCodeQuery, new[]
-                {
-                    new SqlParameter("@ProductCode", request.ProductCode)
-                }) ?? 0);
-
-                if (codeExists > 0)
-                {
-                    sw.Stop();
-                    return Conflict(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 409,
-                        Message = "PRODUCT_ALREADY_EXISTS",
-                        Errors = new List<string> { "Product with given ProductCode already exists." }
-                    });
+                    return BadRequest(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "CATEGORY_NOT_FOUND",
+                            Errors = new List<string>
+                            {
+                                "Specified product category does not exist or is inactive.",
+                            },
+                        }
+                    );
                 }
 
                 // Check Duplicate SKU
-                string checkSkuQuery = @"
+                string checkSkuQuery =
+                    @"
                     SELECT COUNT(1)
                     FROM drs_product_mst WITH (NOLOCK)
                     WHERE SKU = @SKU AND IsDeleted = 0";
 
-                int skuExists = Convert.ToInt32(_db.ExecuteScalar(checkSkuQuery, new[]
-                {
-                    new SqlParameter("@SKU", request.SKU)
-                }) ?? 0);
+                int skuExists = Convert.ToInt32(
+                    _db.ExecuteScalar(
+                        checkSkuQuery,
+                        new[] { new SqlParameter("@SKU", request.SKU) }
+                    ) ?? 0
+                );
 
                 if (skuExists > 0)
                 {
                     sw.Stop();
-                    return Conflict(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 409,
-                        Message = "PRODUCT_ALREADY_EXISTS",
-                        Errors = new List<string> { "Product with given SKU already exists." }
-                    });
+                    return Conflict(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 409,
+                            Message = "PRODUCT_ALREADY_EXISTS",
+                            Errors = new List<string> { "Product with given SKU already exists." },
+                        }
+                    );
                 }
 
                 using SqlConnection con = _db.GetOpenConnection();
@@ -194,7 +202,23 @@ namespace Khel_Akhel_Server.Controllers.Product
 
                 try
                 {
-                    string insertProductQuery = @"
+                    string genCodeQuery =
+                        "SELECT 'DRP' + RIGHT('000000' + CAST(NEXT VALUE FOR dbo.Seq_ProductCode AS VARCHAR(6)), 6);";
+                    using SqlCommand genCmd = new(genCodeQuery, con, tx);
+                    string productCode = Convert.ToString(genCmd.ExecuteScalar()) ?? string.Empty;
+
+                    if (
+                        !System.Text.RegularExpressions.Regex.IsMatch(productCode, @"^DRP[0-9]{6}$")
+                    )
+                    {
+                        tx.Rollback();
+                        throw new InvalidOperationException(
+                            $"Invalid generated ProductCode format: {productCode}"
+                        );
+                    }
+
+                    string insertProductQuery =
+                        @"
                         INSERT INTO drs_product_mst
                         (product_category_id, ProductName, ProductCode, SKU, ShortDescription, Description, MRP, SellingPrice, IsFeatured, IsNewArrival, IsBestSeller, IsTrending, IsCustomerFavourite, IsActive, IsDeleted, CreatedDate)
                         VALUES
@@ -204,22 +228,32 @@ namespace Khel_Akhel_Server.Controllers.Product
                     using SqlCommand productCmd = new(insertProductQuery, con, tx);
                     productCmd.Parameters.AddWithValue("@CategoryId", categoryId);
                     productCmd.Parameters.AddWithValue("@ProductName", request.ProductName);
-                    productCmd.Parameters.AddWithValue("@ProductCode", request.ProductCode);
+                    productCmd.Parameters.AddWithValue("@ProductCode", productCode);
                     productCmd.Parameters.AddWithValue("@SKU", request.SKU);
-                    productCmd.Parameters.AddWithValue("@ShortDescription", (object?)request.ShortDescription ?? DBNull.Value);
-                    productCmd.Parameters.AddWithValue("@Description", (object?)request.Description ?? DBNull.Value);
+                    productCmd.Parameters.AddWithValue(
+                        "@ShortDescription",
+                        (object?)request.ShortDescription ?? DBNull.Value
+                    );
+                    productCmd.Parameters.AddWithValue(
+                        "@Description",
+                        (object?)request.Description ?? DBNull.Value
+                    );
                     productCmd.Parameters.AddWithValue("@MRP", request.MRP);
                     productCmd.Parameters.AddWithValue("@SellingPrice", request.SellingPrice);
                     productCmd.Parameters.AddWithValue("@IsFeatured", request.IsFeatured);
                     productCmd.Parameters.AddWithValue("@IsNewArrival", request.IsNewArrival);
                     productCmd.Parameters.AddWithValue("@IsBestSeller", request.IsBestSeller);
                     productCmd.Parameters.AddWithValue("@IsTrending", request.IsTrending);
-                    productCmd.Parameters.AddWithValue("@IsCustomerFavourite", request.IsCustomerFavourite);
+                    productCmd.Parameters.AddWithValue(
+                        "@IsCustomerFavourite",
+                        request.IsCustomerFavourite
+                    );
 
                     long productId = Convert.ToInt64(productCmd.ExecuteScalar());
 
                     // Create Initial Stock Record
-                    string insertStockQuery = @"
+                    string insertStockQuery =
+                        @"
                         INSERT INTO drs_product_stock_mst
                         (product_id, AvailableQty, ReservedQty, IsActive, IsDeleted, CreatedDate)
                         VALUES
@@ -237,10 +271,10 @@ namespace Khel_Akhel_Server.Controllers.Product
                         EncryptedProductId = encryptedProductId,
                         EncryptedCategoryId = request.EncryptedCategoryId,
                         ProductName = request.ProductName,
-                        ProductCode = request.ProductCode,
+                        ProductCode = productCode,
                         SKU = request.SKU,
-                        ShortDescription = request.ShortDescription,
-                        Description = request.Description,
+                        ShortDescription = request.ShortDescription ?? string.Empty,
+                        Description = request.Description ?? string.Empty,
                         MRP = request.MRP,
                         SellingPrice = request.SellingPrice,
                         IsFeatured = request.IsFeatured,
@@ -250,7 +284,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                         IsCustomerFavourite = request.IsCustomerFavourite,
                         IsActive = true,
                         AvailableQty = 0,
-                        CreatedDate = DateTimeFormat.Format(DateTime.Now)
+                        CreatedDate = DateTimeFormat.Format(DateTime.Now),
                     };
 
                     await _audit.InsertAuditAsync(
@@ -268,13 +302,15 @@ namespace Khel_Akhel_Server.Controllers.Product
                     sw.Stop();
                     Logs.Info($"ProductCreate completed | ProductId:{productId}");
 
-                    return Ok(new ApiResponse
-                    {
-                        Success = true,
-                        StatusCode = 200,
-                        Message = "PRODUCT_CREATED",
-                        Data = responseData
-                    });
+                    return Ok(
+                        new ApiResponse
+                        {
+                            Success = true,
+                            StatusCode = 200,
+                            Message = "PRODUCT_CREATED",
+                            Data = responseData,
+                        }
+                    );
                 }
                 catch
                 {
@@ -286,13 +322,16 @@ namespace Khel_Akhel_Server.Controllers.Product
             {
                 sw.Stop();
                 Logs.Error("Exception occurred in ProductCreate API", ex);
-                return StatusCode(500, new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 500,
-                    Message = "SERVER_ERROR",
-                    Errors = new List<string> { "An internal server error occurred." }
-                });
+                return StatusCode(
+                    500,
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 500,
+                        Message = "SERVER_ERROR",
+                        Errors = new List<string> { "An internal server error occurred." },
+                    }
+                );
             }
         }
         #endregion
@@ -311,43 +350,59 @@ namespace Khel_Akhel_Server.Controllers.Product
                 {
                     sw.Stop();
                     Logs.Warning("ProductUpdate rejected | Missing product ID or request body");
-                    return BadRequest(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 400,
-                        Message = "VALIDATION_FAILED",
-                        Errors = new List<string> { "Encrypted product ID is required." }
-                    });
+                    return BadRequest(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "VALIDATION_FAILED",
+                            Errors = new List<string> { "Encrypted product ID is required." },
+                        }
+                    );
                 }
 
-                if (!_encryption.TryDecrypt(request.EncryptedProductId, out long productId) || productId <= 0)
+                if (
+                    !_encryption.TryDecrypt(request.EncryptedProductId, out long productId)
+                    || productId <= 0
+                )
                 {
                     sw.Stop();
-                    return BadRequest(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 400,
-                        Message = "INVALID_REQUEST",
-                        Errors = new List<string> { "Invalid or tampered encrypted product ID." }
-                    });
+                    return BadRequest(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "INVALID_REQUEST",
+                            Errors = new List<string>
+                            {
+                                "Invalid or tampered encrypted product ID.",
+                            },
+                        }
+                    );
                 }
 
-                string selectQuery = @"
+                string selectQuery =
+                    @"
                     SELECT TOP 1 ID, product_category_id, ProductName, ProductCode, SKU, ShortDescription, Description, MRP, SellingPrice, IsFeatured, IsNewArrival, IsBestSeller, IsTrending, IsCustomerFavourite, IsActive
                     FROM drs_product_mst WITH (NOLOCK)
                     WHERE ID = @ID AND IsDeleted = 0";
 
-                DataTable dt = _db.ExecuteQuery(selectQuery, new[] { new SqlParameter("@ID", productId) });
+                DataTable dt = _db.ExecuteQuery(
+                    selectQuery,
+                    new[] { new SqlParameter("@ID", productId) }
+                );
                 if (dt.Rows.Count == 0)
                 {
                     sw.Stop();
-                    return NotFound(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 404,
-                        Message = "PRODUCT_NOT_FOUND",
-                        Errors = new List<string> { "Product record not found." }
-                    });
+                    return NotFound(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 404,
+                            Message = "PRODUCT_NOT_FOUND",
+                            Errors = new List<string> { "Product record not found." },
+                        }
+                    );
                 }
 
                 DataRow existing = dt.Rows[0];
@@ -356,72 +411,121 @@ namespace Khel_Akhel_Server.Controllers.Product
                 long newCategoryId = currentCategoryId;
                 if (!string.IsNullOrWhiteSpace(request.EncryptedCategoryId))
                 {
-                    if (!_encryption.TryDecrypt(request.EncryptedCategoryId, out long decCatId) || decCatId <= 0)
+                    if (
+                        !_encryption.TryDecrypt(request.EncryptedCategoryId, out long decCatId)
+                        || decCatId <= 0
+                    )
                     {
                         sw.Stop();
-                        return BadRequest(new ApiResponse
-                        {
-                            Success = false,
-                            StatusCode = 400,
-                            Message = "INVALID_REQUEST",
-                            Errors = new List<string> { "Invalid category ID." }
-                        });
+                        return BadRequest(
+                            new ApiResponse
+                            {
+                                Success = false,
+                                StatusCode = 400,
+                                Message = "INVALID_REQUEST",
+                                Errors = new List<string> { "Invalid category ID." },
+                            }
+                        );
                     }
                     newCategoryId = decCatId;
                 }
 
-                string newName = request.ProductName != null ? request.ProductName.Trim() : existing["ProductName"].ToString() ?? "";
-                string newCode = request.ProductCode != null ? request.ProductCode.Trim() : existing["ProductCode"].ToString() ?? "";
-                string newSku = request.SKU != null ? request.SKU.Trim() : existing["SKU"].ToString() ?? "";
-                string newShortDesc = request.ShortDescription != null ? request.ShortDescription.Trim() : existing["ShortDescription"].ToString() ?? "";
-                string newDesc = request.Description != null ? request.Description.Trim() : existing["Description"].ToString() ?? "";
+                string newName =
+                    request.ProductName != null
+                        ? request.ProductName.Trim()
+                        : existing["ProductName"].ToString() ?? "";
+                string newCode =
+                    request.ProductCode != null
+                        ? request.ProductCode.Trim()
+                        : existing["ProductCode"].ToString() ?? "";
+                string newSku =
+                    request.SKU != null ? request.SKU.Trim() : existing["SKU"].ToString() ?? "";
+                string newShortDesc =
+                    request.ShortDescription != null
+                        ? request.ShortDescription.Trim()
+                        : existing["ShortDescription"].ToString() ?? "";
+                string newDesc =
+                    request.Description != null
+                        ? request.Description.Trim()
+                        : existing["Description"].ToString() ?? "";
                 decimal newMrp = request.MRP ?? Convert.ToDecimal(existing["MRP"]);
-                decimal newPrice = request.SellingPrice ?? Convert.ToDecimal(existing["SellingPrice"]);
+                decimal newPrice =
+                    request.SellingPrice ?? Convert.ToDecimal(existing["SellingPrice"]);
                 bool newFeatured = request.IsFeatured ?? Convert.ToBoolean(existing["IsFeatured"]);
-                bool newNewArrival = request.IsNewArrival ?? Convert.ToBoolean(existing["IsNewArrival"]);
-                bool newBestSeller = request.IsBestSeller ?? Convert.ToBoolean(existing["IsBestSeller"]);
+                bool newNewArrival =
+                    request.IsNewArrival ?? Convert.ToBoolean(existing["IsNewArrival"]);
+                bool newBestSeller =
+                    request.IsBestSeller ?? Convert.ToBoolean(existing["IsBestSeller"]);
                 bool newTrending = request.IsTrending ?? Convert.ToBoolean(existing["IsTrending"]);
-                bool newFavourite = request.IsCustomerFavourite ?? Convert.ToBoolean(existing["IsCustomerFavourite"]);
+                bool newFavourite =
+                    request.IsCustomerFavourite
+                    ?? Convert.ToBoolean(existing["IsCustomerFavourite"]);
                 bool newIsActive = request.IsActive ?? Convert.ToBoolean(existing["IsActive"]);
 
                 var errors = new List<string>();
-                if (newMrp < 0) errors.Add("MRP cannot be negative.");
-                if (newPrice < 0) errors.Add("Selling price cannot be negative.");
-                if (newPrice > newMrp) errors.Add("Selling price cannot be greater than MRP.");
+                if (request.ProductName != null && !ValidationHelper.IsValidProductName(newName))
+                    errors.Add("Product name must be between 2 and 200 characters.");
+                if (request.SKU != null && !ValidationHelper.IsValidSku(newSku))
+                    errors.Add(
+                        "SKU must be 3-50 alphanumeric characters (hyphens and underscores allowed)."
+                    );
+                if (newMrp < 0)
+                    errors.Add("MRP cannot be negative.");
+                else if (decimal.Round(newMrp, 2) != newMrp)
+                    errors.Add("MRP cannot have more than 2 decimal places.");
+                if (newPrice < 0)
+                    errors.Add("Selling price cannot be negative.");
+                else if (decimal.Round(newPrice, 2) != newPrice)
+                    errors.Add("Selling price cannot have more than 2 decimal places.");
+                if (newPrice > newMrp)
+                    errors.Add("Selling price cannot be greater than MRP.");
 
                 if (errors.Any())
                 {
                     sw.Stop();
-                    return BadRequest(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 400,
-                        Message = "VALIDATION_FAILED",
-                        Errors = errors
-                    });
+                    return BadRequest(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "VALIDATION_FAILED",
+                            Errors = errors,
+                        }
+                    );
                 }
 
                 // Check ProductCode Uniqueness if changed
                 string oldCode = existing["ProductCode"].ToString() ?? "";
                 if (!string.Equals(oldCode, newCode, StringComparison.OrdinalIgnoreCase))
                 {
-                    string dupCode = @"SELECT COUNT(1) FROM drs_product_mst WITH (NOLOCK) WHERE ProductCode = @Code AND ID <> @ID AND IsDeleted = 0";
-                    int cDup = Convert.ToInt32(_db.ExecuteScalar(dupCode, new[]
-                    {
-                        new SqlParameter("@Code", newCode),
-                        new SqlParameter("@ID", productId)
-                    }) ?? 0);
+                    string dupCode =
+                        @"SELECT COUNT(1) FROM drs_product_mst WITH (NOLOCK) WHERE ProductCode = @Code AND ID <> @ID AND IsDeleted = 0";
+                    int cDup = Convert.ToInt32(
+                        _db.ExecuteScalar(
+                            dupCode,
+                            new[]
+                            {
+                                new SqlParameter("@Code", newCode),
+                                new SqlParameter("@ID", productId),
+                            }
+                        ) ?? 0
+                    );
 
                     if (cDup > 0)
                     {
                         sw.Stop();
-                        return Conflict(new ApiResponse
-                        {
-                            Success = false,
-                            StatusCode = 409,
-                            Message = "PRODUCT_ALREADY_EXISTS",
-                            Errors = new List<string> { "Product with given ProductCode already exists." }
-                        });
+                        return Conflict(
+                            new ApiResponse
+                            {
+                                Success = false,
+                                StatusCode = 409,
+                                Message = "PRODUCT_ALREADY_EXISTS",
+                                Errors = new List<string>
+                                {
+                                    "Product with given ProductCode already exists.",
+                                },
+                            }
+                        );
                     }
                 }
 
@@ -429,27 +533,39 @@ namespace Khel_Akhel_Server.Controllers.Product
                 string oldSku = existing["SKU"].ToString() ?? "";
                 if (!string.Equals(oldSku, newSku, StringComparison.OrdinalIgnoreCase))
                 {
-                    string dupSku = @"SELECT COUNT(1) FROM drs_product_mst WITH (NOLOCK) WHERE SKU = @SKU AND ID <> @ID AND IsDeleted = 0";
-                    int sDup = Convert.ToInt32(_db.ExecuteScalar(dupSku, new[]
-                    {
-                        new SqlParameter("@SKU", newSku),
-                        new SqlParameter("@ID", productId)
-                    }) ?? 0);
+                    string dupSku =
+                        @"SELECT COUNT(1) FROM drs_product_mst WITH (NOLOCK) WHERE SKU = @SKU AND ID <> @ID AND IsDeleted = 0";
+                    int sDup = Convert.ToInt32(
+                        _db.ExecuteScalar(
+                            dupSku,
+                            new[]
+                            {
+                                new SqlParameter("@SKU", newSku),
+                                new SqlParameter("@ID", productId),
+                            }
+                        ) ?? 0
+                    );
 
                     if (sDup > 0)
                     {
                         sw.Stop();
-                        return Conflict(new ApiResponse
-                        {
-                            Success = false,
-                            StatusCode = 409,
-                            Message = "PRODUCT_ALREADY_EXISTS",
-                            Errors = new List<string> { "Product with given SKU already exists." }
-                        });
+                        return Conflict(
+                            new ApiResponse
+                            {
+                                Success = false,
+                                StatusCode = 409,
+                                Message = "PRODUCT_ALREADY_EXISTS",
+                                Errors = new List<string>
+                                {
+                                    "Product with given SKU already exists.",
+                                },
+                            }
+                        );
                     }
                 }
 
-                string updateQuery = @"
+                string updateQuery =
+                    @"
                     UPDATE drs_product_mst
                     SET product_category_id = @CategoryId,
                         ProductName = @ProductName,
@@ -468,24 +584,30 @@ namespace Khel_Akhel_Server.Controllers.Product
                         ModifiedDate = GETDATE()
                     WHERE ID = @ID AND IsDeleted = 0";
 
-                _db.ExecuteNonQuery(updateQuery, new[]
-                {
-                    new SqlParameter("@CategoryId", newCategoryId),
-                    new SqlParameter("@ProductName", newName),
-                    new SqlParameter("@ProductCode", newCode),
-                    new SqlParameter("@SKU", newSku),
-                    new SqlParameter("@ShortDescription", (object?)newShortDesc ?? DBNull.Value),
-                    new SqlParameter("@Description", (object?)newDesc ?? DBNull.Value),
-                    new SqlParameter("@MRP", newMrp),
-                    new SqlParameter("@SellingPrice", newPrice),
-                    new SqlParameter("@IsFeatured", newFeatured),
-                    new SqlParameter("@IsNewArrival", newNewArrival),
-                    new SqlParameter("@IsBestSeller", newBestSeller),
-                    new SqlParameter("@IsTrending", newTrending),
-                    new SqlParameter("@IsCustomerFavourite", newFavourite),
-                    new SqlParameter("@IsActive", newIsActive),
-                    new SqlParameter("@ID", productId)
-                });
+                _db.ExecuteNonQuery(
+                    updateQuery,
+                    new[]
+                    {
+                        new SqlParameter("@CategoryId", newCategoryId),
+                        new SqlParameter("@ProductName", newName),
+                        new SqlParameter("@ProductCode", newCode),
+                        new SqlParameter("@SKU", newSku),
+                        new SqlParameter(
+                            "@ShortDescription",
+                            (object?)newShortDesc ?? DBNull.Value
+                        ),
+                        new SqlParameter("@Description", (object?)newDesc ?? DBNull.Value),
+                        new SqlParameter("@MRP", newMrp),
+                        new SqlParameter("@SellingPrice", newPrice),
+                        new SqlParameter("@IsFeatured", newFeatured),
+                        new SqlParameter("@IsNewArrival", newNewArrival),
+                        new SqlParameter("@IsBestSeller", newBestSeller),
+                        new SqlParameter("@IsTrending", newTrending),
+                        new SqlParameter("@IsCustomerFavourite", newFavourite),
+                        new SqlParameter("@IsActive", newIsActive),
+                        new SqlParameter("@ID", productId),
+                    }
+                );
 
                 var responseData = new ProductResponse
                 {
@@ -494,8 +616,8 @@ namespace Khel_Akhel_Server.Controllers.Product
                     ProductName = newName,
                     ProductCode = newCode,
                     SKU = newSku,
-                    ShortDescription = newShortDesc,
-                    Description = newDesc,
+                    ShortDescription = newShortDesc ?? string.Empty,
+                    Description = newDesc ?? string.Empty,
                     MRP = newMrp,
                     SellingPrice = newPrice,
                     IsFeatured = newFeatured,
@@ -503,7 +625,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                     IsBestSeller = newBestSeller,
                     IsTrending = newTrending,
                     IsCustomerFavourite = newFavourite,
-                    IsActive = newIsActive
+                    IsActive = newIsActive,
                 };
 
                 await _audit.InsertAuditAsync(
@@ -521,25 +643,30 @@ namespace Khel_Akhel_Server.Controllers.Product
                 sw.Stop();
                 Logs.Info($"ProductUpdate completed | ProductId:{productId}");
 
-                return Ok(new ApiResponse
-                {
-                    Success = true,
-                    StatusCode = 200,
-                    Message = "PRODUCT_UPDATED",
-                    Data = responseData
-                });
+                return Ok(
+                    new ApiResponse
+                    {
+                        Success = true,
+                        StatusCode = 200,
+                        Message = "PRODUCT_UPDATED",
+                        Data = responseData,
+                    }
+                );
             }
             catch (Exception ex)
             {
                 sw.Stop();
                 Logs.Error("Exception occurred in ProductUpdate API", ex);
-                return StatusCode(500, new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 500,
-                    Message = "SERVER_ERROR",
-                    Errors = new List<string> { "An internal server error occurred." }
-                });
+                return StatusCode(
+                    500,
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 500,
+                        Message = "SERVER_ERROR",
+                        Errors = new List<string> { "An internal server error occurred." },
+                    }
+                );
             }
         }
         #endregion
@@ -554,34 +681,49 @@ namespace Khel_Akhel_Server.Controllers.Product
 
             try
             {
-                if (string.IsNullOrWhiteSpace(encryptedId) || !_encryption.TryDecrypt(encryptedId, out long productId) || productId <= 0)
+                if (
+                    string.IsNullOrWhiteSpace(encryptedId)
+                    || !_encryption.TryDecrypt(encryptedId, out long productId)
+                    || productId <= 0
+                )
                 {
                     sw.Stop();
-                    return BadRequest(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 400,
-                        Message = "INVALID_REQUEST",
-                        Errors = new List<string> { "Encrypted product ID is required." }
-                    });
+                    return BadRequest(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "INVALID_REQUEST",
+                            Errors = new List<string> { "Encrypted product ID is required." },
+                        }
+                    );
                 }
 
-                string checkQuery = @"SELECT COUNT(1) FROM drs_product_mst WITH (NOLOCK) WHERE ID = @ID AND IsDeleted = 0";
-                int exists = Convert.ToInt32(_db.ExecuteScalar(checkQuery, new[] { new SqlParameter("@ID", productId) }) ?? 0);
+                string checkQuery =
+                    @"SELECT COUNT(1) FROM drs_product_mst WITH (NOLOCK) WHERE ID = @ID AND IsDeleted = 0";
+                int exists = Convert.ToInt32(
+                    _db.ExecuteScalar(checkQuery, new[] { new SqlParameter("@ID", productId) }) ?? 0
+                );
 
                 if (exists == 0)
                 {
                     sw.Stop();
-                    return NotFound(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 404,
-                        Message = "PRODUCT_NOT_FOUND",
-                        Errors = new List<string> { "Product record not found or already deleted." }
-                    });
+                    return NotFound(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 404,
+                            Message = "PRODUCT_NOT_FOUND",
+                            Errors = new List<string>
+                            {
+                                "Product record not found or already deleted.",
+                            },
+                        }
+                    );
                 }
 
-                string deleteQuery = @"UPDATE drs_product_mst SET IsDeleted = 1, IsActive = 0, ModifiedDate = GETDATE() WHERE ID = @ID";
+                string deleteQuery =
+                    @"UPDATE drs_product_mst SET IsDeleted = 1, IsActive = 0, ModifiedDate = GETDATE() WHERE ID = @ID";
                 _db.ExecuteNonQuery(deleteQuery, new[] { new SqlParameter("@ID", productId) });
 
                 await _audit.InsertAuditAsync(
@@ -599,25 +741,30 @@ namespace Khel_Akhel_Server.Controllers.Product
                 sw.Stop();
                 Logs.Info($"ProductSoftDelete completed | ProductId:{productId}");
 
-                return Ok(new ApiResponse
-                {
-                    Success = true,
-                    StatusCode = 200,
-                    Message = "PRODUCT_DELETED",
-                    Data = null
-                });
+                return Ok(
+                    new ApiResponse
+                    {
+                        Success = true,
+                        StatusCode = 200,
+                        Message = "PRODUCT_DELETED",
+                        Data = null,
+                    }
+                );
             }
             catch (Exception ex)
             {
                 sw.Stop();
                 Logs.Error("Exception occurred in ProductSoftDelete API", ex);
-                return StatusCode(500, new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 500,
-                    Message = "SERVER_ERROR",
-                    Errors = new List<string> { "An internal server error occurred." }
-                });
+                return StatusCode(
+                    500,
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 500,
+                        Message = "SERVER_ERROR",
+                        Errors = new List<string> { "An internal server error occurred." },
+                    }
+                );
             }
         }
         #endregion
@@ -635,40 +782,55 @@ namespace Khel_Akhel_Server.Controllers.Product
                 if (!_encryption.TryDecrypt(encryptedId, out long productId) || productId <= 0)
                 {
                     sw.Stop();
-                    return BadRequest(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 400,
-                        Message = "INVALID_REQUEST",
-                        Errors = new List<string> { "Invalid or tampered encrypted product ID." }
-                    });
+                    return BadRequest(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "INVALID_REQUEST",
+                            Errors = new List<string>
+                            {
+                                "Invalid or tampered encrypted product ID.",
+                            },
+                        }
+                    );
                 }
 
-                string query = @"
+                string query =
+                    @"
                     SELECT p.ID, p.product_category_id, c.CategoryName, p.ProductName, p.ProductCode, p.SKU, p.ShortDescription, p.Description, p.MRP, p.SellingPrice, p.IsFeatured, p.IsNewArrival, p.IsBestSeller, p.IsTrending, p.IsCustomerFavourite, p.IsActive, p.CreatedDate, ISNULL(s.AvailableQty, 0) AS AvailableQty
                     FROM drs_product_mst p WITH (NOLOCK)
                     LEFT JOIN drs_product_category_mst c WITH (NOLOCK) ON c.ID = p.product_category_id AND c.IsDeleted = 0
                     LEFT JOIN drs_product_stock_mst s WITH (NOLOCK) ON s.product_id = p.ID AND s.IsDeleted = 0
                     WHERE p.ID = @ID AND p.IsDeleted = 0";
 
-                DataTable dt = _db.ExecuteQuery(query, new[] { new SqlParameter("@ID", productId) });
+                DataTable dt = _db.ExecuteQuery(
+                    query,
+                    new[] { new SqlParameter("@ID", productId) }
+                );
                 if (dt.Rows.Count == 0)
                 {
                     sw.Stop();
-                    return NotFound(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 404,
-                        Message = "PRODUCT_NOT_FOUND",
-                        Errors = new List<string> { "Product record not found." }
-                    });
+                    return NotFound(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 404,
+                            Message = "PRODUCT_NOT_FOUND",
+                            Errors = new List<string> { "Product record not found." },
+                        }
+                    );
                 }
 
                 DataRow row = dt.Rows[0];
 
                 // Fetch Product Images
-                string imageQuery = @"SELECT ImagePath FROM drs_product_image_mst WITH (NOLOCK) WHERE product_id = @ProductId AND IsDeleted = 0 ORDER BY IsDefault DESC, DisplayOrder ASC";
-                DataTable dtImages = _db.ExecuteQuery(imageQuery, new[] { new SqlParameter("@ProductId", productId) });
+                string imageQuery =
+                    @"SELECT ImagePath FROM drs_product_image_mst WITH (NOLOCK) WHERE product_id = @ProductId AND IsDeleted = 0 ORDER BY IsDefault DESC, DisplayOrder ASC";
+                DataTable dtImages = _db.ExecuteQuery(
+                    imageQuery,
+                    new[] { new SqlParameter("@ProductId", productId) }
+                );
                 var images = new List<string>();
                 foreach (DataRow imgRow in dtImages.Rows)
                 {
@@ -678,7 +840,9 @@ namespace Khel_Akhel_Server.Controllers.Product
                 var productResponse = new ProductResponse
                 {
                     EncryptedProductId = _encryption.Encrypt(Convert.ToInt64(row["ID"])),
-                    EncryptedCategoryId = _encryption.Encrypt(Convert.ToInt64(row["product_category_id"])),
+                    EncryptedCategoryId = _encryption.Encrypt(
+                        Convert.ToInt64(row["product_category_id"])
+                    ),
                     CategoryName = row["CategoryName"].ToString() ?? "",
                     ProductName = row["ProductName"].ToString() ?? "",
                     ProductCode = row["ProductCode"].ToString() ?? "",
@@ -695,47 +859,70 @@ namespace Khel_Akhel_Server.Controllers.Product
                     IsActive = Convert.ToBoolean(row["IsActive"]),
                     AvailableQty = Convert.ToInt32(row["AvailableQty"]),
                     ImagePaths = images,
-                    CreatedDate = DateTimeFormat.Format(Convert.ToDateTime(row["CreatedDate"]))
+                    CreatedDate = DateTimeFormat.Format(Convert.ToDateTime(row["CreatedDate"])),
                 };
 
                 sw.Stop();
                 Logs.Info($"GetProductById completed | ProductId:{productId}");
 
-                return Ok(new ApiResponse
-                {
-                    Success = true,
-                    StatusCode = 200,
-                    Message = "SUCCESS",
-                    Data = productResponse
-                });
+                return Ok(
+                    new ApiResponse
+                    {
+                        Success = true,
+                        StatusCode = 200,
+                        Message = "SUCCESS",
+                        Data = productResponse,
+                    }
+                );
             }
             catch (Exception ex)
             {
                 sw.Stop();
                 Logs.Error("Exception occurred in GetProductById API", ex);
-                return StatusCode(500, new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 500,
-                    Message = "SERVER_ERROR",
-                    Errors = new List<string> { "An internal server error occurred." }
-                });
+                return StatusCode(
+                    500,
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 500,
+                        Message = "SERVER_ERROR",
+                        Errors = new List<string> { "An internal server error occurred." },
+                    }
+                );
             }
         }
         #endregion
 
-        #region 5.5 GetAllProduct & 5.6 SearchProducts [GET]
+        #region 5.5 GetAllProduct & 5.6 SearchProducts [GET / POST]
         [AllowAnonymous]
         [HttpGet("list")]
-        public IActionResult GetAllProduct([FromQuery] ProductListRequest request)
+        [HttpPost("list")]
+        public IActionResult GetAllProduct(
+            [FromQuery] ProductListRequest? queryRequest,
+            [FromBody] ProductListRequest? bodyRequest
+        )
         {
+            var request =
+                (HttpMethods.IsPost(Request.Method) ? bodyRequest : queryRequest)
+                ?? queryRequest
+                ?? bodyRequest
+                ?? new ProductListRequest();
             return FetchProducts(request);
         }
 
         [AllowAnonymous]
         [HttpGet("search")]
-        public IActionResult SearchProducts([FromQuery] ProductListRequest request)
+        [HttpPost("search")]
+        public IActionResult SearchProducts(
+            [FromQuery] ProductListRequest? queryRequest,
+            [FromBody] ProductListRequest? bodyRequest
+        )
         {
+            var request =
+                (HttpMethods.IsPost(Request.Method) ? bodyRequest : queryRequest)
+                ?? queryRequest
+                ?? bodyRequest
+                ?? new ProductListRequest();
             return FetchProducts(request);
         }
 
@@ -747,20 +934,24 @@ namespace Khel_Akhel_Server.Controllers.Product
             try
             {
                 int pageIndex = request.PageIndex < 1 ? 1 : request.PageIndex;
-                int pageSize = request.PageSize < 1 ? 10 : (request.PageSize > 100 ? 100 : request.PageSize);
+                int pageSize =
+                    request.PageSize < 1 ? 10 : (request.PageSize > 100 ? 100 : request.PageSize);
                 int offset = (pageIndex - 1) * pageSize;
 
                 var parameters = new List<SqlParameter>
                 {
                     new SqlParameter("@Offset", offset),
-                    new SqlParameter("@PageSize", pageSize)
+                    new SqlParameter("@PageSize", pageSize),
                 };
 
                 string whereClause = "WHERE p.IsDeleted = 0";
 
                 if (!string.IsNullOrWhiteSpace(request.EncryptedCategoryId))
                 {
-                    if (_encryption.TryDecrypt(request.EncryptedCategoryId, out long catId) && catId > 0)
+                    if (
+                        _encryption.TryDecrypt(request.EncryptedCategoryId, out long catId)
+                        && catId > 0
+                    )
                     {
                         whereClause += " AND p.product_category_id = @CategoryId";
                         parameters.Add(new SqlParameter("@CategoryId", catId));
@@ -794,7 +985,8 @@ namespace Khel_Akhel_Server.Controllers.Product
                 if (!string.IsNullOrWhiteSpace(request.Search))
                 {
                     string term = $"%{request.Search.Trim()}%";
-                    whereClause += " AND (p.ProductName LIKE @Search OR p.ProductCode LIKE @Search OR p.SKU LIKE @Search OR p.Description LIKE @Search)";
+                    whereClause +=
+                        " AND (p.ProductName LIKE @Search OR p.ProductCode LIKE @Search OR p.SKU LIKE @Search OR p.Description LIKE @Search)";
                     parameters.Add(new SqlParameter("@Search", term));
                 }
 
@@ -803,13 +995,17 @@ namespace Khel_Akhel_Server.Controllers.Product
                     "price_asc" => "p.SellingPrice ASC",
                     "price_desc" => "p.SellingPrice DESC",
                     "name" => "p.ProductName ASC",
-                    _ => "p.ID DESC"
+                    _ => "p.ID DESC",
                 };
 
-                string countQuery = $"SELECT COUNT(1) FROM drs_product_mst p WITH (NOLOCK) {whereClause}";
-                int totalRecords = Convert.ToInt32(_db.ExecuteScalar(countQuery, parameters.ToArray()) ?? 0);
+                string countQuery =
+                    $"SELECT COUNT(1) FROM drs_product_mst p WITH (NOLOCK) {whereClause}";
+                int totalRecords = Convert.ToInt32(
+                    _db.ExecuteScalar(countQuery, parameters.ToArray()) ?? 0
+                );
 
-                string listQuery = $@"
+                string listQuery =
+                    $@"
                     SELECT p.ID, p.product_category_id, c.CategoryName, p.ProductName, p.ProductCode, p.SKU, p.ShortDescription, p.Description, p.MRP, p.SellingPrice, p.IsFeatured, p.IsNewArrival, p.IsBestSeller, p.IsTrending, p.IsCustomerFavourite, p.IsActive, p.CreatedDate, ISNULL(s.AvailableQty, 0) AS AvailableQty
                     FROM drs_product_mst p WITH (NOLOCK)
                     LEFT JOIN drs_product_category_mst c WITH (NOLOCK) ON c.ID = p.product_category_id AND c.IsDeleted = 0
@@ -824,27 +1020,33 @@ namespace Khel_Akhel_Server.Controllers.Product
                 foreach (DataRow row in dt.Rows)
                 {
                     long pId = Convert.ToInt64(row["ID"]);
-                    productList.Add(new ProductResponse
-                    {
-                        EncryptedProductId = _encryption.Encrypt(pId),
-                        EncryptedCategoryId = _encryption.Encrypt(Convert.ToInt64(row["product_category_id"])),
-                        CategoryName = row["CategoryName"].ToString() ?? "",
-                        ProductName = row["ProductName"].ToString() ?? "",
-                        ProductCode = row["ProductCode"].ToString() ?? "",
-                        SKU = row["SKU"].ToString() ?? "",
-                        ShortDescription = row["ShortDescription"].ToString() ?? "",
-                        Description = row["Description"].ToString() ?? "",
-                        MRP = Convert.ToDecimal(row["MRP"]),
-                        SellingPrice = Convert.ToDecimal(row["SellingPrice"]),
-                        IsFeatured = Convert.ToBoolean(row["IsFeatured"]),
-                        IsNewArrival = Convert.ToBoolean(row["IsNewArrival"]),
-                        IsBestSeller = Convert.ToBoolean(row["IsBestSeller"]),
-                        IsTrending = Convert.ToBoolean(row["IsTrending"]),
-                        IsCustomerFavourite = Convert.ToBoolean(row["IsCustomerFavourite"]),
-                        IsActive = Convert.ToBoolean(row["IsActive"]),
-                        AvailableQty = Convert.ToInt32(row["AvailableQty"]),
-                        CreatedDate = DateTimeFormat.Format(Convert.ToDateTime(row["CreatedDate"]))
-                    });
+                    productList.Add(
+                        new ProductResponse
+                        {
+                            EncryptedProductId = _encryption.Encrypt(pId),
+                            EncryptedCategoryId = _encryption.Encrypt(
+                                Convert.ToInt64(row["product_category_id"])
+                            ),
+                            CategoryName = row["CategoryName"].ToString() ?? "",
+                            ProductName = row["ProductName"].ToString() ?? "",
+                            ProductCode = row["ProductCode"].ToString() ?? "",
+                            SKU = row["SKU"].ToString() ?? "",
+                            ShortDescription = row["ShortDescription"].ToString() ?? "",
+                            Description = row["Description"].ToString() ?? "",
+                            MRP = Convert.ToDecimal(row["MRP"]),
+                            SellingPrice = Convert.ToDecimal(row["SellingPrice"]),
+                            IsFeatured = Convert.ToBoolean(row["IsFeatured"]),
+                            IsNewArrival = Convert.ToBoolean(row["IsNewArrival"]),
+                            IsBestSeller = Convert.ToBoolean(row["IsBestSeller"]),
+                            IsTrending = Convert.ToBoolean(row["IsTrending"]),
+                            IsCustomerFavourite = Convert.ToBoolean(row["IsCustomerFavourite"]),
+                            IsActive = Convert.ToBoolean(row["IsActive"]),
+                            AvailableQty = Convert.ToInt32(row["AvailableQty"]),
+                            CreatedDate = DateTimeFormat.Format(
+                                Convert.ToDateTime(row["CreatedDate"])
+                            ),
+                        }
+                    );
                 }
 
                 var responseData = new ProductListResponse
@@ -852,31 +1054,38 @@ namespace Khel_Akhel_Server.Controllers.Product
                     Products = productList,
                     TotalRecords = totalRecords,
                     PageIndex = pageIndex,
-                    PageSize = pageSize
+                    PageSize = pageSize,
                 };
 
                 sw.Stop();
-                Logs.Info($"FetchProducts completed | Count:{productList.Count} TotalRecords:{totalRecords}");
+                Logs.Info(
+                    $"FetchProducts completed | Count:{productList.Count} TotalRecords:{totalRecords}"
+                );
 
-                return Ok(new ApiResponse
-                {
-                    Success = true,
-                    StatusCode = 200,
-                    Message = "SUCCESS",
-                    Data = responseData
-                });
+                return Ok(
+                    new ApiResponse
+                    {
+                        Success = true,
+                        StatusCode = 200,
+                        Message = "SUCCESS",
+                        Data = responseData,
+                    }
+                );
             }
             catch (Exception ex)
             {
                 sw.Stop();
                 Logs.Error("Exception occurred in FetchProducts API", ex);
-                return StatusCode(500, new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 500,
-                    Message = "SERVER_ERROR",
-                    Errors = new List<string> { "An internal server error occurred." }
-                });
+                return StatusCode(
+                    500,
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 500,
+                        Message = "SERVER_ERROR",
+                        Errors = new List<string> { "An internal server error occurred." },
+                    }
+                );
             }
         }
         #endregion

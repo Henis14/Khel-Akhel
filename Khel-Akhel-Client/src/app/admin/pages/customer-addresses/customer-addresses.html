@@ -1,0 +1,215 @@
+<div class="addresses-page">
+  <div class="page-header">
+    <app-breadcrumb [items]="breadcrumbs"></app-breadcrumb>
+    <div class="header-content d-flex justify-content-between align-items-center w-100">
+      <div>
+        <h1>Customer Addresses</h1>
+        <p class="subtitle">Manage customer shipping and billing address records</p>
+      </div>
+      <button class="btn btn-primary" (click)="openCreateModal()">
+        + Add Address
+      </button>
+    </div>
+  </div>
+
+  @if (successMessage) {
+    <div class="alert alert-success">
+      {{ successMessage }}
+    </div>
+  }
+
+  @if (errorMessage) {
+    <div class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
+  }
+
+  <div class="table-card card">
+    @if (loading) {
+      <app-loader text="Loading customer addresses..."></app-loader>
+    } @else {
+      <div class="table-responsive">
+      <table class="table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Full Name</th>
+              <th>Mobile</th>
+              <th>Address</th>
+              <th>City / State</th>
+              <th>Country</th>
+              <th>Pincode</th>
+              <th>Default</th>
+              <th class="text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (a of addresses; track a.encryptedAddressId) {
+              <tr>
+                <td class="font-weight-600">{{ a.addressTitle }}</td>
+                <td>{{ a.fullName }}</td>
+                <td>{{ a.mobileNo }}</td>
+                <td>{{ a.addressLine1 }} @if (a.addressLine2) { <span>, {{ a.addressLine2 }}</span> }</td>
+                <td>{{ a.city }}, {{ a.state }}</td>
+                <td>{{ a.country }}</td>
+                <td><code>{{ a.pincode }}</code></td>
+                <td>
+                  <span class="badge" [class.badge-success]="a.isDefault" [class.badge-secondary]="!a.isDefault">
+                    {{ a.isDefault ? 'Yes' : 'No' }}
+                  </span>
+                </td>
+                <td class="text-right actions-cell">
+                  <button class="btn btn-secondary btn-sm" (click)="openEditModal(a)">Edit</button>
+                  <button class="btn btn-danger btn-sm" (click)="confirmDelete(a)">Delete</button>
+                </td>
+              </tr>
+            }
+            @if (addresses.length === 0) {
+              <tr>
+                <td colspan="9" class="text-center text-muted">No customer addresses found.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+  <!-- Create/Edit Modal -->
+  @if (isModalOpen) {
+    <div class="modal-backdrop">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>{{ isEditMode ? 'Edit Address' : 'Add New Address' }}</h3>
+          <button class="close-btn" (click)="closeModal()">✕</button>
+        </div>
+
+        <form [formGroup]="addressForm" (ngSubmit)="saveAddress()">
+          <div class="modal-body">
+            <div class="form-row">
+              <div class="form-group col">
+                <label>Address Title *</label>
+                <input type="text" class="form-control" formControlName="addressTitle" placeholder="e.g. Home, Office" />
+              </div>
+              <div class="form-group col">
+                <label>Address Type *</label>
+                <select class="form-control" formControlName="addressType">
+                  <option value="Shipping">Shipping</option>
+                  <option value="Billing">Billing</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group col">
+                <label>Full Name *</label>
+                <input type="text" class="form-control" formControlName="fullName" placeholder="Enter recipient name" />
+                @if (addressForm.get('fullName')?.touched && addressForm.get('fullName')?.invalid) {
+                  <div class="invalid-feedback">Full name (2-200 characters) is required.</div>
+                }
+              </div>
+              <div class="form-group col">
+                <label>Mobile Number *</label>
+                <input type="text" class="form-control" formControlName="mobileNo" placeholder="10-digit mobile number" />
+                @if (addressForm.get('mobileNo')?.touched && addressForm.get('mobileNo')?.invalid) {
+                  <div class="invalid-feedback">Valid 10-digit mobile number is required.</div>
+                }
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Address Line 1 *</label>
+              <input type="text" class="form-control" formControlName="addressLine1" placeholder="House/Flat No., Building, Street" />
+              @if (addressForm.get('addressLine1')?.touched && addressForm.get('addressLine1')?.invalid) {
+                <div class="invalid-feedback">Address Line 1 is required.</div>
+              }
+            </div>
+
+            <div class="form-group">
+              <label>Address Line 2</label>
+              <input type="text" class="form-control" formControlName="addressLine2" placeholder="Locality, Area" />
+            </div>
+
+            <div class="form-group">
+              <label>Landmark</label>
+              <input type="text" class="form-control" formControlName="landmark" placeholder="Nearby landmark" />
+            </div>
+
+            <!-- Dependent Location Dropdowns: Country -> State -> City Text -->
+            <div class="form-row">
+              <div class="form-group col">
+                <label>Country *</label>
+                <select class="form-control" formControlName="countryId" (change)="onCountryChange($any($event.target).value)">
+                  <option value="" disabled>Select Country</option>
+                  <option *ngFor="let c of countries" [value]="c.id">{{ c.countryName }} ({{ c.countryCode }})</option>
+                </select>
+                @if (addressForm.get('countryId')?.touched && addressForm.get('countryId')?.invalid) {
+                  <div class="invalid-feedback">Country selection is required.</div>
+                }
+              </div>
+
+              <div class="form-group col">
+                <label>State *</label>
+                <select class="form-control" formControlName="stateId" [disabled]="!addressForm.value.countryId || statesLoading">
+                  <option value="" disabled>
+                    {{ !addressForm.value.countryId ? 'Select Country First' : (statesLoading ? 'Loading states...' : 'Select State') }}
+                  </option>
+                  <option *ngFor="let s of states" [value]="s.id">{{ s.stateName }}</option>
+                </select>
+                @if (addressForm.get('stateId')?.touched && addressForm.get('stateId')?.invalid) {
+                  <div class="invalid-feedback">State selection is required.</div>
+                }
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group col">
+                <label>City *</label>
+                <input type="text" class="form-control" formControlName="city" placeholder="e.g. Ahmedabad" />
+                @if (addressForm.get('city')?.touched && addressForm.get('city')?.invalid) {
+                  <div class="invalid-feedback">City (2-100 characters, letters/spaces only) is required.</div>
+                }
+              </div>
+
+              <div class="form-group col">
+                <label>Pincode *</label>
+                <input type="text" class="form-control" formControlName="pincode" placeholder="e.g. 380001" />
+                @if (addressForm.get('pincode')?.touched && addressForm.get('pincode')?.invalid) {
+                  <div class="invalid-feedback">Valid 6-digit pincode is required.</div>
+                }
+              </div>
+            </div>
+
+            <div class="form-group checkbox-group">
+              <label>
+                <input type="checkbox" formControlName="isDefault" /> Set as Default Address
+              </label>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" [disabled]="formSubmitting" (click)="closeModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="formSubmitting || addressForm.invalid">
+              @if (formSubmitting) {
+                <span class="btn-spinner"></span>
+                <span>Saving...</span>
+              } @else {
+                <span>Save Address</span>
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <app-confirmation-dialog
+    [isOpen]="isConfirmOpen"
+    [title]="confirmTitle"
+    [message]="confirmMessage"
+    [isDanger]="true"
+    [isSubmitting]="isActionSubmitting"
+    (confirm)="onConfirmAction()"
+    (cancel)="onCancelAction()"
+  ></app-confirmation-dialog>
+</div>

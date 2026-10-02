@@ -3,6 +3,7 @@ USE KhelAkhe_CRM;
 -- 1. Customer Master Table
 CREATE TABLE [dbo].[drs_customer_mst] (
     [ID] BIGINT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [Account_no] VARCHAR(9) NOT NULL,
     [FirstName] NVARCHAR(100) NOT NULL,
     [LastName] NVARCHAR(100) NOT NULL,
     [Email] NVARCHAR(255) NOT NULL,
@@ -20,6 +21,19 @@ CREATE TABLE [dbo].[drs_customer_mst] (
     [CreatedDate] DATETIME NOT NULL DEFAULT GETDATE(),
     [ModifiedDate] DATETIME NULL
 );
+GO
+
+-- Sequences for Auto-generation
+CREATE SEQUENCE [dbo].[Seq_CustomerAccount]
+    AS BIGINT
+    START WITH 1
+    INCREMENT BY 1;
+GO
+
+CREATE SEQUENCE [dbo].[Seq_ProductCode]
+    AS BIGINT
+    START WITH 1
+    INCREMENT BY 1;
 GO
 
 -- 2. Customer Address Master Table
@@ -174,6 +188,50 @@ CREATE TABLE [dbo].[drs_error_message_mst] (
     [CreatedDate] DATETIME NOT NULL DEFAULT GETDATE(),
     [ModifiedDate] DATETIME NULL
 );
+GO
+
+-- 11. Country Master Table
+
+CREATE TABLE [dbo].[drs_country_mst] (
+    [ID] BIGINT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [CountryName] NVARCHAR(100) NOT NULL,
+    [CountryCode] VARCHAR(10) NOT NULL,
+    [PhoneCode] VARCHAR(10) NULL,
+    [IsActive] BIT NOT NULL DEFAULT 1,
+    [IsDeleted] BIT NOT NULL DEFAULT 0,
+    [CreatedDate] DATETIME NOT NULL DEFAULT GETDATE(),
+    [ModifiedDate] DATETIME NULL
+);
+
+GO
+
+-- 12. State Master Table
+
+CREATE TABLE [dbo].[drs_state_mst] (
+    [ID] BIGINT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [country_id] BIGINT NOT NULL,
+    [StateName] NVARCHAR(100) NOT NULL,
+    [StateCode] VARCHAR(20) NULL,
+    [IsActive] BIT NOT NULL DEFAULT 1,
+    [IsDeleted] BIT NOT NULL DEFAULT 0,
+    [CreatedDate] DATETIME NOT NULL DEFAULT GETDATE(),
+    [ModifiedDate] DATETIME NULL
+);
+
+GO
+
+-- Alter Customer Address Table for country_id and state_id columns
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[drs_customer_address_mst]') AND type in (N'U'))
+BEGIN
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[drs_customer_address_mst]') AND name = 'country_id')
+    BEGIN
+        ALTER TABLE [dbo].[drs_customer_address_mst] ADD [country_id] BIGINT NULL;
+    END;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[drs_customer_address_mst]') AND name = 'state_id')
+    BEGIN
+        ALTER TABLE [dbo].[drs_customer_address_mst] ADD [state_id] BIGINT NULL;
+    END;
+END;
 GO
 
 

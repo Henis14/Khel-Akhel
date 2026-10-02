@@ -77,16 +77,26 @@ namespace Khel_Akhel_Server.Controllers.Product
                 request.CategoryName = request.CategoryName?.Trim() ?? string.Empty;
                 request.Description = request.Description?.Trim() ?? string.Empty;
 
+                var errors = new List<string>();
+
                 if (string.IsNullOrWhiteSpace(request.CategoryName))
+                    errors.Add("Category name is required.");
+                else if (!ValidationHelper.IsValidCategoryName(request.CategoryName))
+                    errors.Add("Category name must be between 2 and 100 characters.");
+
+                if (!ValidationHelper.IsValidCategoryDescription(request.Description))
+                    errors.Add("Description cannot exceed 500 characters.");
+
+                if (errors.Any())
                 {
                     sw.Stop();
-                    Logs.Warning("ProductCategoryCreate rejected | Reason: Category name missing");
+                    Logs.Warning($"ProductCategoryCreate rejected | Validation errors: {string.Join(", ", errors)}");
                     return BadRequest(new ApiResponse
                     {
                         Success = false,
                         StatusCode = 400,
                         Message = "VALIDATION_FAILED",
-                        Errors = new List<string> { "Category name is required." }
+                        Errors = errors
                     });
                 }
 
@@ -134,8 +144,8 @@ namespace Khel_Akhel_Server.Controllers.Product
                 var responseData = new ProductCategoryResponse
                 {
                     EncryptedCategoryId = encryptedId,
-                    CategoryName = request.CategoryName,
-                    Description = request.Description,
+                    CategoryName = request.CategoryName ?? string.Empty,
+                    Description = request.Description ?? string.Empty,
                     DisplayOrder = request.DisplayOrder,
                     IsActive = true,
                     CreatedDate = DateTimeFormat.Format(DateTime.Now)
@@ -285,9 +295,9 @@ namespace Khel_Akhel_Server.Controllers.Product
 
                 var responseData = new ProductCategoryResponse
                 {
-                    EncryptedCategoryId = request.EncryptedCategoryId,
-                    CategoryName = newName,
-                    Description = newDesc,
+                    EncryptedCategoryId = request.EncryptedCategoryId ?? string.Empty,
+                    CategoryName = newName ?? string.Empty,
+                    Description = newDesc ?? string.Empty,
                     DisplayOrder = newOrder,
                     IsActive = newIsActive,
                     CreatedDate = DateTimeFormat.Format(DateTime.Now)

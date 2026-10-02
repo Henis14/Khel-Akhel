@@ -1,0 +1,36 @@
+<div class="user-home-page">
+  <!-- Hero Section -->
+  <section class="hero-banner">
+    <h1>Welcome to Khel-Akhel</h1>
+    <p>Your premier destination for high-quality sports gear, apparel, and athletic accessories.</p>
+    <a routerLink="/products" class="btn btn-primary btn-lg">Browse Products</a>
+  </section>
+
+  <!-- Featured Products Section -->
+  <section class="featured-section">
+    <h2>Featured Sports Gear</h2>
+    <div class="product-grid">
+      @for (p of featuredProducts; track p.encryptedProductId) {
+        <div class="product-card card">
+          <div class="product-info">
+            <span class="category-tag">{{ p.categoryName || 'Sports' }}</span>
+            <h3 class="product-title">{{ p.productName }}</h3>
+            <p class="product-desc">{{ p.shortDescription }}</p>
+            <div class="price-row">
+              <span class="selling-price">₹{{ p.sellingPrice }}</span>
+              @if (p.mrp > p.sellingPrice) {
+                <span class="mrp">₹{{ p.mrp }}</span>
+              }
+            </div>
+          </div>
+        </div>
+      }
+
+      @if (featuredProducts.length === 0) {
+        <div class="no-data">
+          No featured products available at the moment.
+        </div>
+      }
+    </div>
+  </section>
+</div>

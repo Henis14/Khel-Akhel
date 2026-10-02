@@ -1,0 +1,265 @@
+<div class="customer-detail-page">
+  <!-- Header / Breadcrumb -->
+  <div class="page-header">
+    <app-breadcrumb [items]="breadcrumbs"></app-breadcrumb>
+    <div class="page-header-main d-flex justify-content-between align-items-center w-100">
+      <div class="header-left">
+        <div class="title-group" *ngIf="customer">
+          <h2>{{ customer.firstName }} {{ customer.lastName }}</h2>
+          <span class="badge badge-code">{{ customer.accountNo || '-' }}</span>
+          <span class="badge" [ngClass]="customer.isActive ? 'badge-success' : 'badge-danger'">
+            {{ customer.isActive ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
+      </div>
+      <div class="header-actions" *ngIf="customer">
+        <button type="button" class="btn btn-primary" (click)="openEditModal()">
+          <i class="bi bi-pencil-square me-1"></i> Edit Customer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alert Messages -->
+  <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+    <i class="bi bi-check-circle-fill me-2"></i> {{ successMessage }}
+    <button type="button" class="btn-close" (click)="successMessage = null"></button>
+  </div>
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ errorMessage }}
+    <button type="button" class="btn-close" (click)="errorMessage = null"></button>
+  </div>
+
+  <div *ngIf="loading" class="mt-4">
+    <app-loader text="Loading customer details..."></app-loader>
+  </div>
+
+  <div *ngIf="!loading && customer" class="detail-container">
+    <!-- Navigation Tabs -->
+    <div class="detail-tabs">
+      <button class="tab-btn" [class.active]="activeTab === 'overview'" (click)="setTab('overview')">
+        <i class="bi bi-person-lines-fill me-2"></i> Overview
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'addresses'" (click)="setTab('addresses')">
+        <i class="bi bi-geo-alt-fill me-2"></i> Addresses ({{ addresses.length }})
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'orders'" (click)="setTab('orders')">
+        <i class="bi bi-bag-check-fill me-2"></i> Orders
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'activity'" (click)="setTab('activity')">
+        <i class="bi bi-clock-history me-2"></i> Activity Log
+      </button>
+    </div>
+
+    <!-- Tab Content: Overview -->
+    <div class="tab-content" *ngIf="activeTab === 'overview'">
+      <div class="overview-grid">
+        <!-- Account Info Card -->
+        <div class="card info-card">
+          <div class="card-header">
+            <h3><i class="bi bi-person-vcard me-2"></i> Account Details</h3>
+          </div>
+          <div class="card-body">
+            <div class="info-row">
+              <span class="info-label">Customer Account No</span>
+              <span class="info-value font-mono text-primary font-bold">{{ customer.accountNo || '-' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Full Name</span>
+              <span class="info-value">{{ customer.firstName }} {{ customer.lastName }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Email Address</span>
+              <span class="info-value">
+                <a href="mailto:{{ customer.email }}" class="text-link">{{ customer.email }}</a>
+              </span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Mobile Number</span>
+              <span class="info-value">{{ customer.mobileNo || '-' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Registration Date</span>
+              <span class="info-value">{{ parseDate(customer.createdDate) | date: 'mediumDate' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Account Status</span>
+              <span class="info-value">
+                <span class="badge" [ngClass]="customer.isActive ? 'badge-success' : 'badge-danger'">
+                  {{ customer.isActive ? 'Active' : 'Inactive' }}
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metrics Summary Card -->
+        <div class="card metrics-card">
+          <div class="card-header">
+            <h3><i class="bi bi-bar-chart-fill me-2"></i> Customer Summary</h3>
+          </div>
+          <div class="card-body">
+            <div class="metrics-grid">
+              <div class="metric-item">
+                <div class="metric-icon icon-blue"><i class="bi bi-bag"></i></div>
+                <div class="metric-info">
+                  <span class="metric-val">0</span>
+                  <span class="metric-lbl">Total Orders</span>
+                </div>
+              </div>
+              <div class="metric-item">
+                <div class="metric-icon icon-green"><i class="bi bi-currency-rupee"></i></div>
+                <div class="metric-info">
+                  <span class="metric-val">₹0.00</span>
+                  <span class="metric-lbl">Total Spent</span>
+                </div>
+              </div>
+              <div class="metric-item">
+                <div class="metric-icon icon-purple"><i class="bi bi-geo"></i></div>
+                <div class="metric-info">
+                  <span class="metric-val">{{ addresses.length }}</span>
+                  <span class="metric-lbl">Saved Addresses</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab Content: Addresses -->
+    <div class="tab-content" *ngIf="activeTab === 'addresses'">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h3><i class="bi bi-geo-alt me-2"></i> Customer Addresses</h3>
+        </div>
+        <div class="card-body">
+          <div *ngIf="addressesLoading">
+            <app-loader size="small" text="Loading customer addresses..."></app-loader>
+          </div>
+
+          <div *ngIf="!addressesLoading && addresses.length === 0" class="empty-state">
+            <i class="bi bi-geo-alt-fill empty-icon"></i>
+            <h4>No Addresses Found</h4>
+            <p class="text-muted">This customer has not registered any shipping or billing addresses yet.</p>
+          </div>
+
+          <div *ngIf="addresses.length > 0" class="address-grid">
+            <div *ngFor="let addr of addresses" class="address-card" [class.is-default]="addr.isDefault">
+              <div class="address-card-header">
+                <span class="address-type-badge">{{ addr.addressType || 'Address' }}</span>
+                <span *ngIf="addr.isDefault" class="badge badge-primary">Default</span>
+              </div>
+              <div class="address-card-body">
+                <p class="name"><strong>{{ addr.fullName || (customer.firstName + ' ' + customer.lastName) }}</strong></p>
+                <p class="street">{{ addr.addressLine1 }}</p>
+                <p class="street" *ngIf="addr.addressLine2">{{ addr.addressLine2 }}</p>
+                <p class="city-state">{{ addr.city }}, {{ addr.state }} - {{ addr.pincode }}</p>
+                <p class="country">{{ addr.country || 'India' }}</p>
+                <p class="phone" *ngIf="addr.mobileNo"><i class="bi bi-telephone me-1"></i> {{ addr.mobileNo }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab Content: Orders -->
+    <div class="tab-content" *ngIf="activeTab === 'orders'">
+      <div class="card">
+        <div class="card-header">
+          <h3><i class="bi bi-cart-check me-2"></i> Order History</h3>
+        </div>
+        <div class="card-body">
+          <div class="empty-state">
+            <i class="bi bi-cart-x empty-icon"></i>
+            <h4>No Orders Placed Yet</h4>
+            <p class="text-muted">Orders placed by this customer will appear here once registered in the system.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab Content: Activity Log -->
+    <div class="tab-content" *ngIf="activeTab === 'activity'">
+      <div class="card">
+        <div class="card-header">
+          <h3><i class="bi bi-list-stars me-2"></i> Customer Activity Log</h3>
+        </div>
+        <div class="card-body">
+          <ul class="activity-timeline">
+            <li class="timeline-item">
+              <div class="timeline-icon bg-success"><i class="bi bi-person-check-fill"></i></div>
+              <div class="timeline-content">
+                <h6>Customer Account Created</h6>
+                <p class="text-muted small">Account registered with Account No: <code>{{ customer.accountNo }}</code></p>
+                <span class="timeline-time">{{ parseDate(customer.createdDate) | date: 'medium' }}</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Customer Modal -->
+  <div class="modal-backdrop" *ngIf="isEditModalOpen" (click)="closeEditModal()">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i> Edit Customer Details</h5>
+          <button type="button" class="btn-close" (click)="closeEditModal()"></button>
+        </div>
+        <form [formGroup]="editForm" (ngSubmit)="saveCustomer()">
+          <div class="modal-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label required">First Name</label>
+                <input type="text" class="form-control" formControlName="firstName"
+                       [class.is-invalid]="editForm.get('firstName')?.touched && editForm.get('firstName')?.invalid">
+                <div class="invalid-feedback" *ngIf="editForm.get('firstName')?.errors?.['requiredNonEmpty']">
+                  First name is required.
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label required">Last Name</label>
+                <input type="text" class="form-control" formControlName="lastName"
+                       [class.is-invalid]="editForm.get('lastName')?.touched && editForm.get('lastName')?.invalid">
+                <div class="invalid-feedback" *ngIf="editForm.get('lastName')?.errors?.['requiredNonEmpty']">
+                  Last name is required.
+                </div>
+              </div>
+              <div class="col-12">
+                <label class="form-label required">Email Address</label>
+                <input type="email" class="form-control" formControlName="email"
+                       [class.is-invalid]="editForm.get('email')?.touched && editForm.get('email')?.invalid">
+                <div class="invalid-feedback" *ngIf="editForm.get('email')?.errors?.['invalidEmail'] || editForm.get('email')?.errors?.['requiredNonEmpty']">
+                  Please enter a valid email address.
+                </div>
+              </div>
+              <div class="col-12">
+                <label class="form-label required">Mobile Number</label>
+                <input type="text" class="form-control" formControlName="mobileNo"
+                       [class.is-invalid]="editForm.get('mobileNo')?.touched && editForm.get('mobileNo')?.invalid">
+                <div class="invalid-feedback" *ngIf="editForm.get('mobileNo')?.errors?.['invalidMobile'] || editForm.get('mobileNo')?.errors?.['requiredNonEmpty']">
+                  Please enter a valid 10-digit mobile number.
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" [disabled]="editSubmitting" (click)="closeEditModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="editSubmitting || editForm.invalid">
+              @if (editSubmitting) {
+                <span class="btn-spinner"></span>
+                <span>Saving...</span>
+              } @else {
+                <span>Save Changes</span>
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

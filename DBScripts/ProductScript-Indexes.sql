@@ -1,5 +1,10 @@
 USE KhelAkhe_CRM;
 
+-- Customer Account No (Permanent Unique Index)
+CREATE UNIQUE NONCLUSTERED INDEX [UQ_drs_customer_mst_Account_no]
+ON [dbo].[drs_customer_mst]([Account_no]);
+GO
+
 -- Customer Email (Filtered Unique Index)
 CREATE UNIQUE NONCLUSTERED INDEX [UQ_drs_customer_mst_Email]
 ON [dbo].[drs_customer_mst]([Email])
@@ -23,10 +28,9 @@ ON [dbo].[drs_product_category_mst]([CategoryName])
 WHERE [IsDeleted] = 0;
 GO
 
--- Product Code (Filtered Unique Index)
+-- Product Code (Permanent Unique Index)
 CREATE UNIQUE NONCLUSTERED INDEX [UQ_drs_product_mst_ProductCode]
-ON [dbo].[drs_product_mst]([ProductCode])
-WHERE [IsDeleted] = 0;
+ON [dbo].[drs_product_mst]([ProductCode]);
 GO
 
 -- Product SKU (Filtered Unique Index)
@@ -75,4 +79,31 @@ GO
 CREATE UNIQUE NONCLUSTERED INDEX [UQ_drs_error_message_mst_MessageCode]
 ON [dbo].[drs_error_message_mst]([MessageCode])
 WHERE [IsDeleted] = 0;
+GO
+
+-- Country Name (Filtered Unique Index)
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'UQ_drs_country_mst_CountryName' AND object_id = OBJECT_ID('drs_country_mst'))
+BEGIN
+    CREATE UNIQUE NONCLUSTERED INDEX [UQ_drs_country_mst_CountryName]
+    ON [dbo].[drs_country_mst] ([CountryName])
+    WHERE [IsDeleted] = 0;
+END;
+GO
+
+-- Country Code (Filtered Unique Index)
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'UQ_drs_country_mst_CountryCode' AND object_id = OBJECT_ID('drs_country_mst'))
+BEGIN
+    CREATE UNIQUE NONCLUSTERED INDEX [UQ_drs_country_mst_CountryCode]
+    ON [dbo].[drs_country_mst] ([CountryCode])
+    WHERE [IsDeleted] = 0;
+END;
+GO
+
+-- State Name per Country (Filtered Unique Index)
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'UQ_drs_state_mst_Country_StateName' AND object_id = OBJECT_ID('drs_state_mst'))
+BEGIN
+    CREATE UNIQUE NONCLUSTERED INDEX [UQ_drs_state_mst_Country_StateName]
+    ON [dbo].[drs_state_mst] ([country_id], [StateName])
+    WHERE [IsDeleted] = 0;
+END;
 GO

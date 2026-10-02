@@ -1,0 +1,42 @@
+<div class="user-login-wrapper">
+  <div class="login-card card">
+    <h2>Customer Login</h2>
+    <p class="subtitle">Sign in to your Khel-Akhel customer account</p>
+
+    @if (errorMessage()) {
+      <div class="alert alert-danger">
+        {{ errorMessage() }}
+      </div>
+    }
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label>Email or Mobile Number</label>
+        <input type="text" class="form-control" formControlName="userName" placeholder="Enter your email or mobile" />
+        @if (f['userName'].touched && f['userName'].invalid) {
+          <div class="invalid-feedback">
+            Email or mobile number is required.
+          </div>
+        }
+      </div>
+
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" class="form-control" formControlName="password" placeholder="••••••••" />
+        @if (f['password'].touched && f['password'].invalid) {
+          <div class="invalid-feedback">
+            Password is required.
+          </div>
+        }
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block" [disabled]="loading() || loginForm.invalid">
+        Sign In
+      </button>
+
+      <div class="register-link">
+        Don't have an account? <a routerLink="/register">Register here</a>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,108 @@
+.user-home-page {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.hero-banner {
+  background: linear-gradient(135deg, #1976d2 0%, #0d47a1 100%);
+  color: #ffffff;
+  padding: 3.5rem 2rem;
+  border-radius: 12px;
+  text-align: center;
+
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+  }
+
+  .btn-lg {
+    padding: 0.85rem 2rem;
+    font-size: 1rem;
+    font-weight: 700;
+    background-color: #ff9800;
+    border-color: #ff9800;
+    color: #ffffff;
+
+    &:hover {
+      background-color: #e68a00;
+    }
+  }
+}
+
+.featured-section {
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+  }
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.product-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  }
+
+  .category-tag {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #1976d2;
+  }
+
+  .product-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0.35rem 0;
+  }
+
+  .product-desc {
+    font-size: 0.85rem;
+    color: #666666;
+    margin-bottom: 1rem;
+  }
+
+  .price-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    .selling-price {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #212121;
+    }
+
+    .mrp {
+      font-size: 0.9rem;
+      text-decoration: line-through;
+      color: #9e9e9e;
+    }
+  }
+}
+
+.no-data {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #757375;
+  padding: 2rem;
+}

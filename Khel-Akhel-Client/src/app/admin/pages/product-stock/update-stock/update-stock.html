@@ -1,0 +1,234 @@
+<div class="update-stock-page">
+  <!-- Breadcrumb & Page Header -->
+  <div class="page-header">
+    <app-breadcrumb [items]="breadcrumbs"></app-breadcrumb>
+    <h1>Add / Update Product Stock</h1>
+    <p class="subtitle">Increase inventory stock quantity or set exact stock levels.</p>
+  </div>
+
+  @if (successMessage) {
+    <div class="alert alert-success">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+      <div>
+        <strong>Success!</strong> {{ successMessage }}
+      </div>
+    </div>
+  }
+
+  @if (errorMessage) {
+    <div class="alert alert-danger">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <div>
+        <strong>Error:</strong> {{ errorMessage }}
+      </div>
+    </div>
+  }
+
+  <!-- Mode Selector Tabs -->
+  <div class="mode-tabs">
+    <button class="mode-btn" [class.active]="mode === 'add'" (click)="setMode('add')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="16"></line>
+        <line x1="8" y1="12" x2="16" y2="12"></line>
+      </svg>
+      <span>Add Stock (Increase Quantity)</span>
+    </button>
+    <button class="mode-btn" [class.active]="mode === 'set'" (click)="setMode('set')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="4" y1="21" x2="4" y2="14"></line>
+        <line x1="4" y1="10" x2="4" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="12"></line>
+        <line x1="12" y1="8" x2="12" y2="3"></line>
+        <line x1="20" y1="21" x2="20" y2="16"></line>
+        <line x1="20" y1="12" x2="20" y2="3"></line>
+        <line x1="1" y1="14" x2="7" y2="14"></line>
+        <line x1="9" y1="8" x2="15" y2="8"></line>
+        <line x1="17" y1="16" x2="23" y2="16"></line>
+      </svg>
+      <span>Set Exact Stock Quantity</span>
+    </button>
+  </div>
+
+  <!-- Form 1: Add Stock -->
+  @if (mode === 'add') {
+    <form [formGroup]="addStockForm" (ngSubmit)="onAddStockSubmit()">
+      <div class="form-layout-grid">
+        <div class="card form-card">
+          <div class="card-header-box">
+            <div class="header-icon-avatar blue">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+              </svg>
+            </div>
+            <div>
+              <h3>Add Stock Units</h3>
+              <p>Select product and specify quantity to add to current available stock.</p>
+            </div>
+          </div>
+
+          <div class="form-body">
+            <div class="form-row">
+              <div class="form-group col">
+                <label>Select Product <span class="req">*</span></label>
+                <div class="input-with-icon">
+                  <select
+                    class="form-control"
+                    formControlName="encryptedProductId"
+                    [class.is-invalid]="addStockForm.get('encryptedProductId')?.touched && addStockForm.get('encryptedProductId')?.invalid"
+                  >
+                    <option value="" disabled>Select Product</option>
+                    @for (p of productsList; track p.encryptedProductId) {
+                      <option [value]="p.encryptedProductId">
+                        {{ p.productName }} ({{ p.productCode || p.sku }}) - Current: {{ p.availableQty }} units
+                      </option>
+                    }
+                  </select>
+                </div>
+                @if (addStockForm.get('encryptedProductId')?.touched && addStockForm.get('encryptedProductId')?.invalid) {
+                  <div class="invalid-feedback">Product selection is required.</div>
+                }
+              </div>
+
+              <div class="form-group col">
+                <label>Quantity to Add <span class="req">*</span></label>
+                <div class="input-with-icon">
+                  <input
+                    type="number"
+                    class="form-control"
+                    formControlName="quantity"
+                    min="1"
+                    placeholder="Enter quantity"
+                    [class.is-invalid]="addStockForm.get('quantity')?.touched && addStockForm.get('quantity')?.invalid"
+                  />
+                </div>
+                @if (addStockForm.get('quantity')?.touched && addStockForm.get('quantity')?.invalid) {
+                  <div class="invalid-feedback">Quantity must be at least 1.</div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions-bar">
+        <button type="button" class="btn btn-cancel" (click)="goBack()" [disabled]="submitting">Cancel</button>
+        <button type="submit" class="btn btn-primary" [disabled]="submitting || addStockForm.invalid">
+          @if (submitting) {
+            <span class="btn-spinner"></span>
+            <span>Adding Stock...</span>
+          } @else {
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>Add Stock Quantity</span>
+          }
+        </button>
+      </div>
+    </form>
+  }
+
+  <!-- Form 2: Set Exact Stock -->
+  @if (mode === 'set') {
+    <form [formGroup]="setStockForm" (ngSubmit)="onSetStockSubmit()">
+      <div class="form-layout-grid">
+        <div class="card form-card">
+          <div class="card-header-box">
+            <div class="header-icon-avatar blue">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            </div>
+            <div>
+              <h3>Set Exact Available & Reserved Stock</h3>
+              <p>Override available and reserved inventory quantities directly.</p>
+            </div>
+          </div>
+
+          <div class="form-body">
+            <div class="form-group">
+              <label>Select Product <span class="req">*</span></label>
+              <div class="input-with-icon">
+                <select
+                  class="form-control"
+                  formControlName="encryptedProductId"
+                  [class.is-invalid]="setStockForm.get('encryptedProductId')?.touched && setStockForm.get('encryptedProductId')?.invalid"
+                >
+                  <option value="" disabled>Select Product</option>
+                  @for (p of productsList; track p.encryptedProductId) {
+                    <option [value]="p.encryptedProductId">
+                      {{ p.productName }} ({{ p.productCode || p.sku }})
+                    </option>
+                  }
+                </select>
+              </div>
+              @if (setStockForm.get('encryptedProductId')?.touched && setStockForm.get('encryptedProductId')?.invalid) {
+                <div class="invalid-feedback">Product selection is required.</div>
+              }
+            </div>
+
+            <div class="form-row">
+              <div class="form-group col">
+                <label>Available Quantity <span class="req">*</span></label>
+                <div class="input-with-icon">
+                  <input
+                    type="number"
+                    class="form-control"
+                    formControlName="availableQuantity"
+                    min="0"
+                    placeholder="0"
+                    [class.is-invalid]="setStockForm.get('availableQuantity')?.touched && setStockForm.get('availableQuantity')?.invalid"
+                  />
+                </div>
+                @if (setStockForm.get('availableQuantity')?.touched && setStockForm.get('availableQuantity')?.invalid) {
+                  <div class="invalid-feedback">Non-negative quantity is required.</div>
+                }
+              </div>
+
+              <div class="form-group col">
+                <label>Reserved Quantity</label>
+                <div class="input-with-icon">
+                  <input
+                    type="number"
+                    class="form-control"
+                    formControlName="reservedQuantity"
+                    min="0"
+                    placeholder="0"
+                    [class.is-invalid]="setStockForm.get('reservedQuantity')?.touched && setStockForm.get('reservedQuantity')?.invalid"
+                  />
+                </div>
+                @if (setStockForm.get('reservedQuantity')?.touched && setStockForm.get('reservedQuantity')?.invalid) {
+                  <div class="invalid-feedback">Non-negative quantity is required.</div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions-bar">
+        <button type="button" class="btn btn-cancel" (click)="goBack()" [disabled]="submitting">Cancel</button>
+        <button type="submit" class="btn btn-primary" [disabled]="submitting || setStockForm.invalid">
+          @if (submitting) {
+            <span class="btn-spinner"></span>
+            <span>Saving...</span>
+          } @else {
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>Save Stock Levels</span>
+          }
+        </button>
+      </div>
+    </form>
+  }
+</div>

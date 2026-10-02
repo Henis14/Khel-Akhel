@@ -1,0 +1,30 @@
+.product-stock-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.filter-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+
+  .search-box {
+    position: relative;
+    flex: 1;
+    max-width: 420px;
+
+    .search-icon {
+      position: absolute;
+      left: 0.85rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--admin-text-muted);
+    }
+
+    .form-control {
+      padding-left: 2.4rem;
+    }
+  }
+}

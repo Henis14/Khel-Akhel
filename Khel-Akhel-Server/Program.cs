@@ -90,8 +90,7 @@ builder.Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
 
 // Configure JWT Authentication & Options
 string jwtKey =
-    builder.Configuration["Jwt:Key"]
-    ?? "KhelAkhelSecretKeyForJWTAuthentication2026SecureKey!";
+    builder.Configuration["Jwt:Key"] ?? "KhelAkhelSecretKeyForJWTAuthentication2026SecureKey!";
 var key = Encoding.UTF8.GetBytes(jwtKey);
 
 builder
@@ -145,7 +144,8 @@ builder.Services.AddCors(options =>
         policy =>
         {
             var origins =
-                builder.Configuration.GetSection("Security:AllowedOrigins").Get<string[]>() ?? ["http://localhost:4200"];
+                builder.Configuration.GetSection("Security:AllowedOrigins").Get<string[]>()
+                ?? ["http://localhost:4200", "https://localhost:4200"];
             policy.WithOrigins(origins).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
         }
     );
@@ -162,16 +162,20 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-if (!app.Environment.IsDevelopment())
+else
 {
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+// CORS MUST be invoked before HttpsRedirection & Authentication
 app.UseCors("AngularPolicy");
-app.UseStaticFiles();
 
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
+app.UseStaticFiles();
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();

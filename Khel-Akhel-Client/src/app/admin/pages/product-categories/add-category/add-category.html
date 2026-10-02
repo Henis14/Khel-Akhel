@@ -1,0 +1,113 @@
+<div class="add-category-page">
+  <!-- Breadcrumb & Page Header -->
+  <div class="page-header">
+    <app-breadcrumb [items]="breadcrumbs"></app-breadcrumb>
+    <h1>Add New Product Category</h1>
+    <p class="subtitle">Create a new category to organize catalog items. Display order determines menu placement.</p>
+  </div>
+
+  @if (successMessage) {
+    <div class="alert alert-success">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+      <div>
+        <strong>Success!</strong> {{ successMessage }}
+      </div>
+    </div>
+  }
+
+  @if (errorMessage) {
+    <div class="alert alert-danger">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <div>
+        <strong>Error:</strong> {{ errorMessage }}
+      </div>
+    </div>
+  }
+
+  <form [formGroup]="categoryForm" (ngSubmit)="onSubmit()">
+    <div class="form-layout-grid">
+      <!-- Category Info Card -->
+      <div class="card form-card">
+        <div class="card-header-box">
+          <div class="header-icon-avatar blue">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="8" y1="6" x2="21" y2="6"></line>
+              <line x1="8" y1="12" x2="21" y2="12"></line>
+              <line x1="8" y1="18" x2="21" y2="18"></line>
+              <line x1="3" y1="6" x2="3.01" y2="6"></line>
+            </svg>
+          </div>
+          <div>
+            <h3>Category Information</h3>
+            <p>Enter category details and display order preference.</p>
+          </div>
+        </div>
+
+        <div class="form-body">
+          <div class="form-row">
+            <div class="form-group col">
+              <label>Category Name <span class="req">*</span></label>
+              <div class="input-with-icon">
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="categoryName"
+                  placeholder="e.g. Football Equipment, Apparel"
+                  [class.is-invalid]="categoryForm.get('categoryName')?.touched && categoryForm.get('categoryName')?.invalid"
+                />
+              </div>
+              @if (categoryForm.get('categoryName')?.touched && categoryForm.get('categoryName')?.invalid) {
+                <div class="invalid-feedback">Category name (2-100 characters) is required.</div>
+              }
+            </div>
+
+            <div class="form-group col">
+              <label>Display Order</label>
+              <div class="input-with-icon">
+                <input
+                  type="number"
+                  class="form-control"
+                  formControlName="displayOrder"
+                  placeholder="0"
+                  [class.is-invalid]="categoryForm.get('displayOrder')?.touched && categoryForm.get('displayOrder')?.invalid"
+                />
+              </div>
+              <small class="form-hint">Lower numbers appear first in shop navigation menus.</small>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Description</label>
+            <div class="input-with-icon">
+              <textarea
+                class="form-control text-area"
+                rows="4"
+                formControlName="description"
+                placeholder="Brief description of products included in this category..."
+              ></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions Bar at Bottom Right -->
+    <div class="form-actions-bar">
+      <button type="button" class="btn btn-cancel" (click)="goBack()">Cancel</button>
+      <button type="submit" class="btn btn-primary" [disabled]="submitting || categoryForm.invalid">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>Create Category</span>
+      </button>
+    </div>
+  </form>
+</div>

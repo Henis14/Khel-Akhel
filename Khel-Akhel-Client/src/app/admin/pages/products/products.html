@@ -1,0 +1,278 @@
+<div class="products-page">
+  <div class="page-header">
+    <app-breadcrumb [items]="breadcrumbs"></app-breadcrumb>
+    <div class="header-content">
+      <div>
+        <h1>Products</h1>
+        <p class="subtitle">Manage e-commerce product catalog and details</p>
+      </div>
+      <div class="page-actions">
+        <a class="btn btn-primary" [routerLink]="['/admin/products/add']">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>Add Product</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  @if (successMessage) {
+    <div class="alert alert-success">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+      <span>{{ successMessage }}</span>
+    </div>
+  }
+
+  @if (errorMessage) {
+    <div class="alert alert-danger">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span>{{ errorMessage }}</span>
+    </div>
+  }
+
+  <!-- Filter & Search Bar -->
+  <div class="filter-card card">
+    <div class="filter-controls">
+      <div class="search-box">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Search product name, code, SKU..."
+          [value]="searchQuery"
+          (input)="onSearch($any($event.target).value)"
+        />
+      </div>
+
+      <div class="filter-select">
+        <select
+          class="form-control"
+          [value]="selectedCategoryFilter"
+          (change)="onCategoryFilterChange($any($event.target).value)"
+        >
+          <option value="">All Categories</option>
+          @for (cat of categories; track cat.encryptedCategoryId) {
+            <option [value]="cat.encryptedCategoryId">
+              {{ cat.categoryName }}
+            </option>
+          }
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table Card -->
+  <div class="table-card card">
+    @if (loading) {
+      <app-loader text="Loading products..."></app-loader>
+    } @else {
+      <div class="table-responsive">
+      <table class="table">
+          <thead>
+            <tr>
+              <th>Product Code</th>
+              <th>Product Name</th>
+              <th>Category</th>
+              <th>SKU</th>
+              <th>MRP</th>
+              <th>Selling Price</th>
+              <th>Available Qty</th>
+              <th>Status</th>
+              <th class="text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of products; track p.encryptedProductId) {
+              <tr>
+                <td><code class="code-badge">{{ p.productCode }}</code></td>
+                <td>
+                  <a [routerLink]="['/admin/products', p.encryptedProductId]" class="product-link">
+                    {{ p.productName }}
+                  </a>
+                </td>
+                <td><span class="category-pill">{{ p.categoryName || 'General' }}</span></td>
+                <td><code class="code-badge secondary">{{ p.sku }}</code></td>
+                <td class="text-muted">₹{{ p.mrp | number:'1.2-2' }}</td>
+                <td class="font-weight-600">₹{{ p.sellingPrice | number:'1.2-2' }}</td>
+                <td>
+                  <span class="stock-qty" [class.low-stock]="p.availableQty < 5">
+                    {{ p.availableQty }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge" [class.badge-success]="p.isActive" [class.badge-danger]="!p.isActive">
+                    {{ p.isActive ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+                <td class="text-right actions-cell">
+                  <a class="btn btn-outline btn-sm" [routerLink]="['/admin/products', p.encryptedProductId]">View</a>
+                  <button class="btn btn-secondary btn-sm" (click)="openEditModal(p)">Edit</button>
+                  <button
+                    class="btn btn-sm"
+                    [class.btn-secondary]="p.isActive"
+                    [class.btn-outline]="!p.isActive"
+                    (click)="confirmToggleActive(p)"
+                  >
+                    {{ p.isActive ? 'Deactivate' : 'Activate' }}
+                  </button>
+                  <button class="btn btn-danger btn-sm" (click)="confirmDelete(p)">Delete</button>
+                </td>
+              </tr>
+            }
+            @if (products.length === 0) {
+              <tr>
+                <td colspan="9">
+                  <div class="empty-state">
+                    <div class="empty-icon">
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                        <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                      </svg>
+                    </div>
+                    <h3 class="empty-title">No products found</h3>
+                    <p class="empty-subtitle">
+                      {{ searchQuery || selectedCategoryFilter ? 'No products match your search or filter criteria.' : 'Add your first product to start populating your catalog.' }}
+                    </p>
+                    @if (!searchQuery && !selectedCategoryFilter) {
+                      <a class="btn btn-primary btn-sm" [routerLink]="['/admin/products/add']">+ Add Product</a>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (totalRecords > 0) {
+        <app-pagination
+          [pageIndex]="pageIndex"
+          [pageSize]="pageSize"
+          [totalRecords]="totalRecords"
+          (pageChange)="onPageChange($event)"
+        ></app-pagination>
+      }
+    }
+  </div>
+
+  <!-- Create/Edit Modal -->
+  @if (isModalOpen) {
+    <div class="modal-backdrop">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>{{ isEditMode ? 'Edit Product' : 'Add New Product' }}</h3>
+          <button class="close-btn" (click)="closeModal()">✕</button>
+        </div>
+
+        <form [formGroup]="productForm" (ngSubmit)="saveProduct()">
+          <div class="modal-body">
+            <div class="form-row">
+              <div class="form-group col">
+                <label>Category <span class="required-star">*</span></label>
+                <select class="form-control" formControlName="encryptedCategoryId">
+                  <option value="">Select Category</option>
+                  @for (cat of categories; track cat.encryptedCategoryId) {
+                    <option [value]="cat.encryptedCategoryId">
+                      {{ cat.categoryName }}
+                    </option>
+                  }
+                </select>
+                @if (productForm.get('encryptedCategoryId')?.touched && productForm.get('encryptedCategoryId')?.invalid) {
+                  <div class="invalid-feedback">Category selection is required.</div>
+                }
+              </div>
+
+              <div class="form-group col">
+                <label>Product Name <span class="required-star">*</span></label>
+                <input type="text" class="form-control" formControlName="productName" placeholder="Enter product name" />
+                @if (productForm.get('productName')?.touched && productForm.get('productName')?.invalid) {
+                  <div class="invalid-feedback">Product name is required.</div>
+                }
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group col">
+                <label>Product Code</label>
+                <input type="text" class="form-control" [value]="isEditMode ? (selectedProduct?.productCode || '') : 'Auto-generated on save'" readonly disabled />
+              </div>
+              <div class="form-group col">
+                <label>SKU Code <span class="required-star">*</span></label>
+                <input type="text" class="form-control" formControlName="sku" placeholder="e.g. SKU-FOOT-01" />
+                @if (productForm.get('sku')?.touched && productForm.get('sku')?.invalid) {
+                  <div class="invalid-feedback">Valid SKU (3-50 chars) is required.</div>
+                }
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group col">
+                <label>MRP (₹) <span class="required-star">*</span></label>
+                <input type="number" class="form-control" formControlName="mrp" min="0" step="0.01" />
+              </div>
+              <div class="form-group col">
+                <label>Selling Price (₹) <span class="required-star">*</span></label>
+                <input type="number" class="form-control" formControlName="sellingPrice" min="0" step="0.01" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Short Description</label>
+              <input type="text" class="form-control" formControlName="shortDescription" placeholder="Brief summary for listings..." />
+            </div>
+
+            <div class="form-group">
+              <label>Detailed Description</label>
+              <textarea class="form-control" formControlName="description" rows="3" placeholder="Full product details..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>Badges & Visibility</label>
+              <div class="badge-checkboxes">
+                <label class="checkbox-badge"><input type="checkbox" formControlName="isFeatured" /> Featured</label>
+                <label class="checkbox-badge"><input type="checkbox" formControlName="isNewArrival" /> New Arrival</label>
+                <label class="checkbox-badge"><input type="checkbox" formControlName="isBestSeller" /> Best Seller</label>
+                <label class="checkbox-badge"><input type="checkbox" formControlName="isTrending" /> Trending</label>
+                <label class="checkbox-badge"><input type="checkbox" formControlName="isCustomerFavourite" /> Favourite</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" [disabled]="formSubmitting" (click)="closeModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="formSubmitting || productForm.invalid">
+              @if (formSubmitting) {
+                <span class="btn-spinner"></span>
+                <span>Saving...</span>
+              } @else {
+                <span>Save Product</span>
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <app-confirmation-dialog
+    [isOpen]="isConfirmOpen"
+    [title]="confirmTitle"
+    [message]="confirmMessage"
+    [isDanger]="true"
+    [isSubmitting]="isActionSubmitting"
+    (confirm)="onConfirmAction()"
+    (cancel)="onCancelAction()"
+  ></app-confirmation-dialog>
+</div>

@@ -1,0 +1,41 @@
+<div class="user-products-page">
+  <div class="page-title">
+    <h1>All Products</h1>
+    <p>Explore our complete catalog of athletic gear and equipment</p>
+  </div>
+
+  <div class="search-bar card">
+    <input
+      type="text"
+      class="form-control"
+      placeholder="Search products..."
+      [value]="searchQuery"
+      (input)="onSearch($any($event.target).value)"
+    />
+  </div>
+
+  <div class="product-grid">
+    @for (p of products; track p.encryptedProductId) {
+      <div class="product-card card">
+        <div class="product-info">
+          <span class="category-tag">{{ p.categoryName || 'Sports' }}</span>
+          <h3 class="product-title">{{ p.productName }}</h3>
+          <p class="product-sku">SKU: {{ p.sku }}</p>
+          <p class="product-desc">{{ p.shortDescription }}</p>
+          <div class="price-row">
+            <span class="selling-price">₹{{ p.sellingPrice }}</span>
+            @if (p.mrp > p.sellingPrice) {
+              <span class="mrp">₹{{ p.mrp }}</span>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (products.length === 0) {
+      <div class="no-products text-center">
+        No products match your criteria.
+      </div>
+    }
+  </div>
+</div>

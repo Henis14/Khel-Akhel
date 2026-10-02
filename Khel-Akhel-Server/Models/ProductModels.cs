@@ -4,7 +4,7 @@ namespace Khel_Akhel_Server.Models
     {
         public string EncryptedCategoryId { get; set; } = string.Empty;
         public string ProductName { get; set; } = string.Empty;
-        public string ProductCode { get; set; } = string.Empty;
+        public string? ProductCode { get; set; }
         public string SKU { get; set; } = string.Empty;
         public string? ShortDescription { get; set; }
         public string? Description { get; set; }
