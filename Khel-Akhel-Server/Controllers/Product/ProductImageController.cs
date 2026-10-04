@@ -20,14 +20,16 @@ namespace Khel_Akhel_Server.Controllers.Product
         private readonly IAuditService _audit;
         private readonly IWebHostEnvironment _env;
 
-        private const int MaxImagesPerProduct = 10;
+        private const int MaxImagesPerProduct = 7;
+        private const int MinImagesPerProduct = 3;
         private const long MaxImageSizeInBytes = 5 * 1024 * 1024; // 5MB
 
         public ProductImageController(
             DbHelper db,
             IUrlEncryptionService encryption,
             IAuditService audit,
-            IWebHostEnvironment env)
+            IWebHostEnvironment env
+        )
         {
             _db = db;
             _encryption = encryption;
@@ -60,7 +62,9 @@ namespace Khel_Akhel_Server.Controllers.Product
         #region 1. Upload Product Images
         [Authorize(Roles = "Admin")]
         [HttpPost("upload")]
-        public async Task<IActionResult> UploadProductImages([FromForm] ProductImageUploadRequest? request)
+        public async Task<IActionResult> UploadProductImages(
+            [FromForm] ProductImageUploadRequest? request
+        )
         {
             Logs.Info("ProductImageUpload API started");
             var sw = Stopwatch.StartNew();
@@ -69,63 +73,95 @@ namespace Khel_Akhel_Server.Controllers.Product
             {
                 sw.Stop();
                 Logs.Warning("ProductImageUpload rejected | Reason: Missing files");
-                return BadRequest(new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 400,
-                    Message = "INVALID_REQUEST",
-                    Errors = new List<string> { "At least one image file is required." }
-                });
+                return BadRequest(
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 400,
+                        Message = "INVALID_REQUEST",
+                        Errors = new List<string> { "At least one image file is required." },
+                    }
+                );
             }
 
-            if (!_encryption.TryDecrypt(request.EncryptedProductId, out long productId) || productId <= 0)
+            if (
+                !_encryption.TryDecrypt(request.EncryptedProductId, out long productId)
+                || productId <= 0
+            )
             {
                 sw.Stop();
-                Logs.Warning($"ProductImageUpload rejected | Reason: Invalid EncryptedProductId: {request.EncryptedProductId}");
-                return BadRequest(new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 400,
-                    Message = "INVALID_REQUEST",
-                    Errors = new List<string> { "Invalid or tampered Product ID." }
-                });
+                Logs.Warning(
+                    $"ProductImageUpload rejected | Reason: Invalid EncryptedProductId: {request.EncryptedProductId}"
+                );
+                return BadRequest(
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 400,
+                        Message = "INVALID_REQUEST",
+                        Errors = new List<string> { "Invalid or tampered Product ID." },
+                    }
+                );
             }
 
             // Check Product Existence
-            string checkProductSql = "SELECT COUNT(1) FROM drs_product_mst WHERE ID = @ProductId AND IsDeleted = 0;";
+            string checkProductSql =
+                "SELECT COUNT(1) FROM drs_product_mst WHERE ID = @ProductId AND IsDeleted = 0;";
             var checkParams = new SqlParameter[] { new SqlParameter("@ProductId", productId) };
             object? productExistsObj = await _db.ExecuteScalarAsync(checkProductSql, checkParams);
-            int productExists = (productExistsObj != null && productExistsObj != DBNull.Value) ? Convert.ToInt32(productExistsObj) : 0;
+            int productExists =
+                (productExistsObj != null && productExistsObj != DBNull.Value)
+                    ? Convert.ToInt32(productExistsObj)
+                    : 0;
 
             if (productExists == 0)
             {
                 sw.Stop();
-                Logs.Warning($"ProductImageUpload failed | Product not found. ProductId: {productId}");
-                return NotFound(new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 404,
-                    Message = "PRODUCT_NOT_FOUND",
-                    Errors = new List<string> { "Target product does not exist or has been deleted." }
-                });
+                Logs.Warning(
+                    $"ProductImageUpload failed | Product not found. ProductId: {productId}"
+                );
+                return NotFound(
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 404,
+                        Message = "PRODUCT_NOT_FOUND",
+                        Errors = new List<string>
+                        {
+                            "Target product does not exist or has been deleted.",
+                        },
+                    }
+                );
             }
 
             // Check Max Allowed Images
-            string countSql = "SELECT COUNT(1) FROM drs_product_image_mst WHERE product_id = @ProductId AND IsDeleted = 0;";
-            object? countObj = await _db.ExecuteScalarAsync(countSql, new SqlParameter[] { new SqlParameter("@ProductId", productId) });
-            int existingCount = (countObj != null && countObj != DBNull.Value) ? Convert.ToInt32(countObj) : 0;
+            string countSql =
+                "SELECT COUNT(1) FROM drs_product_image_mst WHERE product_id = @ProductId AND IsDeleted = 0;";
+            object? countObj = await _db.ExecuteScalarAsync(
+                countSql,
+                new SqlParameter[] { new SqlParameter("@ProductId", productId) }
+            );
+            int existingCount =
+                (countObj != null && countObj != DBNull.Value) ? Convert.ToInt32(countObj) : 0;
 
             if (existingCount + request.Images.Count > MaxImagesPerProduct)
             {
                 sw.Stop();
-                Logs.Warning($"ProductImageUpload rejected | Exceeded limit. Existing: {existingCount}, New: {request.Images.Count}, Max: {MaxImagesPerProduct}");
-                return BadRequest(new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 400,
-                    Message = "MAXIMUM_PRODUCT_IMAGES_EXCEEDED",
-                    Errors = new List<string> { $"Cannot upload more than {MaxImagesPerProduct} images per product. Currently active: {existingCount}." }
-                });
+                Logs.Warning(
+                    $"ProductImageUpload rejected | Exceeded limit. Existing: {existingCount}, New: {request.Images.Count}, Max: {MaxImagesPerProduct}"
+                );
+                return BadRequest(
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 400,
+                        Message = "MAXIMUM_PRODUCT_IMAGES_EXCEEDED",
+                        Errors = new List<string>
+                        {
+                            $"Cannot upload more than {MaxImagesPerProduct} images per product. Currently active: {existingCount}.",
+                        },
+                    }
+                );
             }
 
             // Validate all image files prior to disk write
@@ -133,7 +169,10 @@ namespace Khel_Akhel_Server.Controllers.Product
             for (int i = 0; i < request.Images.Count; i++)
             {
                 var file = request.Images[i];
-                var (isValid, errorMessage) = await FileValidationHelper.IsValidImageAsync(file, MaxImageSizeInBytes);
+                var (isValid, errorMessage) = await FileValidationHelper.IsValidImageAsync(
+                    file,
+                    MaxImageSizeInBytes
+                );
                 if (!isValid)
                 {
                     validationErrors.Add($"File '{file.FileName}': {errorMessage}");
@@ -143,17 +182,25 @@ namespace Khel_Akhel_Server.Controllers.Product
             if (validationErrors.Count > 0)
             {
                 sw.Stop();
-                Logs.Warning($"ProductImageUpload validation failed | Errors: {string.Join("; ", validationErrors)}");
-                return BadRequest(new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 400,
-                    Message = "INVALID_IMAGE",
-                    Errors = validationErrors
-                });
+                Logs.Warning(
+                    $"ProductImageUpload validation failed | Errors: {string.Join("; ", validationErrors)}"
+                );
+                return BadRequest(
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 400,
+                        Message = "INVALID_IMAGE",
+                        Errors = validationErrors,
+                    }
+                );
             }
 
-            string uploadsRoot = Path.Combine(_env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads", "products");
+            string uploadsRoot = Path.Combine(
+                _env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"),
+                "uploads",
+                "products"
+            );
             if (!Directory.Exists(uploadsRoot))
             {
                 Directory.CreateDirectory(uploadsRoot);
@@ -168,14 +215,16 @@ namespace Khel_Akhel_Server.Controllers.Product
             try
             {
                 // Check if default image exists for product
-                string hasDefaultSql = "SELECT COUNT(1) FROM drs_product_image_mst WHERE product_id = @ProductId AND IsDefault = 1 AND IsDeleted = 0;";
+                string hasDefaultSql =
+                    "SELECT COUNT(1) FROM drs_product_image_mst WHERE product_id = @ProductId AND IsDefault = 1 AND IsDeleted = 0;";
                 using SqlCommand hasDefaultCmd = new SqlCommand(hasDefaultSql, conn, tran);
                 hasDefaultCmd.Parameters.AddWithValue("@ProductId", productId);
                 int defaultCount = Convert.ToInt32(await hasDefaultCmd.ExecuteScalarAsync());
                 bool hasDefault = defaultCount > 0;
 
                 // Get current max display order
-                string maxOrderSql = "SELECT ISNULL(MAX(DisplayOrder), 0) FROM drs_product_image_mst WHERE product_id = @ProductId AND IsDeleted = 0;";
+                string maxOrderSql =
+                    "SELECT ISNULL(MAX(DisplayOrder), 0) FROM drs_product_image_mst WHERE product_id = @ProductId AND IsDeleted = 0;";
                 using SqlCommand maxOrderCmd = new SqlCommand(maxOrderSql, conn, tran);
                 maxOrderCmd.Parameters.AddWithValue("@ProductId", productId);
                 int currentDisplayOrder = Convert.ToInt32(await maxOrderCmd.ExecuteScalarAsync());
@@ -198,7 +247,8 @@ namespace Khel_Akhel_Server.Controllers.Product
                     currentDisplayOrder++;
                     bool isDefault = !hasDefault && (i == 0);
 
-                    string insertSql = @"
+                    string insertSql =
+                        @"
                         INSERT INTO drs_product_image_mst 
                         (product_id, ImagePath, DisplayOrder, IsDefault, IsActive, IsDeleted, CreatedDate)
                         OUTPUT INSERTED.ID
@@ -214,16 +264,18 @@ namespace Khel_Akhel_Server.Controllers.Product
                     object? newIdObj = await insertCmd.ExecuteScalarAsync();
                     long newImageId = Convert.ToInt64(newIdObj);
 
-                    uploadedImageResponses.Add(new ProductImageResponse
-                    {
-                        EncryptedImageId = _encryption.Encrypt(newImageId),
-                        EncryptedProductId = request.EncryptedProductId,
-                        ImagePath = relativeDbPath,
-                        DisplayOrder = currentDisplayOrder,
-                        IsDefault = isDefault,
-                        IsActive = true,
-                        CreatedDate = DateTimeFormat.Format(DateTime.Now)
-                    });
+                    uploadedImageResponses.Add(
+                        new ProductImageResponse
+                        {
+                            EncryptedImageId = _encryption.Encrypt(newImageId),
+                            EncryptedProductId = request.EncryptedProductId,
+                            ImagePath = relativeDbPath,
+                            DisplayOrder = currentDisplayOrder,
+                            IsDefault = isDefault,
+                            IsActive = true,
+                            CreatedDate = DateTimeFormat.Format(DateTime.Now),
+                        }
+                    );
                 }
 
                 await tran.CommitAsync();
@@ -242,19 +294,23 @@ namespace Khel_Akhel_Server.Controllers.Product
                 );
 
                 sw.Stop();
-                Logs.Info($"ProductImageUpload completed successfully | ProductId: {productId} | ImagesCount: {request.Images.Count} | ElapsedMs: {sw.ElapsedMilliseconds}");
+                Logs.Info(
+                    $"ProductImageUpload completed successfully | ProductId: {productId} | ImagesCount: {request.Images.Count} | ElapsedMs: {sw.ElapsedMilliseconds}"
+                );
 
-                return Ok(new ApiResponse
-                {
-                    Success = true,
-                    StatusCode = 200,
-                    Message = "PRODUCT_IMAGES_UPLOADED",
-                    Data = new ProductImageUploadResponse
+                return Ok(
+                    new ApiResponse
                     {
-                        EncryptedProductId = request.EncryptedProductId,
-                        Images = uploadedImageResponses
+                        Success = true,
+                        StatusCode = 200,
+                        Message = "PRODUCT_IMAGES_UPLOADED",
+                        Data = new ProductImageUploadResponse
+                        {
+                            EncryptedProductId = request.EncryptedProductId,
+                            Images = uploadedImageResponses,
+                        },
                     }
-                });
+                );
             }
             catch (Exception ex)
             {
@@ -272,20 +328,29 @@ namespace Khel_Akhel_Server.Controllers.Product
                     }
                     catch (Exception fileEx)
                     {
-                        Logs.Error($"Failed to clean up orphaned image file '{filePath}' during rollback", fileEx);
+                        Logs.Error(
+                            $"Failed to clean up orphaned image file '{filePath}' during rollback",
+                            fileEx
+                        );
                     }
                 }
 
                 sw.Stop();
                 Logs.Error($"ProductImageUpload failed | Exception: {ex.Message}", ex);
 
-                return StatusCode(500, new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 500,
-                    Message = "SERVER_ERROR",
-                    Errors = new List<string> { "An internal server error occurred while uploading product images." }
-                });
+                return StatusCode(
+                    500,
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 500,
+                        Message = "SERVER_ERROR",
+                        Errors = new List<string>
+                        {
+                            "An internal server error occurred while uploading product images.",
+                        },
+                    }
+                );
             }
         }
         #endregion
@@ -298,16 +363,19 @@ namespace Khel_Akhel_Server.Controllers.Product
 
             if (!_encryption.TryDecrypt(encryptedProductId, out long productId) || productId <= 0)
             {
-                return BadRequest(new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 400,
-                    Message = "INVALID_REQUEST",
-                    Errors = new List<string> { "Invalid or tampered Product ID." }
-                });
+                return BadRequest(
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 400,
+                        Message = "INVALID_REQUEST",
+                        Errors = new List<string> { "Invalid or tampered Product ID." },
+                    }
+                );
             }
 
-            string sql = @"
+            string sql =
+                @"
                 SELECT ID, product_id, ImagePath, DisplayOrder, IsDefault, IsActive, CreatedDate
                 FROM drs_product_image_mst
                 WHERE product_id = @ProductId AND IsDeleted = 0
@@ -320,25 +388,29 @@ namespace Khel_Akhel_Server.Controllers.Product
             foreach (DataRow row in dt.Rows)
             {
                 long imageId = Convert.ToInt64(row["ID"]);
-                images.Add(new ProductImageResponse
-                {
-                    EncryptedImageId = _encryption.Encrypt(imageId),
-                    EncryptedProductId = encryptedProductId,
-                    ImagePath = Convert.ToString(row["ImagePath"]) ?? string.Empty,
-                    DisplayOrder = Convert.ToInt32(row["DisplayOrder"]),
-                    IsDefault = Convert.ToBoolean(row["IsDefault"]),
-                    IsActive = Convert.ToBoolean(row["IsActive"]),
-                    CreatedDate = DateTimeFormat.Format(row["CreatedDate"] as DateTime?)
-                });
+                images.Add(
+                    new ProductImageResponse
+                    {
+                        EncryptedImageId = _encryption.Encrypt(imageId),
+                        EncryptedProductId = encryptedProductId,
+                        ImagePath = Convert.ToString(row["ImagePath"]) ?? string.Empty,
+                        DisplayOrder = Convert.ToInt32(row["DisplayOrder"]),
+                        IsDefault = Convert.ToBoolean(row["IsDefault"]),
+                        IsActive = Convert.ToBoolean(row["IsActive"]),
+                        CreatedDate = DateTimeFormat.Format(row["CreatedDate"] as DateTime?),
+                    }
+                );
             }
 
-            return Ok(new ApiResponse
-            {
-                Success = true,
-                StatusCode = 200,
-                Message = "PRODUCT_IMAGES_RETRIEVED",
-                Data = images
-            });
+            return Ok(
+                new ApiResponse
+                {
+                    Success = true,
+                    StatusCode = 200,
+                    Message = "PRODUCT_IMAGES_RETRIEVED",
+                    Data = images,
+                }
+            );
         }
         #endregion
 
@@ -351,42 +423,52 @@ namespace Khel_Akhel_Server.Controllers.Product
 
             if (request == null || string.IsNullOrWhiteSpace(request.EncryptedImageId))
             {
-                return BadRequest(new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 400,
-                    Message = "INVALID_REQUEST",
-                    Errors = new List<string> { "EncryptedImageId is required." }
-                });
+                return BadRequest(
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 400,
+                        Message = "INVALID_REQUEST",
+                        Errors = new List<string> { "EncryptedImageId is required." },
+                    }
+                );
             }
 
             if (!_encryption.TryDecrypt(request.EncryptedImageId, out long imageId) || imageId <= 0)
             {
-                return BadRequest(new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 400,
-                    Message = "INVALID_REQUEST",
-                    Errors = new List<string> { "Invalid or tampered Image ID." }
-                });
+                return BadRequest(
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 400,
+                        Message = "INVALID_REQUEST",
+                        Errors = new List<string> { "Invalid or tampered Image ID." },
+                    }
+                );
             }
 
             using SqlConnection conn = await _db.GetOpenConnectionAsync();
 
-            string findImgSql = "SELECT product_id FROM drs_product_image_mst WHERE ID = @ImageId AND IsDeleted = 0;";
+            string findImgSql =
+                "SELECT product_id FROM drs_product_image_mst WHERE ID = @ImageId AND IsDeleted = 0;";
             using SqlCommand findCmd = new SqlCommand(findImgSql, conn);
             findCmd.Parameters.AddWithValue("@ImageId", imageId);
             object? productIdObj = await findCmd.ExecuteScalarAsync();
 
             if (productIdObj == null || productIdObj == DBNull.Value)
             {
-                return NotFound(new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 404,
-                    Message = "PRODUCT_IMAGE_NOT_FOUND",
-                    Errors = new List<string> { "Product image record not found or has been deleted." }
-                });
+                return NotFound(
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 404,
+                        Message = "PRODUCT_IMAGE_NOT_FOUND",
+                        Errors = new List<string>
+                        {
+                            "Product image record not found or has been deleted.",
+                        },
+                    }
+                );
             }
 
             long productId = Convert.ToInt64(productIdObj);
@@ -394,12 +476,14 @@ namespace Khel_Akhel_Server.Controllers.Product
             using SqlTransaction tran = conn.BeginTransaction();
             try
             {
-                string resetDefaultSql = "UPDATE drs_product_image_mst SET IsDefault = 0, ModifiedDate = GETDATE() WHERE product_id = @ProductId AND IsDeleted = 0;";
+                string resetDefaultSql =
+                    "UPDATE drs_product_image_mst SET IsDefault = 0, ModifiedDate = GETDATE() WHERE product_id = @ProductId AND IsDeleted = 0;";
                 using SqlCommand resetCmd = new SqlCommand(resetDefaultSql, conn, tran);
                 resetCmd.Parameters.AddWithValue("@ProductId", productId);
                 await resetCmd.ExecuteNonQueryAsync();
 
-                string setDefaultSql = "UPDATE drs_product_image_mst SET IsDefault = 1, ModifiedDate = GETDATE() WHERE ID = @ImageId AND IsDeleted = 0;";
+                string setDefaultSql =
+                    "UPDATE drs_product_image_mst SET IsDefault = 1, ModifiedDate = GETDATE() WHERE ID = @ImageId AND IsDeleted = 0;";
                 using SqlCommand setCmd = new SqlCommand(setDefaultSql, conn, tran);
                 setCmd.Parameters.AddWithValue("@ImageId", imageId);
                 await setCmd.ExecuteNonQueryAsync();
@@ -419,27 +503,38 @@ namespace Khel_Akhel_Server.Controllers.Product
                     GetUserAgent()
                 );
 
-                Logs.Info($"SetDefaultImage completed successfully | ImageId: {imageId} | ProductId: {productId}");
+                Logs.Info(
+                    $"SetDefaultImage completed successfully | ImageId: {imageId} | ProductId: {productId}"
+                );
 
-                return Ok(new ApiResponse
-                {
-                    Success = true,
-                    StatusCode = 200,
-                    Message = "PRODUCT_IMAGE_SET_DEFAULT",
-                    Data = new { EncryptedImageId = request.EncryptedImageId, EncryptedProductId = _encryption.Encrypt(productId) }
-                });
+                return Ok(
+                    new ApiResponse
+                    {
+                        Success = true,
+                        StatusCode = 200,
+                        Message = "PRODUCT_IMAGE_SET_DEFAULT",
+                        Data = new
+                        {
+                            EncryptedImageId = request.EncryptedImageId,
+                            EncryptedProductId = _encryption.Encrypt(productId),
+                        },
+                    }
+                );
             }
             catch (Exception ex)
             {
                 await tran.RollbackAsync();
                 Logs.Error($"SetDefaultImage failed | Exception: {ex.Message}", ex);
-                return StatusCode(500, new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 500,
-                    Message = "SERVER_ERROR",
-                    Errors = new List<string> { "An internal server error occurred." }
-                });
+                return StatusCode(
+                    500,
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 500,
+                        Message = "SERVER_ERROR",
+                        Errors = new List<string> { "An internal server error occurred." },
+                    }
+                );
             }
         }
         #endregion
@@ -453,18 +548,21 @@ namespace Khel_Akhel_Server.Controllers.Product
 
             if (!_encryption.TryDecrypt(encryptedImageId, out long imageId) || imageId <= 0)
             {
-                return BadRequest(new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 400,
-                    Message = "INVALID_REQUEST",
-                    Errors = new List<string> { "Invalid or tampered Image ID." }
-                });
+                return BadRequest(
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 400,
+                        Message = "INVALID_REQUEST",
+                        Errors = new List<string> { "Invalid or tampered Image ID." },
+                    }
+                );
             }
 
             using SqlConnection conn = await _db.GetOpenConnectionAsync();
 
-            string findImgSql = "SELECT product_id, ImagePath, IsDefault FROM drs_product_image_mst WHERE ID = @ImageId AND IsDeleted = 0;";
+            string findImgSql =
+                "SELECT product_id, ImagePath, IsDefault FROM drs_product_image_mst WHERE ID = @ImageId AND IsDeleted = 0;";
             using SqlCommand findCmd = new SqlCommand(findImgSql, conn);
             findCmd.Parameters.AddWithValue("@ImageId", imageId);
 
@@ -482,21 +580,49 @@ namespace Khel_Akhel_Server.Controllers.Product
                 }
                 else
                 {
-                    return NotFound(new ApiResponse
+                    return NotFound(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 404,
+                            Message = "PRODUCT_IMAGE_NOT_FOUND",
+                            Errors = new List<string>
+                            {
+                                "Image record not found or already deleted.",
+                            },
+                        }
+                    );
+                }
+            }
+
+            string countSql =
+                "SELECT COUNT(1) FROM drs_product_image_mst WHERE product_id = @ProductId AND IsDeleted = 0;";
+            using SqlCommand countCmd = new SqlCommand(countSql, conn);
+            countCmd.Parameters.AddWithValue("@ProductId", productId);
+            int currentCount = Convert.ToInt32(await countCmd.ExecuteScalarAsync());
+
+            if (currentCount <= MinImagesPerProduct)
+            {
+                return BadRequest(
+                    new ApiResponse
                     {
                         Success = false,
-                        StatusCode = 404,
-                        Message = "PRODUCT_IMAGE_NOT_FOUND",
-                        Errors = new List<string> { "Image record not found or already deleted." }
-                    });
-                }
+                        StatusCode = 400,
+                        Message = "MINIMUM_PRODUCT_IMAGES_REQUIRED",
+                        Errors = new List<string>
+                        {
+                            $"Minimum {MinImagesPerProduct} images are required for a product. Deleting an image is not allowed unless another image is added.",
+                        },
+                    }
+                );
             }
 
             using SqlTransaction tran = conn.BeginTransaction();
             try
             {
                 // Soft delete current image
-                string deleteSql = "UPDATE drs_product_image_mst SET IsDeleted = 1, ModifiedDate = GETDATE() WHERE ID = @ImageId;";
+                string deleteSql =
+                    "UPDATE drs_product_image_mst SET IsDeleted = 1, ModifiedDate = GETDATE() WHERE ID = @ImageId;";
                 using SqlCommand deleteCmd = new SqlCommand(deleteSql, conn, tran);
                 deleteCmd.Parameters.AddWithValue("@ImageId", imageId);
                 await deleteCmd.ExecuteNonQueryAsync();
@@ -504,7 +630,8 @@ namespace Khel_Akhel_Server.Controllers.Product
                 // If deleted image was default, promote next active image
                 if (wasDefault)
                 {
-                    string promoteSql = @"
+                    string promoteSql =
+                        @"
                         UPDATE drs_product_image_mst 
                         SET IsDefault = 1, ModifiedDate = GETDATE() 
                         WHERE ID = (
@@ -524,7 +651,11 @@ namespace Khel_Akhel_Server.Controllers.Product
                 if (!string.IsNullOrWhiteSpace(imagePath))
                 {
                     string relativePath = imagePath.TrimStart('/', '\\');
-                    string physicalPath = Path.Combine(_env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), relativePath);
+                    string physicalPath = Path.Combine(
+                        _env.WebRootPath
+                            ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"),
+                        relativePath
+                    );
                     try
                     {
                         if (System.IO.File.Exists(physicalPath))
@@ -534,7 +665,10 @@ namespace Khel_Akhel_Server.Controllers.Product
                     }
                     catch (Exception fileEx)
                     {
-                        Logs.Error($"Failed to delete physical file '{physicalPath}' during image deletion", fileEx);
+                        Logs.Error(
+                            $"Failed to delete physical file '{physicalPath}' during image deletion",
+                            fileEx
+                        );
                     }
                 }
 
@@ -551,27 +685,41 @@ namespace Khel_Akhel_Server.Controllers.Product
                     GetUserAgent()
                 );
 
-                Logs.Info($"DeleteProductImage completed successfully | ImageId: {imageId} | ProductId: {productId}");
+                Logs.Info(
+                    $"DeleteProductImage completed successfully | ImageId: {imageId} | ProductId: {productId}"
+                );
 
-                return Ok(new ApiResponse
-                {
-                    Success = true,
-                    StatusCode = 200,
-                    Message = "PRODUCT_IMAGE_DELETED",
-                    Data = new { EncryptedImageId = encryptedImageId, EncryptedProductId = _encryption.Encrypt(productId) }
-                });
+                return Ok(
+                    new ApiResponse
+                    {
+                        Success = true,
+                        StatusCode = 200,
+                        Message = "PRODUCT_IMAGE_DELETED",
+                        Data = new
+                        {
+                            EncryptedImageId = encryptedImageId,
+                            EncryptedProductId = _encryption.Encrypt(productId),
+                        },
+                    }
+                );
             }
             catch (Exception ex)
             {
                 await tran.RollbackAsync();
                 Logs.Error($"DeleteProductImage failed | Exception: {ex.Message}", ex);
-                return StatusCode(500, new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 500,
-                    Message = "SERVER_ERROR",
-                    Errors = new List<string> { "An internal server error occurred while deleting product image." }
-                });
+                return StatusCode(
+                    500,
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 500,
+                        Message = "SERVER_ERROR",
+                        Errors = new List<string>
+                        {
+                            "An internal server error occurred while deleting product image.",
+                        },
+                    }
+                );
             }
         }
         #endregion

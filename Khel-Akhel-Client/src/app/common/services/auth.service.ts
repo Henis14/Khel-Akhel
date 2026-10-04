@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { Observable, BehaviorSubject, of, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { ApiService } from './api.service';
-import { PortalLoginRequest, AuthResponseData, UserSession } from '../models/auth.model';
+import { PortalLoginRequest, AuthResponseData, UserSession, CaptchaResponseData } from '../models/auth.model';
 import { ApiResponse } from '../models/api-response.model';
 
 @Injectable({
@@ -48,6 +48,14 @@ export class AuthService {
 
   public get role(): string | null {
     return this.currentUser()?.role ?? null;
+  }
+
+  getCaptcha(): Observable<ApiResponse<CaptchaResponseData>> {
+    return this.apiService.get<CaptchaResponseData>('auth/captcha');
+  }
+
+  forgotPassword(userName: string): Observable<ApiResponse<null>> {
+    return this.apiService.post<null>('auth/forgot-password', { userName });
   }
 
   login(credentials: PortalLoginRequest): Observable<ApiResponse<AuthResponseData>> {

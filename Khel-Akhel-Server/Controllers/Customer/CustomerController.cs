@@ -326,8 +326,11 @@ namespace Khel_Akhel_Server.Controllers.Customer
 
         #region 2. CustomerUpdate [PATCH]
         [Authorize]
-        [HttpPatch("update")]
-        public async Task<IActionResult> CustomerUpdate([FromBody] CustomerUpdateRequest? request)
+        [HttpPatch("update/{encryptedId?}")]
+        public async Task<IActionResult> CustomerUpdate(
+            [FromRoute] string? encryptedId,
+            [FromBody] CustomerUpdateRequest? request
+        )
         {
             Logs.Info("CustomerUpdate API started");
             var sw = Stopwatch.StartNew();
@@ -364,6 +367,49 @@ namespace Khel_Akhel_Server.Controllers.Customer
                     );
                 }
 
+                long targetCustomerId = currentUserId;
+                if (!string.IsNullOrWhiteSpace(encryptedId))
+                {
+                    if (
+                        !_encryption.TryDecrypt(encryptedId, out long decryptedId)
+                        || decryptedId <= 0
+                    )
+                    {
+                        sw.Stop();
+                        return BadRequest(
+                            new ApiResponse
+                            {
+                                Success = false,
+                                StatusCode = 400,
+                                Message = "INVALID_REQUEST",
+                                Errors = new List<string> { "Invalid customer ID parameter." },
+                            }
+                        );
+                    }
+                    targetCustomerId = decryptedId;
+                }
+
+                if (targetCustomerId != currentUserId && !IsCurrentUserAdmin())
+                {
+                    sw.Stop();
+                    Logs.Warning(
+                        $"CustomerUpdate forbidden | Caller:{currentUserId} Target:{targetCustomerId}"
+                    );
+                    return StatusCode(
+                        403,
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 403,
+                            Message = "FORBIDDEN",
+                            Errors = new List<string>
+                            {
+                                "You are not authorized to update this customer record.",
+                            },
+                        }
+                    );
+                }
+
                 // Check Customer Record Exists
                 string selectQuery =
                     @"
@@ -373,13 +419,13 @@ namespace Khel_Akhel_Server.Controllers.Customer
 
                 DataTable dt = _db.ExecuteQuery(
                     selectQuery,
-                    new[] { new SqlParameter("@ID", currentUserId) }
+                    new[] { new SqlParameter("@ID", targetCustomerId) }
                 );
                 if (dt.Rows.Count == 0)
                 {
                     sw.Stop();
                     Logs.Warning(
-                        $"CustomerUpdate failed | Customer not found | CustomerId:{currentUserId}"
+                        $"CustomerUpdate failed | Customer not found | CustomerId:{targetCustomerId}"
                     );
                     return NotFound(
                         new ApiResponse
@@ -452,7 +498,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                             new[]
                             {
                                 new SqlParameter("@Email", newEmail),
-                                new SqlParameter("@ID", currentUserId),
+                                new SqlParameter("@ID", targetCustomerId),
                             }
                         ) ?? 0
                     );
@@ -490,7 +536,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                             new[]
                             {
                                 new SqlParameter("@MobileNo", newMobileNo),
-                                new SqlParameter("@ID", currentUserId),
+                                new SqlParameter("@ID", targetCustomerId),
                             }
                         ) ?? 0
                     );
@@ -531,7 +577,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                         new SqlParameter("@LastName", newLastName),
                         new SqlParameter("@Email", newEmail),
                         new SqlParameter("@MobileNo", newMobileNo),
-                        new SqlParameter("@ID", currentUserId),
+                        new SqlParameter("@ID", targetCustomerId),
                     }
                 );
 
@@ -561,7 +607,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                     "Customer",
                     "CustomerUpdate",
                     "drs_customer_mst",
-                    currentUserId,
+                    targetCustomerId,
                     oldValueJson,
                     newValueJson,
                     GetClientIpAddress(),
@@ -569,7 +615,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                 );
 
                 sw.Stop();
-                Logs.Info($"CustomerUpdate completed successfully | CustomerId:{currentUserId}");
+                Logs.Info($"CustomerUpdate completed successfully | CustomerId:{targetCustomerId}");
 
                 return Ok(
                     new ApiResponse
@@ -579,7 +625,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                         Message = "CUSTOMER_UPDATED",
                         Data = new CustomerResponse
                         {
-                            EncryptedId = _encryption.Encrypt(currentUserId),
+                            EncryptedId = _encryption.Encrypt(targetCustomerId),
                             FirstName = newFirstName,
                             LastName = newLastName,
                             Email = newEmail,
@@ -607,22 +653,30 @@ namespace Khel_Akhel_Server.Controllers.Customer
         }
         #endregion
 
-        #region 3. CustomerSoftDelete [PATCH]
+        #region 3. CustomerSoftDelete [PATCH / DELETE]
         [Authorize]
-        [HttpPatch("delete")]
-        public async Task<IActionResult> CustomerSoftDelete([FromQuery] string? encryptedId = null)
+        [HttpPatch("delete/{encryptedId?}")]
+        [HttpDelete("delete/{encryptedId?}")]
+        public async Task<IActionResult> CustomerSoftDelete(
+            [FromRoute] string? encryptedId = null,
+            [FromQuery] string? queryEncryptedId = null
+        )
         {
             Logs.Info("CustomerSoftDelete API started");
             var sw = Stopwatch.StartNew();
 
             try
             {
+                string targetEncryptedId = !string.IsNullOrWhiteSpace(encryptedId)
+                    ? encryptedId
+                    : (queryEncryptedId ?? string.Empty);
+
                 long currentUserId = GetAuthenticatedUserId();
                 long targetCustomerId = currentUserId;
 
-                if (!string.IsNullOrWhiteSpace(encryptedId))
+                if (!string.IsNullOrWhiteSpace(targetEncryptedId))
                 {
-                    if (!_encryption.TryDecrypt(encryptedId, out long decryptedId))
+                    if (!_encryption.TryDecrypt(targetEncryptedId, out long decryptedId))
                     {
                         sw.Stop();
                         return BadRequest(

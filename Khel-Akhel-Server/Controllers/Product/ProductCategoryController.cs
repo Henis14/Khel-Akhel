@@ -22,7 +22,8 @@ namespace Khel_Akhel_Server.Controllers.Product
         public ProductCategoryController(
             DbHelper db,
             IUrlEncryptionService encryption,
-            IAuditService audit)
+            IAuditService audit
+        )
         {
             _db = db;
             _encryption = encryption;
@@ -54,7 +55,9 @@ namespace Khel_Akhel_Server.Controllers.Product
         #region 4.1 ProductCategoryCreate
         [Authorize(Roles = "Admin")]
         [HttpPost("create")]
-        public async Task<IActionResult> ProductCategoryCreate([FromBody] ProductCategoryCreateRequest? request)
+        public async Task<IActionResult> ProductCategoryCreate(
+            [FromBody] ProductCategoryCreateRequest? request
+        )
         {
             Logs.Info("ProductCategoryCreate API started");
             var sw = Stopwatch.StartNew();
@@ -65,13 +68,15 @@ namespace Khel_Akhel_Server.Controllers.Product
                 {
                     sw.Stop();
                     Logs.Warning("ProductCategoryCreate rejected | Reason: Null request body");
-                    return BadRequest(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 400,
-                        Message = "REQUEST_BODY_REQUIRED",
-                        Errors = new List<string> { "Request body cannot be null." }
-                    });
+                    return BadRequest(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "REQUEST_BODY_REQUIRED",
+                            Errors = new List<string> { "Request body cannot be null." },
+                        }
+                    );
                 }
 
                 request.CategoryName = request.CategoryName?.Trim() ?? string.Empty;
@@ -90,53 +95,74 @@ namespace Khel_Akhel_Server.Controllers.Product
                 if (errors.Any())
                 {
                     sw.Stop();
-                    Logs.Warning($"ProductCategoryCreate rejected | Validation errors: {string.Join(", ", errors)}");
-                    return BadRequest(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 400,
-                        Message = "VALIDATION_FAILED",
-                        Errors = errors
-                    });
+                    Logs.Warning(
+                        $"ProductCategoryCreate rejected | Validation errors: {string.Join(", ", errors)}"
+                    );
+                    return BadRequest(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "VALIDATION_FAILED",
+                            Errors = errors,
+                        }
+                    );
                 }
 
                 // Uniqueness check for CategoryName where IsDeleted = 0
-                string checkQuery = @"
+                string checkQuery =
+                    @"
                     SELECT COUNT(1)
                     FROM drs_product_category_mst WITH (NOLOCK)
                     WHERE CategoryName = @CategoryName AND IsDeleted = 0";
 
-                int exists = Convert.ToInt32(_db.ExecuteScalar(checkQuery, new[]
-                {
-                    new SqlParameter("@CategoryName", request.CategoryName)
-                }) ?? 0);
+                int exists = Convert.ToInt32(
+                    _db.ExecuteScalar(
+                        checkQuery,
+                        new[] { new SqlParameter("@CategoryName", request.CategoryName) }
+                    ) ?? 0
+                );
 
                 if (exists > 0)
                 {
                     sw.Stop();
-                    Logs.Warning($"ProductCategoryCreate duplicate category name: {request.CategoryName}");
-                    return Conflict(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 409,
-                        Message = "CATEGORY_ALREADY_EXISTS",
-                        Errors = new List<string> { "Product category with given name already exists." }
-                    });
+                    Logs.Warning(
+                        $"ProductCategoryCreate duplicate category name: {request.CategoryName}"
+                    );
+                    return Conflict(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 409,
+                            Message = "CATEGORY_ALREADY_EXISTS",
+                            Errors = new List<string>
+                            {
+                                "Product category with given name already exists.",
+                            },
+                        }
+                    );
                 }
 
-                string insertQuery = @"
+                string insertQuery =
+                    @"
                     INSERT INTO drs_product_category_mst
                     (CategoryName, Description, DisplayOrder, IsActive, IsDeleted, CreatedDate)
                     OUTPUT INSERTED.ID
                     VALUES
                     (@CategoryName, @Description, @DisplayOrder, 1, 0, GETDATE())";
 
-                object? result = _db.ExecuteScalar(insertQuery, new[]
-                {
-                    new SqlParameter("@CategoryName", request.CategoryName),
-                    new SqlParameter("@Description", (object?)request.Description ?? DBNull.Value),
-                    new SqlParameter("@DisplayOrder", request.DisplayOrder)
-                });
+                object? result = _db.ExecuteScalar(
+                    insertQuery,
+                    new[]
+                    {
+                        new SqlParameter("@CategoryName", request.CategoryName),
+                        new SqlParameter(
+                            "@Description",
+                            (object?)request.Description ?? DBNull.Value
+                        ),
+                        new SqlParameter("@DisplayOrder", request.DisplayOrder),
+                    }
+                );
 
                 long categoryId = Convert.ToInt64(result);
                 string encryptedId = _encryption.Encrypt(categoryId);
@@ -148,7 +174,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                     Description = request.Description ?? string.Empty,
                     DisplayOrder = request.DisplayOrder,
                     IsActive = true,
-                    CreatedDate = DateTimeFormat.Format(DateTime.Now)
+                    CreatedDate = DateTimeFormat.Format(DateTime.Now),
                 };
 
                 await _audit.InsertAuditAsync(
@@ -166,25 +192,30 @@ namespace Khel_Akhel_Server.Controllers.Product
                 sw.Stop();
                 Logs.Info($"ProductCategoryCreate completed | CategoryId:{categoryId}");
 
-                return Ok(new ApiResponse
-                {
-                    Success = true,
-                    StatusCode = 200,
-                    Message = "CATEGORY_CREATED",
-                    Data = responseData
-                });
+                return Ok(
+                    new ApiResponse
+                    {
+                        Success = true,
+                        StatusCode = 200,
+                        Message = "CATEGORY_CREATED",
+                        Data = responseData,
+                    }
+                );
             }
             catch (Exception ex)
             {
                 sw.Stop();
                 Logs.Error("Exception occurred in ProductCategoryCreate API", ex);
-                return StatusCode(500, new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 500,
-                    Message = "SERVER_ERROR",
-                    Errors = new List<string> { "An internal server error occurred." }
-                });
+                return StatusCode(
+                    500,
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 500,
+                        Message = "SERVER_ERROR",
+                        Errors = new List<string> { "An internal server error occurred." },
+                    }
+                );
             }
         }
         #endregion
@@ -192,7 +223,9 @@ namespace Khel_Akhel_Server.Controllers.Product
         #region 4.2 ProductCategoryUpdate [PATCH]
         [Authorize(Roles = "Admin")]
         [HttpPatch("update")]
-        public async Task<IActionResult> ProductCategoryUpdate([FromBody] ProductCategoryUpdateRequest? request)
+        public async Task<IActionResult> ProductCategoryUpdate(
+            [FromBody] ProductCategoryUpdateRequest? request
+        )
         {
             Logs.Info("ProductCategoryUpdate API started");
             var sw = Stopwatch.StartNew();
@@ -202,80 +235,114 @@ namespace Khel_Akhel_Server.Controllers.Product
                 if (request == null || string.IsNullOrWhiteSpace(request.EncryptedCategoryId))
                 {
                     sw.Stop();
-                    Logs.Warning("ProductCategoryUpdate rejected | Missing category ID or request body");
-                    return BadRequest(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 400,
-                        Message = "VALIDATION_FAILED",
-                        Errors = new List<string> { "Encrypted category ID is required." }
-                    });
+                    Logs.Warning(
+                        "ProductCategoryUpdate rejected | Missing category ID or request body"
+                    );
+                    return BadRequest(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "VALIDATION_FAILED",
+                            Errors = new List<string> { "Encrypted category ID is required." },
+                        }
+                    );
                 }
 
-                if (!_encryption.TryDecrypt(request.EncryptedCategoryId, out long categoryId) || categoryId <= 0)
+                if (
+                    !_encryption.TryDecrypt(request.EncryptedCategoryId, out long categoryId)
+                    || categoryId <= 0
+                )
                 {
                     sw.Stop();
-                    return BadRequest(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 400,
-                        Message = "INVALID_REQUEST",
-                        Errors = new List<string> { "Invalid or tampered encrypted category ID." }
-                    });
+                    return BadRequest(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "INVALID_REQUEST",
+                            Errors = new List<string>
+                            {
+                                "Invalid or tampered encrypted category ID.",
+                            },
+                        }
+                    );
                 }
 
-                string selectQuery = @"
+                string selectQuery =
+                    @"
                     SELECT TOP 1 ID, CategoryName, Description, DisplayOrder, IsActive
                     FROM drs_product_category_mst WITH (NOLOCK)
                     WHERE ID = @ID AND IsDeleted = 0";
 
-                DataTable dt = _db.ExecuteQuery(selectQuery, new[] { new SqlParameter("@ID", categoryId) });
+                DataTable dt = _db.ExecuteQuery(
+                    selectQuery,
+                    new[] { new SqlParameter("@ID", categoryId) }
+                );
                 if (dt.Rows.Count == 0)
                 {
                     sw.Stop();
-                    return NotFound(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 404,
-                        Message = "CATEGORY_NOT_FOUND",
-                        Errors = new List<string> { "Product category not found." }
-                    });
+                    return NotFound(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 404,
+                            Message = "CATEGORY_NOT_FOUND",
+                            Errors = new List<string> { "Product category not found." },
+                        }
+                    );
                 }
 
                 DataRow existing = dt.Rows[0];
                 string oldName = existing["CategoryName"].ToString() ?? "";
-                string newName = request.CategoryName != null ? request.CategoryName.Trim() : oldName;
-                string newDesc = request.Description != null ? request.Description.Trim() : existing["Description"].ToString() ?? "";
+                string newName =
+                    request.CategoryName != null ? request.CategoryName.Trim() : oldName;
+                string newDesc =
+                    request.Description != null
+                        ? request.Description.Trim()
+                        : existing["Description"].ToString() ?? "";
                 int newOrder = request.DisplayOrder ?? Convert.ToInt32(existing["DisplayOrder"]);
                 bool newIsActive = request.IsActive ?? Convert.ToBoolean(existing["IsActive"]);
 
                 if (!string.Equals(oldName, newName, StringComparison.OrdinalIgnoreCase))
                 {
-                    string dupQuery = @"
+                    string dupQuery =
+                        @"
                         SELECT COUNT(1)
                         FROM drs_product_category_mst WITH (NOLOCK)
                         WHERE CategoryName = @CategoryName AND ID <> @ID AND IsDeleted = 0";
 
-                    int dup = Convert.ToInt32(_db.ExecuteScalar(dupQuery, new[]
-                    {
-                        new SqlParameter("@CategoryName", newName),
-                        new SqlParameter("@ID", categoryId)
-                    }) ?? 0);
+                    int dup = Convert.ToInt32(
+                        _db.ExecuteScalar(
+                            dupQuery,
+                            new[]
+                            {
+                                new SqlParameter("@CategoryName", newName),
+                                new SqlParameter("@ID", categoryId),
+                            }
+                        ) ?? 0
+                    );
 
                     if (dup > 0)
                     {
                         sw.Stop();
-                        return Conflict(new ApiResponse
-                        {
-                            Success = false,
-                            StatusCode = 409,
-                            Message = "CATEGORY_ALREADY_EXISTS",
-                            Errors = new List<string> { "Product category with given name already exists." }
-                        });
+                        return Conflict(
+                            new ApiResponse
+                            {
+                                Success = false,
+                                StatusCode = 409,
+                                Message = "CATEGORY_ALREADY_EXISTS",
+                                Errors = new List<string>
+                                {
+                                    "Product category with given name already exists.",
+                                },
+                            }
+                        );
                     }
                 }
 
-                string updateQuery = @"
+                string updateQuery =
+                    @"
                     UPDATE drs_product_category_mst
                     SET CategoryName = @CategoryName,
                         Description = @Description,
@@ -284,14 +351,17 @@ namespace Khel_Akhel_Server.Controllers.Product
                         ModifiedDate = GETDATE()
                     WHERE ID = @ID AND IsDeleted = 0";
 
-                _db.ExecuteNonQuery(updateQuery, new[]
-                {
-                    new SqlParameter("@CategoryName", newName),
-                    new SqlParameter("@Description", (object?)newDesc ?? DBNull.Value),
-                    new SqlParameter("@DisplayOrder", newOrder),
-                    new SqlParameter("@IsActive", newIsActive),
-                    new SqlParameter("@ID", categoryId)
-                });
+                _db.ExecuteNonQuery(
+                    updateQuery,
+                    new[]
+                    {
+                        new SqlParameter("@CategoryName", newName),
+                        new SqlParameter("@Description", (object?)newDesc ?? DBNull.Value),
+                        new SqlParameter("@DisplayOrder", newOrder),
+                        new SqlParameter("@IsActive", newIsActive),
+                        new SqlParameter("@ID", categoryId),
+                    }
+                );
 
                 var responseData = new ProductCategoryResponse
                 {
@@ -300,7 +370,16 @@ namespace Khel_Akhel_Server.Controllers.Product
                     Description = newDesc ?? string.Empty,
                     DisplayOrder = newOrder,
                     IsActive = newIsActive,
-                    CreatedDate = DateTimeFormat.Format(DateTime.Now)
+                    CreatedDate = DateTimeFormat.Format(DateTime.Now),
+                };
+
+                var oldAuditData = new
+                {
+                    EncryptedCategoryId = request.EncryptedCategoryId ?? string.Empty,
+                    CategoryName = oldName,
+                    Description = existing["Description"].ToString() ?? string.Empty,
+                    DisplayOrder = Convert.ToInt32(existing["DisplayOrder"]),
+                    IsActive = Convert.ToBoolean(existing["IsActive"]),
                 };
 
                 await _audit.InsertAuditAsync(
@@ -309,7 +388,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                     "ProductCategoryUpdate",
                     "drs_product_category_mst",
                     categoryId,
-                    System.Text.Json.JsonSerializer.Serialize(existing.Table.Columns),
+                    System.Text.Json.JsonSerializer.Serialize(oldAuditData),
                     System.Text.Json.JsonSerializer.Serialize(responseData),
                     GetClientIpAddress(),
                     GetUserAgent()
@@ -318,25 +397,30 @@ namespace Khel_Akhel_Server.Controllers.Product
                 sw.Stop();
                 Logs.Info($"ProductCategoryUpdate completed | CategoryId:{categoryId}");
 
-                return Ok(new ApiResponse
-                {
-                    Success = true,
-                    StatusCode = 200,
-                    Message = "CATEGORY_UPDATED",
-                    Data = responseData
-                });
+                return Ok(
+                    new ApiResponse
+                    {
+                        Success = true,
+                        StatusCode = 200,
+                        Message = "CATEGORY_UPDATED",
+                        Data = responseData,
+                    }
+                );
             }
             catch (Exception ex)
             {
                 sw.Stop();
                 Logs.Error("Exception occurred in ProductCategoryUpdate API", ex);
-                return StatusCode(500, new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 500,
-                    Message = "SERVER_ERROR",
-                    Errors = new List<string> { "An internal server error occurred." }
-                });
+                return StatusCode(
+                    500,
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 500,
+                        Message = "SERVER_ERROR",
+                        Errors = new List<string> { "An internal server error occurred." },
+                    }
+                );
             }
         }
         #endregion
@@ -354,31 +438,42 @@ namespace Khel_Akhel_Server.Controllers.Product
                 if (!_encryption.TryDecrypt(encryptedId, out long categoryId) || categoryId <= 0)
                 {
                     sw.Stop();
-                    return BadRequest(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 400,
-                        Message = "INVALID_REQUEST",
-                        Errors = new List<string> { "Invalid or tampered encrypted category ID." }
-                    });
+                    return BadRequest(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "INVALID_REQUEST",
+                            Errors = new List<string>
+                            {
+                                "Invalid or tampered encrypted category ID.",
+                            },
+                        }
+                    );
                 }
 
-                string query = @"
+                string query =
+                    @"
                     SELECT TOP 1 ID, CategoryName, Description, DisplayOrder, IsActive, CreatedDate
                     FROM drs_product_category_mst WITH (NOLOCK)
                     WHERE ID = @ID AND IsDeleted = 0";
 
-                DataTable dt = _db.ExecuteQuery(query, new[] { new SqlParameter("@ID", categoryId) });
+                DataTable dt = _db.ExecuteQuery(
+                    query,
+                    new[] { new SqlParameter("@ID", categoryId) }
+                );
                 if (dt.Rows.Count == 0)
                 {
                     sw.Stop();
-                    return NotFound(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 404,
-                        Message = "CATEGORY_NOT_FOUND",
-                        Errors = new List<string> { "Product category not found." }
-                    });
+                    return NotFound(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 404,
+                            Message = "CATEGORY_NOT_FOUND",
+                            Errors = new List<string> { "Product category not found." },
+                        }
+                    );
                 }
 
                 DataRow row = dt.Rows[0];
@@ -389,31 +484,36 @@ namespace Khel_Akhel_Server.Controllers.Product
                     Description = row["Description"].ToString() ?? "",
                     DisplayOrder = Convert.ToInt32(row["DisplayOrder"]),
                     IsActive = Convert.ToBoolean(row["IsActive"]),
-                    CreatedDate = DateTimeFormat.Format(Convert.ToDateTime(row["CreatedDate"]))
+                    CreatedDate = DateTimeFormat.Format(Convert.ToDateTime(row["CreatedDate"])),
                 };
 
                 sw.Stop();
                 Logs.Info($"GetProductCategoryById completed | CategoryId:{categoryId}");
 
-                return Ok(new ApiResponse
-                {
-                    Success = true,
-                    StatusCode = 200,
-                    Message = "SUCCESS",
-                    Data = categoryResponse
-                });
+                return Ok(
+                    new ApiResponse
+                    {
+                        Success = true,
+                        StatusCode = 200,
+                        Message = "SUCCESS",
+                        Data = categoryResponse,
+                    }
+                );
             }
             catch (Exception ex)
             {
                 sw.Stop();
                 Logs.Error("Exception occurred in GetProductCategoryById API", ex);
-                return StatusCode(500, new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 500,
-                    Message = "SERVER_ERROR",
-                    Errors = new List<string> { "An internal server error occurred." }
-                });
+                return StatusCode(
+                    500,
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 500,
+                        Message = "SERVER_ERROR",
+                        Errors = new List<string> { "An internal server error occurred." },
+                    }
+                );
             }
         }
         #endregion
@@ -428,7 +528,8 @@ namespace Khel_Akhel_Server.Controllers.Product
 
             try
             {
-                string query = @"
+                string query =
+                    @"
                     SELECT ID, CategoryName, Description, DisplayOrder, IsActive, CreatedDate
                     FROM drs_product_category_mst WITH (NOLOCK)
                     WHERE IsDeleted = 0 AND IsActive = 1
@@ -439,39 +540,183 @@ namespace Khel_Akhel_Server.Controllers.Product
                 var categoryList = new List<ProductCategoryResponse>();
                 foreach (DataRow row in dt.Rows)
                 {
-                    categoryList.Add(new ProductCategoryResponse
-                    {
-                        EncryptedCategoryId = _encryption.Encrypt(Convert.ToInt64(row["ID"])),
-                        CategoryName = row["CategoryName"].ToString() ?? "",
-                        Description = row["Description"].ToString() ?? "",
-                        DisplayOrder = Convert.ToInt32(row["DisplayOrder"]),
-                        IsActive = Convert.ToBoolean(row["IsActive"]),
-                        CreatedDate = DateTimeFormat.Format(Convert.ToDateTime(row["CreatedDate"]))
-                    });
+                    categoryList.Add(
+                        new ProductCategoryResponse
+                        {
+                            EncryptedCategoryId = _encryption.Encrypt(Convert.ToInt64(row["ID"])),
+                            CategoryName = row["CategoryName"].ToString() ?? "",
+                            Description = row["Description"].ToString() ?? "",
+                            DisplayOrder = Convert.ToInt32(row["DisplayOrder"]),
+                            IsActive = Convert.ToBoolean(row["IsActive"]),
+                            CreatedDate = DateTimeFormat.Format(
+                                Convert.ToDateTime(row["CreatedDate"])
+                            ),
+                        }
+                    );
                 }
 
                 sw.Stop();
                 Logs.Info($"GetAllProductCategory completed | Count:{categoryList.Count}");
 
-                return Ok(new ApiResponse
-                {
-                    Success = true,
-                    StatusCode = 200,
-                    Message = "SUCCESS",
-                    Data = categoryList
-                });
+                return Ok(
+                    new ApiResponse
+                    {
+                        Success = true,
+                        StatusCode = 200,
+                        Message = "SUCCESS",
+                        Data = categoryList,
+                    }
+                );
             }
             catch (Exception ex)
             {
                 sw.Stop();
                 Logs.Error("Exception occurred in GetAllProductCategory API", ex);
-                return StatusCode(500, new ApiResponse
+                return StatusCode(
+                    500,
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 500,
+                        Message = "SERVER_ERROR",
+                        Errors = new List<string> { "An internal server error occurred." },
+                    }
+                );
+            }
+        }
+        #endregion
+
+        #region 4.5 ProductCategorySoftDelete [DELETE / PATCH]
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("delete/{encryptedCategoryId?}")]
+        [HttpPatch("delete/{encryptedCategoryId?}")]
+        public async Task<IActionResult> ProductCategorySoftDelete(
+            [FromRoute] string? encryptedCategoryId = null,
+            [FromQuery] string? queryEncryptedCategoryId = null
+        )
+        {
+            Logs.Info("ProductCategorySoftDelete API started");
+            var sw = Stopwatch.StartNew();
+
+            try
+            {
+                string targetEncryptedId = !string.IsNullOrWhiteSpace(encryptedCategoryId)
+                    ? encryptedCategoryId
+                    : (queryEncryptedCategoryId ?? string.Empty);
+
+                if (
+                    string.IsNullOrWhiteSpace(targetEncryptedId)
+                    || !_encryption.TryDecrypt(targetEncryptedId, out long categoryId)
+                    || categoryId <= 0
+                )
                 {
-                    Success = false,
-                    StatusCode = 500,
-                    Message = "SERVER_ERROR",
-                    Errors = new List<string> { "An internal server error occurred." }
-                });
+                    sw.Stop();
+                    return BadRequest(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "INVALID_REQUEST",
+                            Errors = new List<string>
+                            {
+                                "Invalid or tampered encrypted category ID.",
+                            },
+                        }
+                    );
+                }
+
+                string checkQuery =
+                    @"
+                    SELECT TOP 1 ID, CategoryName, Description, DisplayOrder, IsActive
+                    FROM drs_product_category_mst WITH (NOLOCK)
+                    WHERE ID = @ID AND IsDeleted = 0";
+
+                DataTable dt = _db.ExecuteQuery(
+                    checkQuery,
+                    new[] { new SqlParameter("@ID", categoryId) }
+                );
+                if (dt.Rows.Count == 0)
+                {
+                    sw.Stop();
+                    return NotFound(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 404,
+                            Message = "CATEGORY_NOT_FOUND",
+                            Errors = new List<string>
+                            {
+                                "Product category not found or already deleted.",
+                            },
+                        }
+                    );
+                }
+
+                DataRow existingRow = dt.Rows[0];
+
+                string deleteQuery =
+                    @"
+                    UPDATE drs_product_category_mst
+                    SET IsDeleted = 1,
+                        IsActive = 0,
+                        ModifiedDate = GETDATE()
+                    WHERE ID = @ID";
+
+                _db.ExecuteNonQuery(deleteQuery, new[] { new SqlParameter("@ID", categoryId) });
+
+                await _audit.InsertAuditAsync(
+                    GetAuthenticatedUserId(),
+                    "ProductCategory",
+                    "ProductCategorySoftDelete",
+                    "drs_product_category_mst",
+                    categoryId,
+                    System.Text.Json.JsonSerializer.Serialize(
+                        new
+                        {
+                            CategoryName = existingRow["CategoryName"].ToString(),
+                            IsActive = Convert.ToBoolean(existingRow["IsActive"]),
+                            IsDeleted = false,
+                        }
+                    ),
+                    System.Text.Json.JsonSerializer.Serialize(
+                        new { IsActive = false, IsDeleted = true }
+                    ),
+                    GetClientIpAddress(),
+                    GetUserAgent()
+                );
+
+                sw.Stop();
+                Logs.Info(
+                    $"ProductCategorySoftDelete completed successfully | CategoryId:{categoryId}"
+                );
+
+                return Ok(
+                    new ApiResponse
+                    {
+                        Success = true,
+                        StatusCode = 200,
+                        Message = "CATEGORY_DELETED",
+                        Data = null,
+                    }
+                );
+            }
+            catch (Exception ex)
+            {
+                sw.Stop();
+                Logs.Error("Exception occurred in ProductCategorySoftDelete API", ex);
+                return StatusCode(
+                    500,
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 500,
+                        Message = "SERVER_ERROR",
+                        Errors = new List<string>
+                        {
+                            "An internal server error occurred while deleting product category.",
+                        },
+                    }
+                );
             }
         }
         #endregion

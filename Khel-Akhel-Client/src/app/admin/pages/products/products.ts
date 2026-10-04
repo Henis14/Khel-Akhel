@@ -279,28 +279,6 @@ export class ProductsComponent implements OnInit {
 
   isActionSubmitting = false;
 
-  confirmToggleActive(product: ProductResponse): void {
-    const actionName = product.isActive ? 'deactivate' : 'activate';
-    this.confirmTitle = `${actionName.toUpperCase()} Product`;
-    this.confirmMessage = `Are you sure you want to ${actionName} product "${product.productName}"?`;
-    this.pendingAction = () => {
-      this.isActionSubmitting = true;
-      this.productService.toggleActive(product.encryptedProductId).subscribe({
-        next: () => {
-          this.isActionSubmitting = false;
-          this.isConfirmOpen = false;
-          this.successMessage = `Product ${actionName}d successfully.`;
-          this.loadProducts();
-        },
-        error: (err) => {
-          this.isActionSubmitting = false;
-          this.errorMessage = err.error?.message || `Failed to ${actionName} product.`;
-        }
-      });
-    };
-    this.isConfirmOpen = true;
-  }
-
   confirmDelete(product: ProductResponse): void {
     this.confirmTitle = 'Delete Product';
     this.confirmMessage = `Are you sure you want to delete product "${product.productName}"?`;

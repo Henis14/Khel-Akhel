@@ -1,64 +1,108 @@
 /* ==========================================================================
-   Khel-Akhel Admin Design System Tokens
+   Khel-Akhel Admin Global Color Tokens
    ========================================================================== */
 :root {
-  /* Color Palette - Modern B2B SaaS Deep Navy & Royal Blue */
-  --admin-primary: #2563eb;
-  --admin-primary-hover: #1d4ed8;
-  --admin-primary-active: #1e40af;
-  --admin-primary-soft: #eff6ff;
-  --admin-primary-border: #bfdbfe;
+  /* Core Brand Colors */
+  --ka-navy: #1F3557;
+  --ka-navy-hover: #162A45;
+  --ka-dark-navy: #162A45;
+  --ka-terracotta: #B45132;
+  --ka-terracotta-hover: #923F28;
+  --ka-ochre: #D9A441;
+  --ka-teal: #2D7370;
+  --ka-olive: #737B4C;
 
-  --admin-bg: #f8fafc;
-  --admin-surface: #ffffff;
-  --admin-surface-alt: #f1f5f9;
-  --admin-surface-hover: #f8fafc;
-  
-  --admin-border: #e2e8f0;
-  --admin-border-strong: #cbd5e1;
+  /* Surfaces & Backgrounds */
+  --ka-bg: #F5F1E8;
+  --ka-surface: #FBF9F4;
+  --ka-surface-alt: #F1E7D5;
+  --ka-surface-hover: #F5F1E8;
+  --ka-white: #FFFFFF;
 
-  --admin-text-primary: #0f172a;
-  --admin-text-secondary: #475569;
-  --admin-text-muted: #94a3b8;
-  --admin-text-disabled: #cbd5e1;
+  /* Text Typography Colors */
+  --ka-text: #1E2430;
+  --ka-text-secondary: #6B6A63;
+  --ka-text-muted: #8A887F;
+  --ka-text-disabled: #9A978E;
+
+  /* Borders & Dividers */
+  --ka-border: #D9D3C6;
+  --ka-border-light: #E7E1D6;
+  --ka-border-strong: #BFB5A3;
 
   /* Semantic Status Colors */
-  --admin-status-success: #059669;
-  --admin-status-success-bg: #ecfdf5;
-  --admin-status-success-border: #a7f3d0;
+  --ka-error: #A83F32;
+  --ka-error-bg: rgba(168, 63, 50, 0.12);
+  --ka-error-border: rgba(168, 63, 50, 0.25);
 
-  --admin-status-danger: #dc2626;
-  --admin-status-danger-bg: #fef2f2;
-  --admin-status-danger-border: #fecaca;
+  --ka-warning: #B07B22;
+  --ka-warning-bg: rgba(217, 164, 65, 0.14);
+  --ka-warning-border: rgba(217, 164, 65, 0.28);
 
-  --admin-status-warning: #d97706;
-  --admin-status-warning-bg: #fffbeb;
-  --admin-status-warning-border: #fde68a;
+  --ka-success: #2D7370;
+  --ka-success-bg: rgba(45, 115, 112, 0.12);
+  --ka-success-border: rgba(45, 115, 112, 0.25);
 
-  --admin-status-info: #2563eb;
-  --admin-status-info-bg: #eff6ff;
-  --admin-status-info-border: #bfdbfe;
+  --ka-info: #1F3557;
+  --ka-info-bg: rgba(31, 53, 87, 0.10);
+  --ka-info-border: rgba(31, 53, 87, 0.20);
+
+  /* Legacy --admin Variable Mapping for 100% Theme Consistency */
+  --admin-primary: var(--ka-navy);
+  --admin-primary-hover: var(--ka-navy-hover);
+  --admin-primary-active: var(--ka-dark-navy);
+  --admin-primary-soft: rgba(31, 53, 87, 0.08);
+  --admin-primary-border: var(--ka-navy);
+
+  --admin-bg: var(--ka-bg);
+  --admin-surface: var(--ka-surface);
+  --admin-surface-alt: #F1E7D5;
+  --admin-surface-hover: #F5F1E8;
+
+  --admin-border: var(--ka-border);
+  --admin-border-strong: var(--ka-border-strong);
+
+  --admin-text-primary: var(--ka-text);
+  --admin-text-secondary: var(--ka-text-secondary);
+  --admin-text-muted: var(--ka-text-muted);
+  --admin-text-disabled: var(--ka-text-disabled);
+
+  --admin-status-success: var(--ka-success);
+  --admin-status-success-bg: var(--ka-success-bg);
+  --admin-status-success-border: var(--ka-success-border);
+
+  --admin-status-danger: var(--ka-error);
+  --admin-status-danger-bg: var(--ka-error-bg);
+  --admin-status-danger-border: var(--ka-error-border);
+
+  --admin-status-warning: var(--ka-warning);
+  --admin-status-warning-bg: var(--ka-warning-bg);
+  --admin-status-warning-border: var(--ka-warning-border);
+
+  --admin-status-info: var(--ka-info);
+  --admin-status-info-bg: var(--ka-info-bg);
+  --admin-status-info-border: var(--ka-info-border);
 
   /* Sidebar Tokens */
-  --admin-sidebar-bg: #0f172a;
-  --admin-sidebar-border: #1e293b;
-  --admin-sidebar-hover: #1e293b;
-  --admin-sidebar-active: #2563eb;
-  --admin-sidebar-text: #94a3b8;
+  --admin-sidebar-bg: var(--ka-dark-navy);
+  --admin-sidebar-border: rgba(217, 211, 198, 0.15);
+  --admin-sidebar-hover: rgba(245, 241, 232, 0.08);
+  --admin-sidebar-active: rgba(180, 81, 50, 0.18);
+  --admin-sidebar-text: rgba(245, 241, 232, 0.72);
   --admin-sidebar-text-active: #ffffff;
 
   /* Form Controls */
-  --admin-input-bg: #ffffff;
-  --admin-input-border: #cbd5e1;
-  --admin-input-focus: #2563eb;
-  --admin-input-focus-ring: rgba(37, 99, 235, 0.15);
-  --admin-input-disabled: #f1f5f9;
+  --admin-input-bg: var(--ka-white);
+  --admin-input-border: var(--ka-border);
+  --admin-input-focus: var(--ka-navy);
+  --admin-input-focus-ring: rgba(31, 53, 87, 0.12);
+  --admin-input-disabled: #E8E4DA;
 
   /* Elevation & Shadows */
-  --admin-shadow-xs: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
-  --admin-shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.08), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
-  --admin-shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
-  --admin-shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.03);
+  --admin-shadow-xs: 0 1px 2px 0 rgba(31, 53, 87, 0.04);
+  --admin-shadow-sm: 0 2px 4px 0 rgba(31, 53, 87, 0.06);
+  --admin-shadow-md: 0 4px 8px -1px rgba(31, 53, 87, 0.08);
+  --admin-shadow-lg: 0 10px 20px -3px rgba(31, 53, 87, 0.10);
 
   /* Border Radius */
   --admin-radius-sm: 6px;
@@ -69,7 +113,7 @@
 
 .admin-layout-container {
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  color: var(--admin-text-primary);
-  background-color: var(--admin-bg);
+  color: var(--ka-text);
+  background-color: var(--ka-bg);
   min-height: 100vh;
 }

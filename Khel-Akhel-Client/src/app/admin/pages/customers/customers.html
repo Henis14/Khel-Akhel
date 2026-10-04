@@ -81,7 +81,6 @@
               <td><code class="account-code">{{ c.accountNo || '-' }}</code></td>
               <td>
                 <div class="user-cell">
-                  <div class="user-avatar">{{ (c.firstName[0] || 'C') + (c.lastName[0] || '') }}</div>
                   <a [routerLink]="['/admin/customers', c.encryptedId]" class="user-name">
                     {{ c.firstName }} {{ c.lastName }}
                   </a>
@@ -103,14 +102,6 @@
               <td class="text-right actions-cell">
                 <a class="btn btn-outline btn-sm" [routerLink]="['/admin/customers', c.encryptedId]">View</a>
                 <button class="btn btn-secondary btn-sm" (click)="openEditModal(c)">Edit</button>
-                <button
-                  class="btn btn-sm"
-                  [class.btn-secondary]="c.isActive"
-                  [class.btn-outline]="!c.isActive"
-                  (click)="confirmToggleActive(c)"
-                >
-                  {{ c.isActive ? 'Deactivate' : 'Activate' }}
-                </button>
                 <button class="btn btn-danger btn-sm" (click)="confirmDelete(c)">Delete</button>
               </td>
             </tr>

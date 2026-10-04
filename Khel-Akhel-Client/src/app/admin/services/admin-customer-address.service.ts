@@ -14,8 +14,9 @@ import {
 export class AdminCustomerAddressService {
   constructor(private api: ApiService) {}
 
-  getList(): Observable<ApiResponse<CustomerAddressResponse[]>> {
-    return this.api.get<CustomerAddressResponse[]>('customer-address/list');
+  getList(encryptedCustomerId?: string): Observable<ApiResponse<CustomerAddressResponse[]>> {
+    const params = encryptedCustomerId ? { encryptedCustomerId } : undefined;
+    return this.api.get<CustomerAddressResponse[]>('customer-address/list', params);
   }
 
   getById(encryptedAddressId: string): Observable<ApiResponse<CustomerAddressResponse>> {

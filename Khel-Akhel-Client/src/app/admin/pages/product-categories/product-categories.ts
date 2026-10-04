@@ -39,6 +39,7 @@ export class ProductCategoriesComponent implements OnInit {
   isConfirmOpen = false;
   confirmTitle = '';
   confirmMessage = '';
+  isActionSubmitting = false;
   pendingAction: (() => void) | null = null;
 
   ngOnInit(): void {
@@ -157,30 +158,6 @@ export class ProductCategoriesComponent implements OnInit {
         }
       });
     }
-  }
-
-  isActionSubmitting = false;
-
-  confirmToggleActive(category: ProductCategoryResponse): void {
-    const actionName = category.isActive ? 'deactivate' : 'activate';
-    this.confirmTitle = `${actionName.toUpperCase()} Category`;
-    this.confirmMessage = `Are you sure you want to ${actionName} category "${category.categoryName}"?`;
-    this.pendingAction = () => {
-      this.isActionSubmitting = true;
-      this.categoryService.toggleActive(category.encryptedCategoryId).subscribe({
-        next: () => {
-          this.isActionSubmitting = false;
-          this.isConfirmOpen = false;
-          this.successMessage = `Category ${actionName}d successfully.`;
-          this.loadCategories();
-        },
-        error: (err) => {
-          this.isActionSubmitting = false;
-          this.errorMessage = err.error?.message || `Failed to ${actionName} category.`;
-        }
-      });
-    };
-    this.isConfirmOpen = true;
   }
 
   confirmDelete(category: ProductCategoryResponse): void {

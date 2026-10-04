@@ -82,11 +82,13 @@ builder.Services.AddRateLimiter(options =>
 });
 
 // Register Application Infrastructure Services
+builder.Services.AddMemoryCache();
 builder.Services.AddScoped<DbHelper>();
 builder.Services.AddScoped<IUrlEncryptionService, UrlEncryptionService>();
 builder.Services.AddScoped<IUrlSignatureService, UrlSignatureService>();
 builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+builder.Services.AddSingleton<ICaptchaService, CaptchaService>();
 
 // Configure JWT Authentication & Options
 string jwtKey =

@@ -116,8 +116,9 @@ export class CustomerDetailComponent implements OnInit {
   }
 
   loadAddresses(): void {
+    if (!this.encryptedId) return;
     this.addressesLoading = true;
-    this.addressService.getList().subscribe({
+    this.addressService.getList(this.encryptedId).subscribe({
       next: (res) => {
         this.addressesLoading = false;
         if (res.success) {

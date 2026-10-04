@@ -437,12 +437,19 @@ namespace Khel_Akhel_Server.Controllers.Product
         #region 6.3 GetAllProductStock [GET / POST]
         [HttpGet("list")]
         [HttpPost("list")]
-        public IActionResult GetAllProductStock([FromQuery] ProductStockListRequest? queryRequest, [FromBody] ProductStockListRequest? bodyRequest)
+        public IActionResult GetAllProductStock(
+            [FromQuery] ProductStockListRequest? queryRequest,
+            [FromBody] ProductStockListRequest? bodyRequest
+        )
         {
             Logs.Info("GetAllProductStock API started");
             var sw = Stopwatch.StartNew();
 
-            var request = (HttpMethods.IsPost(Request.Method) ? bodyRequest : queryRequest) ?? queryRequest ?? bodyRequest ?? new ProductStockListRequest();
+            var request =
+                (HttpMethods.IsPost(Request.Method) ? bodyRequest : queryRequest)
+                ?? queryRequest
+                ?? bodyRequest
+                ?? new ProductStockListRequest();
 
             try
             {

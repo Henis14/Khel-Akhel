@@ -69,14 +69,6 @@
                 <td class="text-muted">{{ cat.createdDate }}</td>
                 <td class="text-right actions-cell">
                   <button class="btn btn-secondary btn-sm" (click)="openEditModal(cat)">Edit</button>
-                  <button
-                    class="btn btn-sm"
-                    [class.btn-secondary]="cat.isActive"
-                    [class.btn-outline]="!cat.isActive"
-                    (click)="confirmToggleActive(cat)"
-                  >
-                    {{ cat.isActive ? 'Deactivate' : 'Activate' }}
-                  </button>
                   <button class="btn btn-danger btn-sm" (click)="confirmDelete(cat)">Delete</button>
                 </td>
               </tr>

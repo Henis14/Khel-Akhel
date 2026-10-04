@@ -140,7 +140,9 @@ namespace Khel_Akhel_Server.Controllers.Customer
                 if (string.IsNullOrWhiteSpace(request.City))
                     errors.Add("City is required.");
                 else if (!ValidationHelper.IsValidCity(request.City))
-                    errors.Add("City must be 2-100 characters containing only letters, spaces, dots, hyphens, and apostrophes.");
+                    errors.Add(
+                        "City must be 2-100 characters containing only letters, spaces, dots, hyphens, and apostrophes."
+                    );
 
                 if (request.CountryId <= 0)
                 {
@@ -148,8 +150,12 @@ namespace Khel_Akhel_Server.Controllers.Customer
                 }
                 else
                 {
-                    string checkCountryQuery = "SELECT CountryName FROM dbo.drs_country_mst WITH (NOLOCK) WHERE ID = @ID AND IsActive = 1 AND IsDeleted = 0";
-                    object? countryNameObj = _db.ExecuteScalar(checkCountryQuery, new[] { new SqlParameter("@ID", request.CountryId) });
+                    string checkCountryQuery =
+                        "SELECT CountryName FROM dbo.drs_country_mst WITH (NOLOCK) WHERE ID = @ID AND IsActive = 1 AND IsDeleted = 0";
+                    object? countryNameObj = _db.ExecuteScalar(
+                        checkCountryQuery,
+                        new[] { new SqlParameter("@ID", request.CountryId) }
+                    );
                     if (countryNameObj == null)
                     {
                         errors.Add("Selected Country is invalid or inactive.");
@@ -166,11 +172,16 @@ namespace Khel_Akhel_Server.Controllers.Customer
                 }
                 else if (request.CountryId > 0)
                 {
-                    string checkStateQuery = "SELECT StateName FROM dbo.drs_state_mst WITH (NOLOCK) WHERE ID = @StateId AND country_id = @CountryId AND IsActive = 1 AND IsDeleted = 0";
-                    object? stateNameObj = _db.ExecuteScalar(checkStateQuery, new[] {
-                        new SqlParameter("@StateId", request.StateId),
-                        new SqlParameter("@CountryId", request.CountryId)
-                    });
+                    string checkStateQuery =
+                        "SELECT StateName FROM dbo.drs_state_mst WITH (NOLOCK) WHERE ID = @StateId AND country_id = @CountryId AND IsActive = 1 AND IsDeleted = 0";
+                    object? stateNameObj = _db.ExecuteScalar(
+                        checkStateQuery,
+                        new[]
+                        {
+                            new SqlParameter("@StateId", request.StateId),
+                            new SqlParameter("@CountryId", request.CountryId),
+                        }
+                    );
                     if (stateNameObj == null)
                     {
                         errors.Add("Selected State is invalid for the selected Country.");
@@ -590,7 +601,13 @@ namespace Khel_Akhel_Server.Controllers.Customer
                         "CustomerAddressUpdate",
                         "drs_customer_address_mst",
                         addressId,
-                        System.Text.Json.JsonSerializer.Serialize(existing.Table.Columns),
+                        System.Text.Json.JsonSerializer.Serialize(
+                            new
+                            {
+                                ID = addressId,
+                                FullName = existing["FullName"]?.ToString() ?? "",
+                            }
+                        ),
                         System.Text.Json.JsonSerializer.Serialize(responseData),
                         GetClientIpAddress(),
                         GetUserAgent()
@@ -762,7 +779,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
 
         #region 3.4 GetCustomerAddresses [GET]
         [HttpGet("list")]
-        public IActionResult GetCustomerAddresses()
+        public IActionResult GetCustomerAddresses([FromQuery] string? encryptedCustomerId = null)
         {
             Logs.Info("GetCustomerAddresses API started");
             var sw = Stopwatch.StartNew();
@@ -770,6 +787,17 @@ namespace Khel_Akhel_Server.Controllers.Customer
             try
             {
                 long customerId = GetAuthenticatedUserId();
+
+                if (IsCurrentUserAdmin() && !string.IsNullOrWhiteSpace(encryptedCustomerId))
+                {
+                    if (
+                        _encryption.TryDecrypt(encryptedCustomerId, out long adminTargetId)
+                        && adminTargetId > 0
+                    )
+                    {
+                        customerId = adminTargetId;
+                    }
+                }
 
                 string query =
                     @"
@@ -829,6 +857,135 @@ namespace Khel_Akhel_Server.Controllers.Customer
             {
                 sw.Stop();
                 Logs.Error("Exception occurred in GetCustomerAddresses API", ex);
+                return StatusCode(
+                    500,
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 500,
+                        Message = "SERVER_ERROR",
+                        Errors = new List<string> { "An internal server error occurred." },
+                    }
+                );
+            }
+        }
+        #endregion
+
+        #region 3.5 CustomerAddressSoftDelete
+        [HttpDelete("delete/{encryptedId?}")]
+        [HttpPatch("delete/{encryptedId?}")]
+        [HttpDelete("delete")]
+        [HttpPatch("delete")]
+        public async Task<IActionResult> CustomerAddressSoftDelete(
+            [FromRoute] string? encryptedId = null,
+            [FromQuery] string? encryptedIdQuery = null,
+            [FromQuery] string? id = null
+        )
+        {
+            Logs.Info("CustomerAddressSoftDelete API started");
+            var sw = Stopwatch.StartNew();
+
+            try
+            {
+                string? targetEncryptedId = !string.IsNullOrWhiteSpace(encryptedId)
+                    ? encryptedId
+                    : (!string.IsNullOrWhiteSpace(encryptedIdQuery) ? encryptedIdQuery : id);
+
+                if (
+                    string.IsNullOrWhiteSpace(targetEncryptedId)
+                    || !_encryption.TryDecrypt(targetEncryptedId, out long addressId)
+                    || addressId <= 0
+                )
+                {
+                    sw.Stop();
+                    return BadRequest(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "INVALID_REQUEST",
+                            Errors = new List<string> { "Encrypted address ID is required." },
+                        }
+                    );
+                }
+
+                long customerId = GetAuthenticatedUserId();
+
+                string fetchQuery =
+                    @"SELECT TOP 1 customer_id FROM drs_customer_address_mst WITH (NOLOCK) WHERE ID = @ID AND IsDeleted = 0";
+                DataTable dt = _db.ExecuteQuery(
+                    fetchQuery,
+                    new[] { new SqlParameter("@ID", addressId) }
+                );
+                if (dt.Rows.Count == 0)
+                {
+                    sw.Stop();
+                    return NotFound(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 404,
+                            Message = "ADDRESS_NOT_FOUND",
+                            Errors = new List<string>
+                            {
+                                "Customer address record not found or already deleted.",
+                            },
+                        }
+                    );
+                }
+
+                long ownerCustomerId = Convert.ToInt64(dt.Rows[0]["customer_id"]);
+                if (ownerCustomerId != customerId && !IsCurrentUserAdmin())
+                {
+                    sw.Stop();
+                    return StatusCode(
+                        403,
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 403,
+                            Message = "FORBIDDEN",
+                            Errors = new List<string>
+                            {
+                                "You are not authorized to delete this address.",
+                            },
+                        }
+                    );
+                }
+
+                string deleteQuery =
+                    @"UPDATE drs_customer_address_mst SET IsDeleted = 1, IsActive = 0, ModifiedDate = GETDATE() WHERE ID = @ID";
+                _db.ExecuteNonQuery(deleteQuery, new[] { new SqlParameter("@ID", addressId) });
+
+                await _audit.InsertAuditAsync(
+                    customerId,
+                    "CustomerAddress",
+                    "CustomerAddressSoftDelete",
+                    "drs_customer_address_mst",
+                    addressId,
+                    System.Text.Json.JsonSerializer.Serialize(new { IsActive = 1, IsDeleted = 0 }),
+                    System.Text.Json.JsonSerializer.Serialize(new { IsActive = 0, IsDeleted = 1 }),
+                    GetClientIpAddress(),
+                    GetUserAgent()
+                );
+
+                sw.Stop();
+                Logs.Info($"CustomerAddressSoftDelete completed | AddressId:{addressId}");
+
+                return Ok(
+                    new ApiResponse
+                    {
+                        Success = true,
+                        StatusCode = 200,
+                        Message = "ADDRESS_DELETED",
+                        Data = null,
+                    }
+                );
+            }
+            catch (Exception ex)
+            {
+                sw.Stop();
+                Logs.Error("Exception occurred in CustomerAddressSoftDelete API", ex);
                 return StatusCode(
                     500,
                     new ApiResponse

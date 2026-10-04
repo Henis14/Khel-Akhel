@@ -47,7 +47,8 @@ export class AddProductComponent implements OnInit, OnDestroy {
 
   selectedFiles: File[] = [];
   imagePreviews: ImagePreview[] = [];
-  readonly maxImages = 10;
+  readonly minImages = 3;
+  readonly maxImages = 7;
   readonly maxFileSizeMB = 5;
   readonly allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
   readonly allowedExtensions = ['.jpg', '.jpeg', '.png', '.webp'];
@@ -106,7 +107,7 @@ export class AddProductComponent implements OnInit, OnDestroy {
     const filesArray = Array.from(input.files);
 
     if (this.selectedFiles.length + filesArray.length > this.maxImages) {
-      this.errorMessage = `You can upload a maximum of ${this.maxImages} images per product.`;
+      this.errorMessage = `Maximum ${this.maxImages} images are allowed.`;
       input.value = '';
       return;
     }
@@ -155,6 +156,13 @@ export class AddProductComponent implements OnInit, OnDestroy {
   onSubmit(): void {
     if (this.productForm.invalid) {
       this.productForm.markAllAsTouched();
+      if (!this.productForm.value.encryptedCategoryId) {
+        this.errorMessage = 'Please select a product category.';
+      } else if (this.productForm.errors?.['sellingPriceGreaterThanMrp'] || this.productForm.errors?.['sellingPriceExceedsMrp']) {
+        this.errorMessage = 'Selling price cannot be greater than MRP.';
+      } else {
+        this.errorMessage = 'Please complete all required fields correctly.';
+      }
       return;
     }
 
@@ -163,6 +171,16 @@ export class AddProductComponent implements OnInit, OnDestroy {
 
     if (sellingPrice > mrp) {
       this.errorMessage = 'Selling price cannot be greater than MRP.';
+      return;
+    }
+
+    if (this.selectedFiles.length < this.minImages) {
+      this.errorMessage = `Minimum ${this.minImages} images are required. Currently selected: ${this.selectedFiles.length}.`;
+      return;
+    }
+
+    if (this.selectedFiles.length > this.maxImages) {
+      this.errorMessage = `Maximum ${this.maxImages} images are allowed. Currently selected: ${this.selectedFiles.length}.`;
       return;
     }
 

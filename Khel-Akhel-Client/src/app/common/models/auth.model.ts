@@ -2,6 +2,13 @@ export interface PortalLoginRequest {
   userName: string;
   password: string;
   deviceInfo?: string;
+  captchaId?: string;
+  captcha?: string;
+}
+
+export interface CaptchaResponseData {
+  captchaId: string;
+  captcha: string;
 }
 
 export interface AuthResponseData {

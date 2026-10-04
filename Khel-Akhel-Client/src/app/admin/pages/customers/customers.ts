@@ -61,28 +61,6 @@ export class CustomersComponent implements OnInit {
   isActionSubmitting = false;
   pendingAction: (() => void) | null = null;
 
-  confirmToggleActive(customer: CustomerResponse): void {
-    const actionName = customer.isActive ? 'deactivate' : 'activate';
-    this.confirmTitle = `${actionName.toUpperCase()} Customer`;
-    this.confirmMessage = `Are you sure you want to ${actionName} customer "${customer.firstName} ${customer.lastName}"?`;
-    this.pendingAction = () => {
-      this.isActionSubmitting = true;
-      this.customerService.toggleActive(customer.encryptedId).subscribe({
-        next: () => {
-          this.isActionSubmitting = false;
-          this.isConfirmOpen = false;
-          this.successMessage = `Customer ${actionName}d successfully.`;
-          this.loadCustomers();
-        },
-        error: (err) => {
-          this.isActionSubmitting = false;
-          this.errorMessage = err.error?.message || `Failed to ${actionName} customer.`;
-        }
-      });
-    };
-    this.isConfirmOpen = true;
-  }
-
   confirmDelete(customer: CustomerResponse): void {
     this.confirmTitle = 'Delete Customer';
     this.confirmMessage = `Are you sure you want to delete customer "${customer.firstName} ${customer.lastName}"? This action cannot be undone.`;

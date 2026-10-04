@@ -634,7 +634,13 @@ namespace Khel_Akhel_Server.Controllers.Product
                     "ProductUpdate",
                     "drs_product_mst",
                     productId,
-                    System.Text.Json.JsonSerializer.Serialize(existing.Table.Columns),
+                    System.Text.Json.JsonSerializer.Serialize(
+                        new
+                        {
+                            ID = productId,
+                            ProductName = existing["ProductName"]?.ToString() ?? "",
+                        }
+                    ),
                     System.Text.Json.JsonSerializer.Serialize(responseData),
                     GetClientIpAddress(),
                     GetUserAgent()
@@ -671,19 +677,30 @@ namespace Khel_Akhel_Server.Controllers.Product
         }
         #endregion
 
-        #region 5.3 ProductSoftDelete [PATCH]
+        #region 5.3 ProductSoftDelete
         [Authorize(Roles = "Admin")]
+        [HttpDelete("delete/{encryptedId?}")]
+        [HttpPatch("delete/{encryptedId?}")]
+        [HttpDelete("delete")]
         [HttpPatch("delete")]
-        public async Task<IActionResult> ProductSoftDelete([FromQuery] string? encryptedId = null)
+        public async Task<IActionResult> ProductSoftDelete(
+            [FromRoute] string? encryptedId = null,
+            [FromQuery] string? encryptedIdQuery = null,
+            [FromQuery] string? id = null
+        )
         {
             Logs.Info("ProductSoftDelete API started");
             var sw = Stopwatch.StartNew();
 
             try
             {
+                string? targetEncryptedId = !string.IsNullOrWhiteSpace(encryptedId)
+                    ? encryptedId
+                    : (!string.IsNullOrWhiteSpace(encryptedIdQuery) ? encryptedIdQuery : id);
+
                 if (
-                    string.IsNullOrWhiteSpace(encryptedId)
-                    || !_encryption.TryDecrypt(encryptedId, out long productId)
+                    string.IsNullOrWhiteSpace(targetEncryptedId)
+                    || !_encryption.TryDecrypt(targetEncryptedId, out long productId)
                     || productId <= 0
                 )
                 {

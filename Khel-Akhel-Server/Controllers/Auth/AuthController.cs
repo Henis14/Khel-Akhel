@@ -17,7 +17,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
     [EnableRateLimiting("authentication")]
     public class AuthController : ControllerBase
     {
-        private const string RefreshCookieName = "kd_refresh";
+        private const string RefreshCookieName = "drs_refresh";
 
         private readonly DbHelper _db;
         private readonly IConfiguration _configuration;
@@ -25,6 +25,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
         private readonly IRefreshTokenService _refreshTokens;
         private readonly IAuditService _audit;
         private readonly IWebHostEnvironment _environment;
+        private readonly ICaptchaService _captchaService;
 
         public AuthController(
             DbHelper db,
@@ -32,7 +33,8 @@ namespace Khel_Akhel_Server.Controllers.Auth
             IUrlEncryptionService encryption,
             IRefreshTokenService refreshTokens,
             IAuditService audit,
-            IWebHostEnvironment environment
+            IWebHostEnvironment environment,
+            ICaptchaService captchaService
         )
         {
             _db = db;
@@ -41,6 +43,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
             _refreshTokens = refreshTokens;
             _audit = audit;
             _environment = environment;
+            _captchaService = captchaService;
         }
 
         #region Helper Methods
@@ -103,9 +106,46 @@ namespace Khel_Akhel_Server.Controllers.Auth
         }
         #endregion
 
+        #region CAPTCHA
+        [AllowAnonymous]
+        [HttpGet("captcha")]
+        [HttpGet("/api/admin/auth/captcha")]
+        public IActionResult GetCaptcha()
+        {
+            try
+            {
+                var captchaData = _captchaService.GenerateCaptcha();
+                return Ok(
+                    new ApiResponse
+                    {
+                        Success = true,
+                        StatusCode = 200,
+                        Message = "CAPTCHA_GENERATED",
+                        Data = captchaData,
+                    }
+                );
+            }
+            catch (Exception ex)
+            {
+                Logs.Error("Exception occurred in GetCaptcha API", ex);
+                return StatusCode(
+                    500,
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 500,
+                        Message = "SERVER_ERROR",
+                        Errors = new List<string> { "An internal server error occurred." },
+                    }
+                );
+            }
+        }
+        #endregion
+
         #region 7.1 PortalLogin
         [AllowAnonymous]
         [HttpPost("login")]
+        [HttpPost("/api/admin/auth/login")]
         public async Task<IActionResult> PortalLogin([FromBody] PortalLoginRequest? request)
         {
             Logs.Info("PortalLogin API started");
@@ -130,6 +170,8 @@ namespace Khel_Akhel_Server.Controllers.Auth
 
                 request.UserName = request.UserName?.Trim() ?? string.Empty;
                 request.Password = request.Password?.Trim() ?? string.Empty;
+                request.CaptchaId = request.CaptchaId?.Trim();
+                request.Captcha = request.Captcha?.Trim();
 
                 if (
                     string.IsNullOrWhiteSpace(request.UserName)
@@ -149,12 +191,40 @@ namespace Khel_Akhel_Server.Controllers.Auth
                     );
                 }
 
+                // If CAPTCHA token/code is supplied in the request, validate CAPTCHA first before user lookup
+                bool captchaSupplied =
+                    !string.IsNullOrWhiteSpace(request.CaptchaId)
+                    || !string.IsNullOrWhiteSpace(request.Captcha);
+                if (captchaSupplied)
+                {
+                    bool captchaValid = _captchaService.ValidateCaptcha(
+                        request.CaptchaId,
+                        request.Captcha
+                    );
+                    if (!captchaValid)
+                    {
+                        sw.Stop();
+                        Logs.Warning(
+                            $"PortalLogin rejected | Invalid or expired CAPTCHA | Identifier:{request.UserName}"
+                        );
+                        return BadRequest(
+                            new ApiResponse
+                            {
+                                Success = false,
+                                StatusCode = 400,
+                                Message = "INVALID_CAPTCHA",
+                                Errors = new List<string> { "Invalid or expired CAPTCHA." },
+                            }
+                        );
+                    }
+                }
+
                 // Query customer by Email or MobileNo
                 string query =
                     @"
                     SELECT TOP 1 ID, FirstName, LastName, Email, MobileNo, PasswordHash, IsAdmin, IsActive, FailedLoginAttempts, AccountLockedUntil
                     FROM drs_customer_mst WITH (NOLOCK)
-                    WHERE (Email = @UserName OR MobileNo = @UserName) AND IsDeleted = 0";
+                    WHERE (LOWER(Email) = LOWER(@UserName) OR MobileNo = @UserName) AND IsDeleted = 0";
 
                 DataTable dt = _db.ExecuteQuery(
                     query,
@@ -180,6 +250,25 @@ namespace Khel_Akhel_Server.Controllers.Auth
 
                 DataRow user = dt.Rows[0];
                 long customerId = Convert.ToInt64(user["ID"]);
+                bool isAdmin = Convert.ToBoolean(user["IsAdmin"]);
+
+                // If user is Admin, CAPTCHA is strictly mandatory
+                if (isAdmin && !captchaSupplied)
+                {
+                    sw.Stop();
+                    Logs.Warning(
+                        $"PortalLogin rejected | CAPTCHA required for Admin account | Identifier:{request.UserName}"
+                    );
+                    return BadRequest(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "INVALID_CAPTCHA",
+                            Errors = new List<string> { "CAPTCHA is required for Admin login." },
+                        }
+                    );
+                }
 
                 // Check Account Lock
                 if (
@@ -275,7 +364,6 @@ namespace Khel_Akhel_Server.Controllers.Auth
                 }
 
                 // Authentication Success
-                bool isAdmin = Convert.ToBoolean(user["IsAdmin"]);
                 string role = isAdmin ? "Admin" : "Customer";
                 string email = user["Email"]?.ToString() ?? "";
 

@@ -119,14 +119,6 @@
                 <td class="text-right actions-cell">
                   <a class="btn btn-outline btn-sm" [routerLink]="['/admin/products', p.encryptedProductId]">View</a>
                   <button class="btn btn-secondary btn-sm" (click)="openEditModal(p)">Edit</button>
-                  <button
-                    class="btn btn-sm"
-                    [class.btn-secondary]="p.isActive"
-                    [class.btn-outline]="!p.isActive"
-                    (click)="confirmToggleActive(p)"
-                  >
-                    {{ p.isActive ? 'Deactivate' : 'Activate' }}
-                  </button>
                   <button class="btn btn-danger btn-sm" (click)="confirmDelete(p)">Delete</button>
                 </td>
               </tr>

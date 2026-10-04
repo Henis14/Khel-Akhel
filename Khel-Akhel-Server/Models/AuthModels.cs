@@ -5,6 +5,14 @@ namespace Khel_Akhel_Server.Models
         public string UserName { get; set; } = string.Empty; // Email or MobileNo
         public string Password { get; set; } = string.Empty;
         public string? DeviceInfo { get; set; }
+        public string? CaptchaId { get; set; }
+        public string? Captcha { get; set; }
+    }
+
+    public class CaptchaResponseData
+    {
+        public string CaptchaId { get; set; } = string.Empty;
+        public string Captcha { get; set; } = string.Empty;
     }
 
     // Alias for backward compatibility

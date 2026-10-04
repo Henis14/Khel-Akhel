@@ -52,7 +52,8 @@ export class ProductDetailComponent implements OnInit {
   editForm!: FormGroup;
   editSubmitting = false;
 
-  readonly maxImages = 10;
+  readonly minImages = 3;
+  readonly maxImages = 7;
   readonly maxFileSizeMB = 5;
 
   ngOnInit(): void {
@@ -184,7 +185,7 @@ export class ProductDetailComponent implements OnInit {
     const filesArray = Array.from(input.files);
 
     if (this.productImages.length + filesArray.length > this.maxImages) {
-      this.errorMessage = `Cannot exceed total limit of ${this.maxImages} images per product. Currently active: ${this.productImages.length}.`;
+      this.errorMessage = `Cannot exceed maximum limit of ${this.maxImages} images per product. Currently active: ${this.productImages.length}.`;
       input.value = '';
       return;
     }
@@ -229,6 +230,14 @@ export class ProductDetailComponent implements OnInit {
   }
 
   onDeleteImage(encryptedImageId: string): void {
+    this.errorMessage = null;
+    this.successMessage = null;
+
+    if (this.productImages.length <= this.minImages) {
+      this.errorMessage = `Minimum ${this.minImages} images are required. Add a replacement image before deleting.`;
+      return;
+    }
+
     if (!confirm('Are you sure you want to delete this product image?')) return;
 
     this.errorMessage = null;
