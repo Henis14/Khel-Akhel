@@ -7,11 +7,11 @@ import {
   CustomerListRequest,
   CustomerListResponse,
   CustomerResponse,
-  CustomerUpdateRequest
+  CustomerUpdateRequest,
 } from '../models/customer.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AdminCustomerService {
   constructor(private api: ApiService) {}
@@ -21,7 +21,8 @@ export class AdminCustomerService {
     if (request.pageIndex) params.pageIndex = request.pageIndex;
     if (request.pageSize) params.pageSize = request.pageSize;
     if (request.search) params.search = request.search;
-    if (request.isActive !== undefined && request.isActive !== null) params.isActive = request.isActive;
+    if (request.isActive !== undefined && request.isActive !== null)
+      params.isActive = request.isActive;
     return this.api.get<CustomerListResponse>('customer/list', params);
   }
 
@@ -33,7 +34,10 @@ export class AdminCustomerService {
     return this.api.post<CustomerResponse>('customer/create', request);
   }
 
-  update(encryptedId: string, request: CustomerUpdateRequest): Observable<ApiResponse<CustomerResponse>> {
+  update(
+    encryptedId: string,
+    request: CustomerUpdateRequest,
+  ): Observable<ApiResponse<CustomerResponse>> {
     return this.api.patch<CustomerResponse>(`customer/update/${encryptedId}`, request);
   }
 

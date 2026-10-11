@@ -3,7 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AdminCustomerService } from '../../services/admin-customer.service';
-import { CustomerCreateRequest, CustomerResponse, CustomerUpdateRequest } from '../../models/customer.model';
+import {
+  CustomerCreateRequest,
+  CustomerResponse,
+  CustomerUpdateRequest,
+} from '../../models/customer.model';
 import { CustomValidators } from '../../../common/validators/custom.validators';
 import { REGEX_PATTERNS } from '../../../common/constants/regex.constants';
 import { PaginationComponent } from '../../../common/components/pagination/pagination';
@@ -22,15 +26,15 @@ import { AppLoaderComponent } from '../../../common/components/app-loader/app-lo
     PaginationComponent,
     ConfirmationDialogComponent,
     BreadcrumbComponent,
-    AppLoaderComponent
+    AppLoaderComponent,
   ],
   templateUrl: './customers.html',
-  styleUrl: './customers.scss'
+  styleUrl: './customers.scss',
 })
 export class CustomersComponent implements OnInit {
   breadcrumbs: BreadcrumbItem[] = [
     { label: 'Home', url: '/admin/dashboard' },
-    { label: 'Customers' }
+    { label: 'Customers' },
   ];
   private customerService = inject(AdminCustomerService);
   private fb = inject(FormBuilder);
@@ -76,7 +80,7 @@ export class CustomersComponent implements OnInit {
         error: (err) => {
           this.isActionSubmitting = false;
           this.errorMessage = err.error?.message || 'Failed to delete customer.';
-        }
+        },
       });
     };
     this.isConfirmOpen = true;
@@ -102,11 +106,41 @@ export class CustomersComponent implements OnInit {
 
   initForm(): void {
     this.customerForm = this.fb.group({
-      firstName: ['', [CustomValidators.requiredNonEmpty, CustomValidators.pattern(REGEX_PATTERNS.NAME, 'invalidName')]],
-      lastName: ['', [CustomValidators.requiredNonEmpty, CustomValidators.pattern(REGEX_PATTERNS.NAME, 'invalidName')]],
-      email: ['', [CustomValidators.requiredNonEmpty, CustomValidators.pattern(REGEX_PATTERNS.EMAIL, 'invalidEmail')]],
-      mobileNo: ['', [CustomValidators.requiredNonEmpty, CustomValidators.pattern(REGEX_PATTERNS.MOBILE, 'invalidMobile')]],
-      password: ['', [CustomValidators.requiredNonEmpty, CustomValidators.rawPattern(REGEX_PATTERNS.PASSWORD, 'invalidPassword')]]
+      firstName: [
+        '',
+        [
+          CustomValidators.requiredNonEmpty,
+          CustomValidators.pattern(REGEX_PATTERNS.NAME, 'invalidName'),
+        ],
+      ],
+      lastName: [
+        '',
+        [
+          CustomValidators.requiredNonEmpty,
+          CustomValidators.pattern(REGEX_PATTERNS.NAME, 'invalidName'),
+        ],
+      ],
+      email: [
+        '',
+        [
+          CustomValidators.requiredNonEmpty,
+          CustomValidators.pattern(REGEX_PATTERNS.EMAIL, 'invalidEmail'),
+        ],
+      ],
+      mobileNo: [
+        '',
+        [
+          CustomValidators.requiredNonEmpty,
+          CustomValidators.pattern(REGEX_PATTERNS.MOBILE, 'invalidMobile'),
+        ],
+      ],
+      password: [
+        '',
+        [
+          CustomValidators.requiredNonEmpty,
+          CustomValidators.rawPattern(REGEX_PATTERNS.PASSWORD, 'invalidPassword'),
+        ],
+      ],
     });
   }
 
@@ -118,7 +152,7 @@ export class CustomersComponent implements OnInit {
       .getList({
         pageIndex: this.pageIndex,
         pageSize: this.pageSize,
-        search: this.searchQuery.trim() || undefined
+        search: this.searchQuery.trim() || undefined,
       })
       .subscribe({
         next: (res) => {
@@ -133,7 +167,7 @@ export class CustomersComponent implements OnInit {
           this.loading = false;
           this.errorMessage = err.error?.message || 'Failed to load customers.';
           this.cdr.markForCheck();
-        }
+        },
       });
   }
 
@@ -152,7 +186,12 @@ export class CustomersComponent implements OnInit {
     this.isEditMode = false;
     this.selectedCustomer = null;
     this.customerForm.reset();
-    this.customerForm.get('password')?.setValidators([CustomValidators.requiredNonEmpty, CustomValidators.rawPattern(REGEX_PATTERNS.PASSWORD, 'invalidPassword')]);
+    this.customerForm
+      .get('password')
+      ?.setValidators([
+        CustomValidators.requiredNonEmpty,
+        CustomValidators.rawPattern(REGEX_PATTERNS.PASSWORD, 'invalidPassword'),
+      ]);
     this.customerForm.get('password')?.updateValueAndValidity();
     this.isModalOpen = true;
   }
@@ -165,7 +204,7 @@ export class CustomersComponent implements OnInit {
       lastName: customer.lastName,
       email: customer.email,
       mobileNo: customer.mobileNo,
-      password: ''
+      password: '',
     });
     this.customerForm.get('password')?.clearValidators();
     this.customerForm.get('password')?.updateValueAndValidity();
@@ -191,7 +230,7 @@ export class CustomersComponent implements OnInit {
         firstName: this.customerForm.value.firstName.trim(),
         lastName: this.customerForm.value.lastName.trim(),
         email: this.customerForm.value.email.trim(),
-        mobileNo: this.customerForm.value.mobileNo.trim()
+        mobileNo: this.customerForm.value.mobileNo.trim(),
       };
 
       this.customerService.update(this.selectedCustomer.encryptedId, updatePayload).subscribe({
@@ -208,7 +247,7 @@ export class CustomersComponent implements OnInit {
         error: (err) => {
           this.formSubmitting = false;
           this.errorMessage = err.error?.message || 'Failed to update customer.';
-        }
+        },
       });
     } else {
       const createPayload: CustomerCreateRequest = {
@@ -216,7 +255,7 @@ export class CustomersComponent implements OnInit {
         lastName: this.customerForm.value.lastName.trim(),
         email: this.customerForm.value.email.trim(),
         mobileNo: this.customerForm.value.mobileNo.trim(),
-        password: this.customerForm.value.password
+        password: this.customerForm.value.password,
       };
 
       this.customerService.create(createPayload).subscribe({
@@ -233,7 +272,7 @@ export class CustomersComponent implements OnInit {
         error: (err) => {
           this.formSubmitting = false;
           this.errorMessage = err.error?.message || 'Failed to create customer.';
-        }
+        },
       });
     }
   }

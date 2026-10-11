@@ -22,13 +22,13 @@ interface ImagePreview {
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, BreadcrumbComponent],
   templateUrl: './add-product.html',
-  styleUrl: './add-product.scss'
+  styleUrl: './add-product.scss',
 })
 export class AddProductComponent implements OnInit, OnDestroy {
   breadcrumbs: BreadcrumbItem[] = [
     { label: 'Home', url: '/admin/dashboard' },
     { label: 'Products', url: '/admin/products' },
-    { label: 'Add Product' }
+    { label: 'Add Product' },
   ];
   private fb = inject(FormBuilder);
   private productService = inject(AdminProductService);
@@ -63,22 +63,45 @@ export class AddProductComponent implements OnInit, OnDestroy {
   }
 
   initForm(): void {
-    this.productForm = this.fb.group({
-      encryptedCategoryId: ['', [CustomValidators.requiredNonEmpty]],
-      productName: ['', [CustomValidators.requiredNonEmpty]],
-      sku: ['', [CustomValidators.requiredNonEmpty, CustomValidators.pattern(REGEX_PATTERNS.SKU, 'invalidSku')]],
-      shortDescription: [''],
-      description: [''],
-      mrp: [0, [CustomValidators.requiredNonEmpty, CustomValidators.nonNegativeNumber, CustomValidators.maxDecimalPlaces(2)]],
-      sellingPrice: [0, [CustomValidators.requiredNonEmpty, CustomValidators.nonNegativeNumber, CustomValidators.maxDecimalPlaces(2)]],
-      isFeatured: [false],
-      isNewArrival: [false],
-      isBestSeller: [false],
-      isTrending: [false],
-      isCustomerFavourite: [false]
-    }, {
-      validators: [CustomValidators.sellingPriceLessOrEqualMrp('mrp', 'sellingPrice')]
-    });
+    this.productForm = this.fb.group(
+      {
+        encryptedCategoryId: ['', [CustomValidators.requiredNonEmpty]],
+        productName: ['', [CustomValidators.requiredNonEmpty]],
+        sku: [
+          '',
+          [
+            CustomValidators.requiredNonEmpty,
+            CustomValidators.pattern(REGEX_PATTERNS.SKU, 'invalidSku'),
+          ],
+        ],
+        shortDescription: [''],
+        description: [''],
+        mrp: [
+          0,
+          [
+            CustomValidators.requiredNonEmpty,
+            CustomValidators.nonNegativeNumber,
+            CustomValidators.maxDecimalPlaces(2),
+          ],
+        ],
+        sellingPrice: [
+          0,
+          [
+            CustomValidators.requiredNonEmpty,
+            CustomValidators.nonNegativeNumber,
+            CustomValidators.maxDecimalPlaces(2),
+          ],
+        ],
+        isFeatured: [false],
+        isNewArrival: [false],
+        isBestSeller: [false],
+        isTrending: [false],
+        isCustomerFavourite: [false],
+      },
+      {
+        validators: [CustomValidators.sellingPriceLessOrEqualMrp('mrp', 'sellingPrice')],
+      },
+    );
   }
 
   loadCategories(): void {
@@ -87,15 +110,17 @@ export class AddProductComponent implements OnInit, OnDestroy {
       next: (res) => {
         this.loadingCategories = false;
         if (res.success && res.data) {
-          this.categories = res.data.filter(c => c.isActive);
+          this.categories = res.data.filter((c) => c.isActive);
           if (this.categories.length > 0) {
-            this.productForm.patchValue({ encryptedCategoryId: this.categories[0].encryptedCategoryId });
+            this.productForm.patchValue({
+              encryptedCategoryId: this.categories[0].encryptedCategoryId,
+            });
           }
         }
       },
       error: () => {
         this.loadingCategories = false;
-      }
+      },
     });
   }
 
@@ -124,7 +149,10 @@ export class AddProductComponent implements OnInit, OnDestroy {
       }
 
       const ext = '.' + (file.name.split('.').pop() || '').toLowerCase();
-      if (!this.allowedTypes.includes(file.type.toLowerCase()) && !this.allowedExtensions.includes(ext)) {
+      if (
+        !this.allowedTypes.includes(file.type.toLowerCase()) &&
+        !this.allowedExtensions.includes(ext)
+      ) {
         this.errorMessage = `File '${file.name}' is not a valid image. Only JPG, PNG, and WEBP formats are allowed.`;
         continue;
       }
@@ -132,7 +160,7 @@ export class AddProductComponent implements OnInit, OnDestroy {
       this.selectedFiles.push(file);
       this.imagePreviews.push({
         file: file,
-        url: URL.createObjectURL(file)
+        url: URL.createObjectURL(file),
       });
     }
 
@@ -148,7 +176,7 @@ export class AddProductComponent implements OnInit, OnDestroy {
   }
 
   clearImagePreviews(): void {
-    this.imagePreviews.forEach(p => URL.revokeObjectURL(p.url));
+    this.imagePreviews.forEach((p) => URL.revokeObjectURL(p.url));
     this.imagePreviews = [];
     this.selectedFiles = [];
   }
@@ -158,7 +186,10 @@ export class AddProductComponent implements OnInit, OnDestroy {
       this.productForm.markAllAsTouched();
       if (!this.productForm.value.encryptedCategoryId) {
         this.errorMessage = 'Please select a product category.';
-      } else if (this.productForm.errors?.['sellingPriceGreaterThanMrp'] || this.productForm.errors?.['sellingPriceExceedsMrp']) {
+      } else if (
+        this.productForm.errors?.['sellingPriceGreaterThanMrp'] ||
+        this.productForm.errors?.['sellingPriceExceedsMrp']
+      ) {
         this.errorMessage = 'Selling price cannot be greater than MRP.';
       } else {
         this.errorMessage = 'Please complete all required fields correctly.';
@@ -200,7 +231,7 @@ export class AddProductComponent implements OnInit, OnDestroy {
       isNewArrival: !!this.productForm.value.isNewArrival,
       isBestSeller: !!this.productForm.value.isBestSeller,
       isTrending: !!this.productForm.value.isTrending,
-      isCustomerFavourite: !!this.productForm.value.isCustomerFavourite
+      isCustomerFavourite: !!this.productForm.value.isCustomerFavourite,
     };
 
     this.productService.create(payload).subscribe({
@@ -210,32 +241,34 @@ export class AddProductComponent implements OnInit, OnDestroy {
 
           if (this.selectedFiles.length > 0) {
             this.isUploadingImages = true;
-            this.productImageService.uploadImages(encryptedProductId, this.selectedFiles).subscribe({
-              next: (imgRes) => {
-                this.submitting = false;
-                this.isUploadingImages = false;
-                if (imgRes.success) {
-                  this.successMessage = 'Product and images created successfully! Redirecting...';
-                  this.clearImagePreviews();
+            this.productImageService
+              .uploadImages(encryptedProductId, this.selectedFiles)
+              .subscribe({
+                next: (imgRes) => {
+                  this.submitting = false;
+                  this.isUploadingImages = false;
+                  if (imgRes.success) {
+                    this.successMessage = 'Product and images created successfully! Redirecting...';
+                    this.clearImagePreviews();
+                    setTimeout(() => {
+                      this.router.navigate(['/admin/products']);
+                    }, 1200);
+                  } else {
+                    this.errorMessage = `Product created, but image upload failed: ${imgRes.message}.`;
+                    setTimeout(() => {
+                      this.router.navigate(['/admin/products']);
+                    }, 2500);
+                  }
+                },
+                error: (imgErr) => {
+                  this.submitting = false;
+                  this.isUploadingImages = false;
+                  this.errorMessage = `Product created, but image upload failed: ${imgErr.error?.message || 'Upload error'}. You can upload images in Product Detail.`;
                   setTimeout(() => {
-                    this.router.navigate(['/admin/products']);
-                  }, 1200);
-                } else {
-                  this.errorMessage = `Product created, but image upload failed: ${imgRes.message}.`;
-                  setTimeout(() => {
-                    this.router.navigate(['/admin/products']);
+                    this.router.navigate(['/admin/products', encryptedProductId]);
                   }, 2500);
-                }
-              },
-              error: (imgErr) => {
-                this.submitting = false;
-                this.isUploadingImages = false;
-                this.errorMessage = `Product created, but image upload failed: ${imgErr.error?.message || 'Upload error'}. You can upload images in Product Detail.`;
-                setTimeout(() => {
-                  this.router.navigate(['/admin/products', encryptedProductId]);
-                }, 2500);
-              }
-            });
+                },
+              });
           } else {
             this.submitting = false;
             this.successMessage = 'Product created successfully! Redirecting...';
@@ -251,7 +284,7 @@ export class AddProductComponent implements OnInit, OnDestroy {
       error: (err) => {
         this.submitting = false;
         this.errorMessage = err.error?.message || 'Server error occurred while creating product.';
-      }
+      },
     });
   }
 

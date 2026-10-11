@@ -2,8 +2,14 @@
   <!-- Page Header & Breadcrumbs -->
   <div class="page-header">
     <app-breadcrumb [items]="breadcrumbs"></app-breadcrumb>
-    <h1>Add New Product</h1>
-    <p class="subtitle">Create a new product item in the inventory. SKU code will be verified automatically.</p>
+    <div class="header-content">
+      <div class="header-titles">
+        <h1>Add New Product</h1>
+        <p class="subtitle">
+          Create a new product item in the inventory. SKU code will be verified automatically.
+        </p>
+      </div>
+    </div>
   </div>
 
   <!-- Alert Messages -->
@@ -16,7 +22,6 @@
 
   <form [formGroup]="productForm" (ngSubmit)="onSubmit()">
     <div class="form-layout-stack">
-      
       <!-- Card 1: Product Information -->
       <div class="card form-card">
         <div class="card-header-box">
@@ -30,21 +35,29 @@
         </div>
         <div class="card-body">
           <div class="form-grid-2">
-            
             <!-- Category -->
             <div class="form-field">
               <label class="form-label required">Product Category</label>
               <select
                 class="form-select"
                 formControlName="encryptedCategoryId"
-                [class.is-invalid]="productForm.get('encryptedCategoryId')?.touched && productForm.get('encryptedCategoryId')?.invalid"
+                [class.is-invalid]="
+                  productForm.get('encryptedCategoryId')?.touched &&
+                  productForm.get('encryptedCategoryId')?.invalid
+                "
               >
                 <option value="" disabled selected>Select Category</option>
                 <option *ngFor="let cat of categories" [value]="cat.encryptedCategoryId">
                   {{ cat.categoryName }}
                 </option>
               </select>
-              <div class="invalid-feedback" *ngIf="productForm.get('encryptedCategoryId')?.touched && productForm.get('encryptedCategoryId')?.invalid">
+              <div
+                class="invalid-feedback"
+                *ngIf="
+                  productForm.get('encryptedCategoryId')?.touched &&
+                  productForm.get('encryptedCategoryId')?.invalid
+                "
+              >
                 Product category is required.
               </div>
             </div>
@@ -56,10 +69,15 @@
                 type="text"
                 class="form-control"
                 formControlName="sku"
-                placeholder="e.g. PROD-CRIC-001"
-                [class.is-invalid]="productForm.get('sku')?.touched && productForm.get('sku')?.invalid"
+                placeholder="e.g. KA-ART-001"
+                [class.is-invalid]="
+                  productForm.get('sku')?.touched && productForm.get('sku')?.invalid
+                "
               />
-              <div class="invalid-feedback" *ngIf="productForm.get('sku')?.touched && productForm.get('sku')?.invalid">
+              <div
+                class="invalid-feedback"
+                *ngIf="productForm.get('sku')?.touched && productForm.get('sku')?.invalid"
+              >
                 Valid SKU (alphanumeric, max 30 chars) is required.
               </div>
             </div>
@@ -72,9 +90,16 @@
                 class="form-control"
                 formControlName="productName"
                 placeholder="Enter product name"
-                [class.is-invalid]="productForm.get('productName')?.touched && productForm.get('productName')?.invalid"
+                [class.is-invalid]="
+                  productForm.get('productName')?.touched && productForm.get('productName')?.invalid
+                "
               />
-              <div class="invalid-feedback" *ngIf="productForm.get('productName')?.touched && productForm.get('productName')?.invalid">
+              <div
+                class="invalid-feedback"
+                *ngIf="
+                  productForm.get('productName')?.touched && productForm.get('productName')?.invalid
+                "
+              >
                 Product name is required.
               </div>
             </div>
@@ -100,7 +125,6 @@
                 placeholder="Detailed product specification..."
               ></textarea>
             </div>
-
           </div>
         </div>
       </div>
@@ -129,10 +153,15 @@
                   class="form-control price-control"
                   formControlName="mrp"
                   placeholder="0.00"
-                  [class.is-invalid]="productForm.get('mrp')?.touched && productForm.get('mrp')?.invalid"
+                  [class.is-invalid]="
+                    productForm.get('mrp')?.touched && productForm.get('mrp')?.invalid
+                  "
                 />
               </div>
-              <div class="invalid-feedback" *ngIf="productForm.get('mrp')?.touched && productForm.get('mrp')?.invalid">
+              <div
+                class="invalid-feedback"
+                *ngIf="productForm.get('mrp')?.touched && productForm.get('mrp')?.invalid"
+              >
                 Valid MRP is required.
               </div>
             </div>
@@ -148,13 +177,30 @@
                   class="form-control price-control"
                   formControlName="sellingPrice"
                   placeholder="0.00"
-                  [class.is-invalid]="(productForm.get('sellingPrice')?.touched && productForm.get('sellingPrice')?.invalid) || productForm.errors?.['sellingPriceGreaterThanMrp'] || productForm.errors?.['sellingPriceExceedsMrp']"
+                  [class.is-invalid]="
+                    (productForm.get('sellingPrice')?.touched &&
+                      productForm.get('sellingPrice')?.invalid) ||
+                    productForm.errors?.['sellingPriceGreaterThanMrp'] ||
+                    productForm.errors?.['sellingPriceExceedsMrp']
+                  "
                 />
               </div>
-              <div class="invalid-feedback" *ngIf="productForm.get('sellingPrice')?.touched && productForm.get('sellingPrice')?.invalid">
+              <div
+                class="invalid-feedback"
+                *ngIf="
+                  productForm.get('sellingPrice')?.touched &&
+                  productForm.get('sellingPrice')?.invalid
+                "
+              >
                 Valid Selling Price is required.
               </div>
-              <div class="invalid-feedback" *ngIf="productForm.errors?.['sellingPriceGreaterThanMrp'] || productForm.errors?.['sellingPriceExceedsMrp']">
+              <div
+                class="invalid-feedback"
+                *ngIf="
+                  productForm.errors?.['sellingPriceGreaterThanMrp'] ||
+                  productForm.errors?.['sellingPriceExceedsMrp']
+                "
+              >
                 Selling price cannot be greater than MRP.
               </div>
             </div>
@@ -176,23 +222,48 @@
         <div class="card-body">
           <div class="badges-checkbox-grid">
             <label class="checkbox-card" for="isFeatured">
-              <input class="checkbox-input" type="checkbox" id="isFeatured" formControlName="isFeatured">
+              <input
+                class="checkbox-input"
+                type="checkbox"
+                id="isFeatured"
+                formControlName="isFeatured"
+              />
               <span class="checkbox-label">Featured Product</span>
             </label>
             <label class="checkbox-card" for="isNewArrival">
-              <input class="checkbox-input" type="checkbox" id="isNewArrival" formControlName="isNewArrival">
+              <input
+                class="checkbox-input"
+                type="checkbox"
+                id="isNewArrival"
+                formControlName="isNewArrival"
+              />
               <span class="checkbox-label">New Arrival</span>
             </label>
             <label class="checkbox-card" for="isBestSeller">
-              <input class="checkbox-input" type="checkbox" id="isBestSeller" formControlName="isBestSeller">
+              <input
+                class="checkbox-input"
+                type="checkbox"
+                id="isBestSeller"
+                formControlName="isBestSeller"
+              />
               <span class="checkbox-label">Best Seller</span>
             </label>
             <label class="checkbox-card" for="isTrending">
-              <input class="checkbox-input" type="checkbox" id="isTrending" formControlName="isTrending">
+              <input
+                class="checkbox-input"
+                type="checkbox"
+                id="isTrending"
+                formControlName="isTrending"
+              />
               <span class="checkbox-label">Trending</span>
             </label>
             <label class="checkbox-card" for="isCustomerFavourite">
-              <input class="checkbox-input" type="checkbox" id="isCustomerFavourite" formControlName="isCustomerFavourite">
+              <input
+                class="checkbox-input"
+                type="checkbox"
+                id="isCustomerFavourite"
+                formControlName="isCustomerFavourite"
+              />
               <span class="checkbox-label">Customer Favourite</span>
             </label>
           </div>
@@ -207,7 +278,10 @@
           </div>
           <div>
             <h3>Product Images</h3>
-            <p>Minimum 3 images are required, and maximum 7 images are allowed (JPG, PNG, WEBP, max 5MB each). First image will automatically be set as Default.</p>
+            <p>
+              Minimum 3 images are required, and maximum 7 images are allowed (JPG, PNG, WEBP, max
+              5MB each). First image will automatically be set as Default.
+            </p>
           </div>
         </div>
         <div class="card-body">
@@ -220,7 +294,7 @@
               (change)="onFileSelected($event)"
               class="d-none"
             />
-            
+
             <button
               type="button"
               class="btn btn-outline-primary upload-trigger-btn"
@@ -230,9 +304,13 @@
               <i class="bi bi-cloud-arrow-up fs-5 me-2"></i>
               <span>Select Product Images ({{ selectedFiles.length }}/{{ maxImages }})</span>
             </button>
-            <span class="upload-hint">Minimum 3, Maximum 7 images. Supported formats: .jpg, .jpeg, .png, .webp (Max 5MB per file)</span>
+            <span class="upload-hint"
+              >Minimum 3, Maximum 7 images. Supported formats: .jpg, .jpeg, .png, .webp (Max 5MB per
+              file)</span
+            >
             <div class="text-danger small mt-2" *ngIf="selectedFiles.length < minImages">
-              <i class="bi bi-exclamation-circle me-1"></i> Minimum 3 images are required (Currently selected: {{ selectedFiles.length }}).
+              <i class="bi bi-exclamation-circle me-1"></i> Minimum 3 images are required (Currently
+              selected: {{ selectedFiles.length }}).
             </div>
           </div>
 
@@ -260,7 +338,14 @@
 
       <!-- Form Actions Footer -->
       <div class="form-actions-bar">
-        <button type="button" class="btn btn-cancel" (click)="goBack()" [disabled]="submitting || isUploadingImages">Cancel</button>
+        <button
+          type="button"
+          class="btn btn-cancel"
+          (click)="goBack()"
+          [disabled]="submitting || isUploadingImages"
+        >
+          Cancel
+        </button>
         <button type="submit" class="btn btn-primary" [disabled]="submitting || isUploadingImages">
           @if (submitting || isUploadingImages) {
             <span class="btn-spinner"></span>
@@ -270,7 +355,6 @@
           }
         </button>
       </div>
-
     </div>
   </form>
 </div>

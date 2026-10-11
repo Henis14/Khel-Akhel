@@ -4,7 +4,7 @@
   align-items: center;
   justify-content: center;
   padding: 1.5rem;
-  background-color: #f8f9fa;
+  background-color: var(--ka-bg, #f5f1e8);
 }
 
 .error-card {
@@ -12,26 +12,33 @@
   width: 100%;
   text-align: center;
   padding: 2.5rem;
+  background: var(--ka-surface, #fbf9f4);
+  border: 1px solid var(--ka-border, #d9d3c6);
+  border-radius: var(--admin-radius-lg, 12px);
+  box-shadow: 0 4px 16px rgba(31, 53, 87, 0.08);
 
   .error-code {
     font-size: 4rem;
     font-weight: 800;
-    color: #dc3545;
+    color: var(--ka-terracotta, #b45132);
     line-height: 1;
     margin-bottom: 1rem;
+    letter-spacing: -0.03em;
   }
 
   h2 {
-    font-size: 1.5rem;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 1.625rem;
     font-weight: 700;
     margin-bottom: 0.75rem;
-    color: #0f0f0f;
+    color: var(--ka-text, #1e2430);
   }
 
   p {
-    color: #4b4b4b;
-    font-size: 0.95rem;
+    color: var(--ka-text-secondary, #6b6a63);
+    font-size: 0.938rem;
     margin-bottom: 1.75rem;
+    line-height: 1.5;
   }
 
   .actions {

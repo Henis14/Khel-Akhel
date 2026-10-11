@@ -8,7 +8,9 @@
         <p>{{ message }}</p>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" [disabled]="isSubmitting" (click)="onCancel()">{{ cancelText }}</button>
+        <button class="btn btn-secondary" [disabled]="isSubmitting" (click)="onCancel()">
+          {{ cancelText }}
+        </button>
         <button
           class="btn"
           [class.btn-danger]="isDanger"

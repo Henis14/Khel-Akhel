@@ -299,6 +299,8 @@ namespace Khel_Akhel_Server.Controllers.Customer
                         AddressLine1 = request.AddressLine1 ?? string.Empty,
                         AddressLine2 = request.AddressLine2 ?? string.Empty,
                         Landmark = request.Landmark ?? string.Empty,
+                        CountryId = request.CountryId,
+                        StateId = request.StateId,
                         City = request.City ?? string.Empty,
                         State = request.State ?? string.Empty,
                         Country = request.Country ?? string.Empty,
@@ -412,7 +414,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                 // Fetch existing address record and verify ownership
                 string fetchQuery =
                     @"
-                    SELECT TOP 1 ID, customer_id, AddressTitle, AddressType, FullName, MobileNo, AddressLine1, AddressLine2, Landmark, City, State, Country, Pincode, IsDefault, IsActive
+                    SELECT TOP 1 ID, customer_id, AddressTitle, AddressType, FullName, MobileNo, AddressLine1, AddressLine2, Landmark, country_id, state_id, City, State, Country, Pincode, IsDefault, IsActive, CreatedDate
                     FROM drs_customer_address_mst WITH (NOLOCK)
                     WHERE ID = @ID AND IsDeleted = 0";
 
@@ -458,6 +460,17 @@ namespace Khel_Akhel_Server.Controllers.Customer
                     );
                 }
 
+                long? existingCountryId =
+                    existing["country_id"] != DBNull.Value
+                        ? Convert.ToInt64(existing["country_id"])
+                        : null;
+                long? existingStateId =
+                    existing["state_id"] != DBNull.Value
+                        ? Convert.ToInt64(existing["state_id"])
+                        : null;
+                string existingCountry = existing["Country"]?.ToString() ?? "";
+                string existingState = existing["State"]?.ToString() ?? "";
+
                 // Determine updated values
                 string newTitle =
                     request.AddressTitle != null
@@ -489,25 +502,167 @@ namespace Khel_Akhel_Server.Controllers.Customer
                         : existing["Landmark"].ToString() ?? "";
                 string newCity =
                     request.City != null ? request.City.Trim() : existing["City"].ToString() ?? "";
-                string newState =
-                    request.State != null
-                        ? request.State.Trim()
-                        : existing["State"].ToString() ?? "";
-                string newCountry =
-                    request.Country != null
-                        ? request.Country.Trim()
-                        : existing["Country"].ToString() ?? "";
                 string newPincode =
                     request.Pincode != null
                         ? request.Pincode.Trim()
                         : existing["Pincode"].ToString() ?? "";
                 bool newIsDefault = request.IsDefault ?? Convert.ToBoolean(existing["IsDefault"]);
 
+                long? newCountryId = existingCountryId;
+                long? newStateId = existingStateId;
+                string newCountry = existingCountry;
+                string newState = existingState;
+
                 var errors = new List<string>();
+
+                if (
+                    request.FullName != null
+                    && (
+                        string.IsNullOrWhiteSpace(newFullName)
+                        || !ValidationHelper.IsValidAddressFullName(newFullName)
+                    )
+                )
+                    errors.Add("Full name must be between 2 and 200 characters.");
                 if (request.MobileNo != null && !ValidationHelper.IsValidMobile(newMobileNo))
                     errors.Add("Invalid mobile number format.");
+                if (
+                    request.AddressLine1 != null
+                    && (
+                        string.IsNullOrWhiteSpace(newLine1)
+                        || !ValidationHelper.IsValidAddressLine1(newLine1)
+                    )
+                )
+                    errors.Add("Address line 1 cannot exceed 255 characters.");
+                if (
+                    request.City != null
+                    && (
+                        string.IsNullOrWhiteSpace(newCity) || !ValidationHelper.IsValidCity(newCity)
+                    )
+                )
+                    errors.Add(
+                        "City must be 2-100 characters containing only letters, spaces, dots, hyphens, and apostrophes."
+                    );
                 if (request.Pincode != null && !ValidationHelper.IsValidPincode(newPincode))
                     errors.Add("Invalid pincode format.");
+
+                // Validate Country and State resolution
+                if (request.CountryId.HasValue && request.StateId.HasValue)
+                {
+                    if (request.CountryId.Value <= 0)
+                    {
+                        errors.Add("Country ID must be a positive integer.");
+                    }
+                    else
+                    {
+                        string checkCountryQuery =
+                            "SELECT CountryName FROM dbo.drs_country_mst WITH (NOLOCK) WHERE ID = @ID AND IsActive = 1 AND IsDeleted = 0";
+                        object? countryNameObj = _db.ExecuteScalar(
+                            checkCountryQuery,
+                            new[] { new SqlParameter("@ID", request.CountryId.Value) }
+                        );
+                        if (countryNameObj == null)
+                        {
+                            errors.Add("Selected Country is invalid or inactive.");
+                        }
+                        else
+                        {
+                            newCountryId = request.CountryId.Value;
+                            newCountry = Convert.ToString(countryNameObj) ?? string.Empty;
+                        }
+                    }
+
+                    if (request.StateId.Value <= 0)
+                    {
+                        errors.Add("State ID must be a positive integer.");
+                    }
+                    else if (newCountryId.HasValue && newCountryId.Value > 0)
+                    {
+                        string checkStateQuery =
+                            "SELECT StateName FROM dbo.drs_state_mst WITH (NOLOCK) WHERE ID = @StateId AND country_id = @CountryId AND IsActive = 1 AND IsDeleted = 0";
+                        object? stateNameObj = _db.ExecuteScalar(
+                            checkStateQuery,
+                            new[]
+                            {
+                                new SqlParameter("@StateId", request.StateId.Value),
+                                new SqlParameter("@CountryId", newCountryId.Value),
+                            }
+                        );
+                        if (stateNameObj == null)
+                        {
+                            errors.Add("Selected State is invalid for the selected Country.");
+                        }
+                        else
+                        {
+                            newStateId = request.StateId.Value;
+                            newState = Convert.ToString(stateNameObj) ?? string.Empty;
+                        }
+                    }
+                }
+                else if (request.CountryId.HasValue && !request.StateId.HasValue)
+                {
+                    if (request.CountryId.Value <= 0)
+                    {
+                        errors.Add("Country ID must be a positive integer.");
+                    }
+                    else if (existingCountryId != request.CountryId.Value)
+                    {
+                        errors.Add(
+                            "When changing Country, a valid matching StateId for the new Country must be provided."
+                        );
+                    }
+                    else
+                    {
+                        string checkCountryQuery =
+                            "SELECT CountryName FROM dbo.drs_country_mst WITH (NOLOCK) WHERE ID = @ID AND IsActive = 1 AND IsDeleted = 0";
+                        object? countryNameObj = _db.ExecuteScalar(
+                            checkCountryQuery,
+                            new[] { new SqlParameter("@ID", request.CountryId.Value) }
+                        );
+                        if (countryNameObj == null)
+                        {
+                            errors.Add("Selected Country is invalid or inactive.");
+                        }
+                        else
+                        {
+                            newCountry = Convert.ToString(countryNameObj) ?? string.Empty;
+                        }
+                    }
+                }
+                else if (!request.CountryId.HasValue && request.StateId.HasValue)
+                {
+                    if (request.StateId.Value <= 0)
+                    {
+                        errors.Add("State ID must be a positive integer.");
+                    }
+                    else if (!existingCountryId.HasValue || existingCountryId.Value <= 0)
+                    {
+                        errors.Add(
+                            "Cannot update State without a valid Country assigned. Please provide both CountryId and StateId."
+                        );
+                    }
+                    else
+                    {
+                        string checkStateQuery =
+                            "SELECT StateName FROM dbo.drs_state_mst WITH (NOLOCK) WHERE ID = @StateId AND country_id = @CountryId AND IsActive = 1 AND IsDeleted = 0";
+                        object? stateNameObj = _db.ExecuteScalar(
+                            checkStateQuery,
+                            new[]
+                            {
+                                new SqlParameter("@StateId", request.StateId.Value),
+                                new SqlParameter("@CountryId", existingCountryId.Value),
+                            }
+                        );
+                        if (stateNameObj == null)
+                        {
+                            errors.Add("Selected State is invalid for the current Country.");
+                        }
+                        else
+                        {
+                            newStateId = request.StateId.Value;
+                            newState = Convert.ToString(stateNameObj) ?? string.Empty;
+                        }
+                    }
+                }
 
                 if (errors.Any())
                 {
@@ -551,6 +706,8 @@ namespace Khel_Akhel_Server.Controllers.Customer
                             AddressLine1 = @AddressLine1,
                             AddressLine2 = @AddressLine2,
                             Landmark = @Landmark,
+                            country_id = @CountryId,
+                            state_id = @StateId,
                             City = @City,
                             State = @State,
                             Country = @Country,
@@ -567,6 +724,14 @@ namespace Khel_Akhel_Server.Controllers.Customer
                     updateCmd.Parameters.AddWithValue("@AddressLine1", newLine1);
                     updateCmd.Parameters.AddWithValue("@AddressLine2", newLine2);
                     updateCmd.Parameters.AddWithValue("@Landmark", newLandmark);
+                    updateCmd.Parameters.AddWithValue(
+                        "@CountryId",
+                        (object?)newCountryId ?? DBNull.Value
+                    );
+                    updateCmd.Parameters.AddWithValue(
+                        "@StateId",
+                        (object?)newStateId ?? DBNull.Value
+                    );
                     updateCmd.Parameters.AddWithValue("@City", newCity);
                     updateCmd.Parameters.AddWithValue("@State", newState);
                     updateCmd.Parameters.AddWithValue("@Country", newCountry);
@@ -587,12 +752,18 @@ namespace Khel_Akhel_Server.Controllers.Customer
                         AddressLine1 = newLine1,
                         AddressLine2 = newLine2,
                         Landmark = newLandmark,
+                        CountryId = newCountryId,
+                        StateId = newStateId,
                         City = newCity,
                         State = newState,
                         Country = newCountry,
                         Pincode = newPincode,
                         IsDefault = newIsDefault,
                         IsActive = Convert.ToBoolean(existing["IsActive"]),
+                        CreatedDate =
+                            existing["CreatedDate"] != DBNull.Value
+                                ? DateTimeFormat.Format(Convert.ToDateTime(existing["CreatedDate"]))
+                                : string.Empty,
                     };
 
                     await _audit.InsertAuditAsync(
@@ -680,7 +851,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
 
                 string query =
                     @"
-                    SELECT TOP 1 ID, customer_id, AddressTitle, AddressType, FullName, MobileNo, AddressLine1, AddressLine2, Landmark, City, State, Country, Pincode, IsDefault, IsActive, CreatedDate
+                    SELECT TOP 1 ID, customer_id, AddressTitle, AddressType, FullName, MobileNo, AddressLine1, AddressLine2, Landmark, country_id, state_id, City, State, Country, Pincode, IsDefault, IsActive, CreatedDate
                     FROM drs_customer_address_mst WITH (NOLOCK)
                     WHERE ID = @ID AND IsDeleted = 0";
 
@@ -737,6 +908,12 @@ namespace Khel_Akhel_Server.Controllers.Customer
                     AddressLine1 = row["AddressLine1"].ToString() ?? "",
                     AddressLine2 = row["AddressLine2"].ToString() ?? "",
                     Landmark = row["Landmark"].ToString() ?? "",
+                    CountryId =
+                        row["country_id"] != DBNull.Value
+                            ? Convert.ToInt64(row["country_id"])
+                            : null,
+                    StateId =
+                        row["state_id"] != DBNull.Value ? Convert.ToInt64(row["state_id"]) : null,
                     City = row["City"].ToString() ?? "",
                     State = row["State"].ToString() ?? "",
                     Country = row["Country"].ToString() ?? "",
@@ -801,7 +978,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
 
                 string query =
                     @"
-                    SELECT ID, customer_id, AddressTitle, AddressType, FullName, MobileNo, AddressLine1, AddressLine2, Landmark, City, State, Country, Pincode, IsDefault, IsActive, CreatedDate
+                    SELECT ID, customer_id, AddressTitle, AddressType, FullName, MobileNo, AddressLine1, AddressLine2, Landmark, country_id, state_id, City, State, Country, Pincode, IsDefault, IsActive, CreatedDate
                     FROM drs_customer_address_mst WITH (NOLOCK)
                     WHERE customer_id = @CustomerId AND IsDeleted = 0
                     ORDER BY IsDefault DESC, ID DESC";
@@ -825,6 +1002,14 @@ namespace Khel_Akhel_Server.Controllers.Customer
                             AddressLine1 = row["AddressLine1"].ToString() ?? "",
                             AddressLine2 = row["AddressLine2"].ToString() ?? "",
                             Landmark = row["Landmark"].ToString() ?? "",
+                            CountryId =
+                                row["country_id"] != DBNull.Value
+                                    ? Convert.ToInt64(row["country_id"])
+                                    : null,
+                            StateId =
+                                row["state_id"] != DBNull.Value
+                                    ? Convert.ToInt64(row["state_id"])
+                                    : null,
                             City = row["City"].ToString() ?? "",
                             State = row["State"].ToString() ?? "",
                             Country = row["Country"].ToString() ?? "",

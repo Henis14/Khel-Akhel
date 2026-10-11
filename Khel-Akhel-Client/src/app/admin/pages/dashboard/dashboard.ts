@@ -6,6 +6,7 @@ import { AdminCustomerService } from '../../services/admin-customer.service';
 import { AdminProductCategoryService } from '../../services/admin-product-category.service';
 import { AdminProductService } from '../../services/admin-product.service';
 import { AdminProductStockService } from '../../services/admin-product-stock.service';
+import { AdminCommissionedProjectService } from '../../services/admin-commissioned-project.service';
 import { BreadcrumbComponent } from '../../../common/components/breadcrumb/breadcrumb';
 import { BreadcrumbItem } from '../../../common/models/breadcrumb.model';
 import { AppLoaderComponent } from '../../../common/components/app-loader/app-loader';
@@ -15,17 +16,18 @@ import { AppLoaderComponent } from '../../../common/components/app-loader/app-lo
   standalone: true,
   imports: [CommonModule, RouterLink, BreadcrumbComponent, AppLoaderComponent],
   templateUrl: './dashboard.html',
-  styleUrl: './dashboard.scss'
+  styleUrl: './dashboard.scss',
 })
 export class AdminDashboardComponent implements OnInit {
   breadcrumbs: BreadcrumbItem[] = [
     { label: 'Home', url: '/admin/dashboard' },
-    { label: 'Dashboard' }
+    { label: 'Dashboard' },
   ];
   private customerService = inject(AdminCustomerService);
   private categoryService = inject(AdminProductCategoryService);
   private productService = inject(AdminProductService);
   private stockService = inject(AdminProductStockService);
+  private commissionService = inject(AdminCommissionedProjectService);
   private cdr = inject(ChangeDetectorRef);
 
   loading = true;
@@ -35,6 +37,7 @@ export class AdminDashboardComponent implements OnInit {
   totalCategories = 0;
   totalProducts = 0;
   totalStockRecords = 0;
+  totalCommissionRequests = 0;
 
   recentProducts: any[] = [];
 
@@ -50,7 +53,8 @@ export class AdminDashboardComponent implements OnInit {
       customers: this.customerService.getList({ pageIndex: 1, pageSize: 1 }),
       categories: this.categoryService.getList(),
       products: this.productService.getList({ pageIndex: 1, pageSize: 5 }),
-      stock: this.stockService.getList({ pageIndex: 1, pageSize: 1 })
+      stock: this.stockService.getList({ pageIndex: 1, pageSize: 1 }),
+      commissions: this.commissionService.getList({ pageIndex: 1, pageSize: 1 }),
     }).subscribe({
       next: (res) => {
         this.loading = false;
@@ -67,13 +71,16 @@ export class AdminDashboardComponent implements OnInit {
         if (res.stock.success && res.stock.data) {
           this.totalStockRecords = res.stock.data.totalRecords;
         }
+        if (res.commissions.success && res.commissions.data) {
+          this.totalCommissionRequests = res.commissions.data.totalRecords;
+        }
         this.cdr.markForCheck();
       },
       error: () => {
         this.loading = false;
         this.errorMessage = 'Failed to load dashboard statistics from server.';
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 }

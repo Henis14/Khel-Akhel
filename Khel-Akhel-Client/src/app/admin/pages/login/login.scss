@@ -76,7 +76,10 @@
     linear-gradient(90deg, rgba(40, 36, 31, 0.04) 1px, transparent 1px),
     linear-gradient(rgba(40, 36, 31, 0.035) 1px, transparent 1px),
     radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.35) 0 1px, transparent 1px);
-  background-size: 6px 6px, 7px 7px, 19px 19px;
+  background-size:
+    6px 6px,
+    7px 7px,
+    19px 19px;
   mix-blend-mode: multiply;
 }
 
@@ -97,8 +100,7 @@
   top: 40px;
   border-radius: 50%;
   background:
-    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.22) 0 4px, transparent 4px 9px),
-    #d3993a;
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.22) 0 4px, transparent 4px 9px), #d3993a;
   box-shadow: inset 0 0 0 10px rgba(255, 255, 255, 0.2);
   opacity: 0.88;
 }
@@ -136,7 +138,9 @@
   background:
     radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.3) 0 4px, transparent 5px),
     var(--login-terracotta);
-  background-size: auto, 20px 20px;
+  background-size:
+    auto,
+    20px 20px;
   transform: rotate(3deg);
 }
 
@@ -253,8 +257,7 @@
   justify-content: center;
   padding: clamp(1.25rem, 3vh, 2.75rem) clamp(1.25rem, 3.5vw, 3rem);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.45), transparent 36%),
-    var(--login-paper);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.45), transparent 36%), var(--login-paper);
 }
 
 .login-panel::before {
@@ -335,7 +338,10 @@ form {
   color: var(--login-ink);
   font: inherit;
   font-size: 0.88rem;
-  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease;
 }
 
 .form-control::placeholder {
@@ -383,7 +389,9 @@ form {
     cursor: pointer;
     border-radius: 4px;
     line-height: 1;
-    transition: color 160ms ease, opacity 160ms ease;
+    transition:
+      color 160ms ease,
+      opacity 160ms ease;
 
     &:hover {
       color: var(--login-indigo);
@@ -438,7 +446,9 @@ form {
   background:
     radial-gradient(circle at 14px 12px, rgba(168, 79, 50, 0.14) 0 2px, transparent 3px),
     linear-gradient(135deg, #fffaf1 0%, #eee3cf 100%);
-  background-size: 24px 20px, auto;
+  background-size:
+    24px 20px,
+    auto;
   transition: opacity 160ms ease;
   user-select: none;
 }
@@ -447,8 +457,14 @@ form {
   position: absolute;
   content: '';
   inset: -14px;
-  background:
-    linear-gradient(105deg, transparent 20%, rgba(36, 55, 86, 0.12) 20% 21%, transparent 21% 48%, rgba(168, 79, 50, 0.11) 48% 49%, transparent 49%);
+  background: linear-gradient(
+    105deg,
+    transparent 20%,
+    rgba(36, 55, 86, 0.12) 20% 21%,
+    transparent 21% 48%,
+    rgba(168, 79, 50, 0.11) 48% 49%,
+    transparent 49%
+  );
   transform: rotate(-4deg);
 }
 
@@ -479,7 +495,11 @@ form {
   color: var(--login-indigo);
   cursor: pointer;
   font-size: 1.25rem;
-  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
 }
 
 .btn-refresh-captcha:hover:not(:disabled) {
@@ -553,7 +573,11 @@ form {
   font-size: 0.92rem;
   font-weight: 800;
   letter-spacing: 0.02em;
-  transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease,
+    box-shadow 160ms ease;
   box-shadow: 0 8px 18px rgba(36, 55, 86, 0.14);
 }
 
@@ -566,7 +590,9 @@ form {
 
 .btn-block:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(36, 55, 86, 0.18), 0 8px 18px rgba(36, 55, 86, 0.14);
+  box-shadow:
+    0 0 0 3px rgba(36, 55, 86, 0.18),
+    0 8px 18px rgba(36, 55, 86, 0.14);
 }
 
 .btn-block:disabled {

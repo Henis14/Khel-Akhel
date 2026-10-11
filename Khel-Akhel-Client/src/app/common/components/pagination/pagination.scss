@@ -2,18 +2,29 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 0;
+  padding: 0.875rem 1.25rem;
   gap: 1rem;
   flex-wrap: wrap;
+  border-top: 1px solid var(--ka-border-light, #e7e1d6);
+  background-color: var(--ka-surface, #fbf9f4);
 }
 
 .pagination-info {
-  font-size: 0.85rem;
-  color: var(--admin-text-secondary, #4b4b4b);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--ka-text-secondary, #6b6a63);
 }
 
 .pagination-controls {
   display: flex;
   gap: 0.35rem;
   align-items: center;
+
+  .btn {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 0.5rem;
+    font-size: 0.8125rem;
+    border-radius: var(--admin-radius-sm, 6px);
+  }
 }

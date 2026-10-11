@@ -58,3 +58,34 @@ BEGIN
     ALTER TABLE [dbo].[drs_customer_address_mst] CHECK CONSTRAINT [FK_drs_customer_address_mst_state_id];
 END;
 GO
+
+-- =========================================================================
+-- Commissioned Projects Foreign Keys
+-- =========================================================================
+
+-- Commission Request Category FK
+IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_drs_commission_request_mst_category_id]') AND parent_object_id = OBJECT_ID(N'[dbo].[drs_commission_request_mst]'))
+BEGIN
+    ALTER TABLE [dbo].[drs_commission_request_mst] WITH CHECK ADD CONSTRAINT [FK_drs_commission_request_mst_category_id]
+    FOREIGN KEY ([category_id]) REFERENCES [dbo].[drs_commission_category_mst] ([ID]);
+    ALTER TABLE [dbo].[drs_commission_request_mst] CHECK CONSTRAINT [FK_drs_commission_request_mst_category_id];
+END;
+GO
+
+-- Commission Request Optional Customer FK
+IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_drs_commission_request_mst_customer_id]') AND parent_object_id = OBJECT_ID(N'[dbo].[drs_commission_request_mst]'))
+BEGIN
+    ALTER TABLE [dbo].[drs_commission_request_mst] WITH CHECK ADD CONSTRAINT [FK_drs_commission_request_mst_customer_id]
+    FOREIGN KEY ([customer_id]) REFERENCES [dbo].[drs_customer_mst] ([ID]);
+    ALTER TABLE [dbo].[drs_commission_request_mst] CHECK CONSTRAINT [FK_drs_commission_request_mst_customer_id];
+END;
+GO
+
+-- Commission Request Image Request FK
+IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_drs_commission_request_image_mst_request_id]') AND parent_object_id = OBJECT_ID(N'[dbo].[drs_commission_request_image_mst]'))
+BEGIN
+    ALTER TABLE [dbo].[drs_commission_request_image_mst] WITH CHECK ADD CONSTRAINT [FK_drs_commission_request_image_mst_request_id]
+    FOREIGN KEY ([commission_request_id]) REFERENCES [dbo].[drs_commission_request_mst] ([ID]);
+    ALTER TABLE [dbo].[drs_commission_request_image_mst] CHECK CONSTRAINT [FK_drs_commission_request_image_mst_request_id];
+END;
+GO

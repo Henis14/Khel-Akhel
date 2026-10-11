@@ -7,11 +7,11 @@ import {
   ProductStockListRequest,
   ProductStockListResponse,
   ProductStockResponse,
-  ProductStockUpdateRequest
+  ProductStockUpdateRequest,
 } from '../models/product-stock.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AdminProductStockService {
   constructor(private api: ApiService) {}
@@ -21,7 +21,8 @@ export class AdminProductStockService {
     if (request.pageIndex) params.pageIndex = request.pageIndex;
     if (request.pageSize) params.pageSize = request.pageSize;
     if (request.search) params.search = request.search;
-    if (request.lowStockOnly !== undefined && request.lowStockOnly !== null) params.lowStockOnly = request.lowStockOnly;
+    if (request.lowStockOnly !== undefined && request.lowStockOnly !== null)
+      params.lowStockOnly = request.lowStockOnly;
     return this.api.get<ProductStockListResponse>('product-stock/list', params);
   }
 

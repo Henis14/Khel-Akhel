@@ -7,6 +7,6 @@ import { RouterLink } from '@angular/router';
   standalone: true,
   imports: [CommonModule, RouterLink],
   templateUrl: './unauthorized.html',
-  styleUrl: './unauthorized.scss'
+  styleUrl: './unauthorized.scss',
 })
 export class UnauthorizedComponent {}

@@ -5,11 +5,11 @@ import { ApiResponse } from '../../common/models/api-response.model';
 import {
   ProductCategoryCreateRequest,
   ProductCategoryResponse,
-  ProductCategoryUpdateRequest
+  ProductCategoryUpdateRequest,
 } from '../models/product-category.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AdminProductCategoryService {
   constructor(private api: ApiService) {}

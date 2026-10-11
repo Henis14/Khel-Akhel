@@ -13,13 +13,13 @@ import { BreadcrumbItem } from '../../../../common/models/breadcrumb.model';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, BreadcrumbComponent],
   templateUrl: './add-customer.html',
-  styleUrl: './add-customer.scss'
+  styleUrl: './add-customer.scss',
 })
 export class AddCustomerComponent implements OnInit {
   breadcrumbs: BreadcrumbItem[] = [
     { label: 'Home', url: '/admin/dashboard' },
     { label: 'Customers', url: '/admin/customers' },
-    { label: 'Add Customer' }
+    { label: 'Add Customer' },
   ];
   private fb = inject(FormBuilder);
   private customerService = inject(AdminCustomerService);
@@ -35,16 +35,49 @@ export class AddCustomerComponent implements OnInit {
   showConfirmPassword = false;
 
   ngOnInit(): void {
-    this.customerForm = this.fb.group({
-      firstName: ['', [CustomValidators.requiredNonEmpty, CustomValidators.pattern(REGEX_PATTERNS.NAME, 'invalidName')]],
-      lastName: ['', [CustomValidators.requiredNonEmpty, CustomValidators.pattern(REGEX_PATTERNS.NAME, 'invalidName')]],
-      email: ['', [CustomValidators.requiredNonEmpty, CustomValidators.pattern(REGEX_PATTERNS.EMAIL, 'invalidEmail')]],
-      mobileNo: ['', [CustomValidators.requiredNonEmpty, CustomValidators.pattern(REGEX_PATTERNS.MOBILE, 'invalidMobile')]],
-      password: ['', [CustomValidators.requiredNonEmpty, CustomValidators.rawPattern(REGEX_PATTERNS.PASSWORD, 'invalidPassword')]],
-      confirmPassword: ['', [CustomValidators.requiredNonEmpty]]
-    }, {
-      validators: [this.passwordsMatchValidator]
-    });
+    this.customerForm = this.fb.group(
+      {
+        firstName: [
+          '',
+          [
+            CustomValidators.requiredNonEmpty,
+            CustomValidators.pattern(REGEX_PATTERNS.NAME, 'invalidName'),
+          ],
+        ],
+        lastName: [
+          '',
+          [
+            CustomValidators.requiredNonEmpty,
+            CustomValidators.pattern(REGEX_PATTERNS.NAME, 'invalidName'),
+          ],
+        ],
+        email: [
+          '',
+          [
+            CustomValidators.requiredNonEmpty,
+            CustomValidators.pattern(REGEX_PATTERNS.EMAIL, 'invalidEmail'),
+          ],
+        ],
+        mobileNo: [
+          '',
+          [
+            CustomValidators.requiredNonEmpty,
+            CustomValidators.pattern(REGEX_PATTERNS.MOBILE, 'invalidMobile'),
+          ],
+        ],
+        password: [
+          '',
+          [
+            CustomValidators.requiredNonEmpty,
+            CustomValidators.rawPattern(REGEX_PATTERNS.PASSWORD, 'invalidPassword'),
+          ],
+        ],
+        confirmPassword: ['', [CustomValidators.requiredNonEmpty]],
+      },
+      {
+        validators: [this.passwordsMatchValidator],
+      },
+    );
   }
 
   passwordsMatchValidator(group: FormGroup) {
@@ -84,7 +117,7 @@ export class AddCustomerComponent implements OnInit {
       lastName: this.customerForm.value.lastName.trim(),
       email: this.customerForm.value.email.trim(),
       mobileNo: this.customerForm.value.mobileNo.trim(),
-      password: this.customerForm.value.password
+      password: this.customerForm.value.password,
     };
 
     this.customerService.create(payload).subscribe({
@@ -100,8 +133,9 @@ export class AddCustomerComponent implements OnInit {
       },
       error: (err) => {
         this.loading = false;
-        this.errorMessage = err.error?.message || 'Failed to create customer. Please check input details.';
-      }
+        this.errorMessage =
+          err.error?.message || 'Failed to create customer. Please check input details.';
+      },
     });
   }
 

@@ -7,8 +7,8 @@ export interface CustomerAddressResponse {
   addressLine1: string;
   addressLine2: string;
   landmark: string;
-  countryId?: number;
-  stateId?: number;
+  countryId?: number | null;
+  stateId?: number | null;
   city: string;
   state: string;
   country: string;

@@ -1,0 +1,867 @@
+<div class="commissioned-projects-page">
+  <!-- Page Header -->
+  <div class="page-header">
+    <app-breadcrumb [items]="breadcrumbs"></app-breadcrumb>
+    <div class="header-content">
+      <div class="header-titles">
+        <h1>Commissioned Projects</h1>
+        <p class="subtitle">
+          Review and manage custom design & art project inquiries from customers
+        </p>
+      </div>
+      <div class="header-badges">
+        <span class="inquiries-pill">
+          <span class="count-number">{{ totalRecords }}</span> Inquiries
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feedback Alerts -->
+  @if (successMessage) {
+    <div class="alert alert-success">
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+      <span>{{ successMessage }}</span>
+    </div>
+  }
+
+  @if (errorMessage) {
+    <div class="alert alert-danger">
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span>{{ errorMessage }}</span>
+    </div>
+  }
+
+  @if (copyFeedback) {
+    <div class="toast-feedback">
+      {{ copyFeedback }}
+    </div>
+  }
+
+  <!-- Compact Search & Filter Toolbar -->
+  <div class="filter-card card">
+    <div class="filter-toolbar">
+      <!-- Row 1: Search, Category, Status -->
+      <div class="filter-row filter-row-primary">
+        <!-- Search Box -->
+        <div class="filter-item search-item">
+          <label class="filter-label" for="search-input">Search Inquiries</label>
+          <div class="input-with-icon">
+            <svg
+              class="icon"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input
+              id="search-input"
+              type="text"
+              class="form-control"
+              placeholder="Search by request #, customer, email, mobile, location..."
+              [value]="searchQuery"
+              (input)="onSearchInput($any($event.target).value)"
+              (keydown.enter)="applyFilters()"
+            />
+          </div>
+        </div>
+
+        <!-- Category Dropdown -->
+        <div class="filter-item category-item">
+          <label class="filter-label" for="category-select">Category</label>
+          <select
+            id="category-select"
+            class="form-control"
+            [value]="selectedCategory"
+            (change)="onCategoryFilter($any($event.target).value)"
+          >
+            <option value="">All Categories</option>
+            @for (cat of categories; track cat.encryptedCategoryId) {
+              <option [value]="cat.encryptedCategoryId">{{ cat.categoryName }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Status Dropdown -->
+        <div class="filter-item status-item">
+          <label class="filter-label" for="status-select">Status</label>
+          <select
+            id="status-select"
+            class="form-control"
+            [value]="selectedStatus"
+            (change)="onStatusFilter($any($event.target).value)"
+          >
+            <option value="">All Statuses</option>
+            @for (st of availableStatuses; track st) {
+              <option [value]="st">{{ st }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <!-- Row 2: From Date, To Date, Sort By, Apply & Reset Buttons -->
+      <div class="filter-row filter-row-secondary">
+        <!-- From Date -->
+        <div class="filter-item date-item">
+          <label class="filter-label" for="start-date-input">From Date</label>
+          <input
+            id="start-date-input"
+            type="date"
+            class="form-control"
+            [(ngModel)]="startDate"
+            (change)="onDateFilter()"
+          />
+        </div>
+
+        <!-- To Date -->
+        <div class="filter-item date-item">
+          <label class="filter-label" for="end-date-input">To Date</label>
+          <input
+            id="end-date-input"
+            type="date"
+            class="form-control"
+            [(ngModel)]="endDate"
+            (change)="onDateFilter()"
+          />
+        </div>
+
+        <!-- Sort By Dropdown -->
+        <div class="filter-item sort-item">
+          <label class="filter-label" for="sort-select">Sort By</label>
+          <select
+            id="sort-select"
+            class="form-control"
+            [value]="sortBy"
+            (change)="onSortChange($any($event.target).value)"
+          >
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="timeline_asc">Timeline (Earliest)</option>
+            <option value="timeline_desc">Timeline (Latest)</option>
+            <option value="status">Status</option>
+          </select>
+        </div>
+
+        <!-- Filter Action Buttons -->
+        <div class="filter-actions">
+          <button
+            type="button"
+            class="btn btn-primary btn-sm filter-btn"
+            title="Apply Filters"
+            (click)="applyFilters()"
+            [disabled]="loading"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+            </svg>
+            <span>Apply</span>
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-secondary btn-sm filter-btn"
+            title="Reset All Filters"
+            (click)="resetFilters()"
+            [disabled]="loading || !hasActiveFilters"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="1 4 1 10 7 10"></polyline>
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+            </svg>
+            <span>Reset</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Date Range Validation Warning -->
+      @if (dateRangeError) {
+        <div class="date-validation-warning">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span>{{ dateRangeError }}</span>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Data Table Card -->
+  <div class="table-card card">
+    @if (loading) {
+      <div class="table-loader-wrap">
+        <app-loader text="Loading commissioned project requests..."></app-loader>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="table commissioned-table">
+          <thead>
+            <tr>
+              <th class="col-req-no">Request #</th>
+              <th class="col-customer">Customer</th>
+              <th class="col-category">Category</th>
+              <th class="col-location">Project Location</th>
+              <th class="col-timeline">Expected Timeline</th>
+              <th class="col-sketches">Sketches</th>
+              <th class="col-status text-center">Status</th>
+              <th class="col-date">Submitted Date</th>
+              <th class="col-actions text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (req of requests; track req.encryptedRequestId) {
+              <tr>
+                <!-- Request No -->
+                <td class="col-req-no">
+                  <span class="request-no-badge">{{ req.requestNo }}</span>
+                </td>
+
+                <!-- Customer Details -->
+                <td class="col-customer customer-cell">
+                  <div class="customer-name font-weight-600">{{ req.fullName }}</div>
+                  <div class="customer-contact-links">
+                    <a [href]="'tel:' + req.mobileNo" class="contact-link" title="Call customer">
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
+                        <path
+                          d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"
+                        ></path>
+                      </svg>
+                      <span>{{ req.mobileNo }}</span>
+                    </a>
+                    <a [href]="'mailto:' + req.email" class="contact-link" title="Email customer">
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
+                        <path
+                          d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
+                        ></path>
+                        <polyline points="22,6 12,13 2,6"></polyline>
+                      </svg>
+                      <span class="email-text">{{ req.email }}</span>
+                    </a>
+                  </div>
+                </td>
+
+                <!-- Category -->
+                <td class="col-category">
+                  <span class="category-pill">{{ req.categoryName }}</span>
+                  @if (req.otherCategoryDescription) {
+                    <div class="other-category-text" [title]="req.otherCategoryDescription">
+                      "{{ req.otherCategoryDescription }}"
+                    </div>
+                  }
+                </td>
+
+                <!-- Location -->
+                <td class="col-location">
+                  <div class="location-text">
+                    <svg
+                      width="13"
+                      height="13"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                      <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                    <span>{{ req.projectLocation }}</span>
+                  </div>
+                </td>
+
+                <!-- Expected Timeline -->
+                <td class="col-timeline">
+                  <span class="timeline-date font-weight-500">{{ req.expectedTimeline }}</span>
+                </td>
+
+                <!-- Attached Sketches -->
+                <td class="col-sketches">
+                  @if (req.imageCount > 0) {
+                    <div class="image-indicator">
+                      @if (req.thumbnailUrl) {
+                        <img
+                          [src]="getImageUrl(req.thumbnailUrl)"
+                          (error)="onImageError($event)"
+                          alt="Thumbnail"
+                          class="table-thumb"
+                        />
+                      }
+                      <span class="badge badge-light"
+                        >{{ req.imageCount }} {{ req.imageCount === 1 ? 'file' : 'files' }}</span
+                      >
+                    </div>
+                  } @else {
+                    <span class="text-muted no-images-text">None</span>
+                  }
+                </td>
+
+                <!-- Status Badge -->
+                <td class="col-status text-center">
+                  <span class="badge" [ngClass]="getStatusBadgeClass(req.status)">
+                    {{ req.status }}
+                  </span>
+                </td>
+
+                <!-- Submitted Date -->
+                <td class="col-date text-muted date-cell">
+                  {{ req.createdDate }}
+                </td>
+
+                <!-- Action Buttons -->
+                <td class="col-actions text-right actions-cell">
+                  <button
+                    class="btn btn-secondary btn-sm"
+                    title="View Request Details"
+                    (click)="openDetailModal(req)"
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    View
+                  </button>
+                  <button
+                    class="btn btn-primary btn-sm"
+                    title="Update Status / Admin Notes"
+                    (click)="
+                      openStatusModal({
+                        encryptedRequestId: req.encryptedRequestId,
+                        requestNo: req.requestNo,
+                        currentStatus: req.status,
+                      })
+                    "
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                    Status
+                  </button>
+                </td>
+              </tr>
+            }
+
+            <!-- Empty State -->
+            @if (requests.length === 0) {
+              <tr>
+                <td colspan="9" class="empty-state-cell">
+                  <div class="empty-state-wrap">
+                    <div class="empty-icon">
+                      <svg
+                        width="40"
+                        height="40"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                      >
+                        <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                        <polyline points="2 17 12 22 22 17"></polyline>
+                        <polyline points="2 12 12 17 22 12"></polyline>
+                      </svg>
+                    </div>
+                    @if (hasActiveFilters) {
+                      <h3>No Matching Requests</h3>
+                      <p class="text-muted">Try changing your search or filters.</p>
+                      <button class="btn btn-secondary btn-sm mt-2" (click)="resetFilters()">
+                        Clear Filters
+                      </button>
+                    } @else {
+                      <h3>No Commission Requests Yet</h3>
+                      <p class="text-muted">
+                        No customer commissioned-project requests have been submitted yet.
+                      </p>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      @if (totalRecords > 0) {
+        <div class="pagination-footer">
+          <app-pagination
+            [pageIndex]="pageIndex"
+            [pageSize]="pageSize"
+            [totalRecords]="totalRecords"
+            (pageChange)="onPageChange($event)"
+          ></app-pagination>
+        </div>
+      }
+    }
+  </div>
+
+  <!-- 1. Request Details Modal -->
+  @if (isDetailModalOpen) {
+    <div class="modal-backdrop" (click)="closeDetailModal()">
+      <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div>
+            <div class="d-flex align-items-center gap-2">
+              <h3>Commission Request: {{ selectedDetail?.requestNo || 'Loading...' }}</h3>
+              @if (selectedDetail) {
+                <span class="badge" [ngClass]="getStatusBadgeClass(selectedDetail.status)">
+                  {{ selectedDetail.status }}
+                </span>
+              }
+            </div>
+            <p class="modal-subtitle text-muted">Submitted on {{ selectedDetail?.createdDate }}</p>
+          </div>
+          <button class="close-btn" (click)="closeDetailModal()" aria-label="Close modal">✕</button>
+        </div>
+
+        <div class="modal-body">
+          @if (detailLoading) {
+            <div class="modal-loader">
+              <app-loader text="Retrieving complete request details..."></app-loader>
+            </div>
+          } @else if (selectedDetail) {
+            <div class="detail-grid">
+              <!-- Customer Details Card -->
+              <div class="detail-card">
+                <div class="detail-card-header">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                  <h4>Customer Information</h4>
+                </div>
+                <div class="detail-card-body">
+                  <div class="info-row">
+                    <span class="info-label">Full Name</span>
+                    <span class="info-value font-weight-600">{{ selectedDetail.fullName }}</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-label">Phone Number</span>
+                    <div class="info-value d-flex align-items-center gap-2">
+                      <a
+                        [href]="'tel:' + selectedDetail.mobileNo"
+                        class="action-link font-weight-500"
+                      >
+                        {{ selectedDetail.mobileNo }}
+                      </a>
+                      <button
+                        type="button"
+                        class="btn-icon"
+                        title="Copy phone"
+                        (click)="copyToClipboard(selectedDetail.mobileNo, 'Phone')"
+                      >
+                        <svg
+                          width="13"
+                          height="13"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                        >
+                          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-label">Email Address</span>
+                    <div class="info-value d-flex align-items-center gap-2">
+                      <a
+                        [href]="'mailto:' + selectedDetail.email"
+                        class="action-link font-weight-500"
+                      >
+                        {{ selectedDetail.email }}
+                      </a>
+                      <button
+                        type="button"
+                        class="btn-icon"
+                        title="Copy email"
+                        (click)="copyToClipboard(selectedDetail.email, 'Email')"
+                      >
+                        <svg
+                          width="13"
+                          height="13"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                        >
+                          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Project Scope Card -->
+              <div class="detail-card">
+                <div class="detail-card-header">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                    <polyline points="2 17 12 22 22 17"></polyline>
+                    <polyline points="2 12 12 17 22 12"></polyline>
+                  </svg>
+                  <h4>Project Specifications</h4>
+                </div>
+                <div class="detail-card-body">
+                  <div class="info-row">
+                    <span class="info-label">Category</span>
+                    <span class="info-value font-weight-600">
+                      {{ selectedDetail.categoryName }}
+                      @if (selectedDetail.otherCategoryDescription) {
+                        <span class="text-muted font-weight-400">
+                          ({{ selectedDetail.otherCategoryDescription }})</span
+                        >
+                      }
+                    </span>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-label">Expected Timeline</span>
+                    <span class="info-value font-weight-600">{{
+                      selectedDetail.expectedTimeline
+                    }}</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-label">Project Location</span>
+                    <span class="info-value">{{ selectedDetail.projectLocation }}</span>
+                  </div>
+                  @if (selectedDetail.keywords) {
+                    <div class="info-row">
+                      <span class="info-label">Keywords</span>
+                      <div class="keywords-wrap">
+                        @for (kw of selectedDetail.keywords.split(','); track kw) {
+                          <span class="keyword-tag">{{ kw.trim() }}</span>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <!-- Project Description Section -->
+            <div class="detail-section">
+              <div class="section-title-wrap">
+                <h4>Project Description</h4>
+                <span class="word-count-badge">{{ selectedDetail.wordCount }} / 500 words</span>
+              </div>
+              <div class="description-content">
+                {{ selectedDetail.projectDescription }}
+              </div>
+            </div>
+
+            <!-- Reference Images & Sketches Section -->
+            <div class="detail-section">
+              <div class="section-title-wrap">
+                <h4>Reference Images & Sketches ({{ selectedDetail.images.length }} / 3)</h4>
+              </div>
+
+              @if (selectedDetail.images.length > 0) {
+                <div class="images-gallery">
+                  @for (img of selectedDetail.images; track img.encryptedImageId) {
+                    <div class="image-gallery-card" (click)="openLightbox(img)">
+                      <div class="image-container">
+                        <img
+                          [src]="getImageUrl(img.imageUrl)"
+                          (error)="onImageError($event)"
+                          [alt]="img.originalFileName"
+                          class="gallery-image"
+                        />
+                        <div class="image-overlay">
+                          <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                          >
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            <line x1="11" y1="8" x2="11" y2="14"></line>
+                            <line x1="8" y1="11" x2="14" y2="11"></line>
+                          </svg>
+                          <span>Enlarge</span>
+                        </div>
+                      </div>
+                      <div class="image-info">
+                        <span class="image-name" [title]="img.originalFileName">{{
+                          img.originalFileName
+                        }}</span>
+                        <span class="image-size text-muted">{{
+                          formatFileSize(img.fileSize)
+                        }}</span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="no-images-box">
+                  <svg
+                    width="32"
+                    height="32"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                  >
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
+                  </svg>
+                  <p class="text-muted">
+                    No reference images or sketches were attached with this inquiry.
+                  </p>
+                </div>
+              }
+            </div>
+
+            <!-- Admin Notes Section -->
+            <div class="detail-section admin-notes-section">
+              <div class="section-title-wrap">
+                <h4>Internal Admin Communication Notes</h4>
+                @if (selectedDetail.modifiedDate) {
+                  <span class="text-muted small"
+                    >Last updated: {{ selectedDetail.modifiedDate }}</span
+                  >
+                }
+              </div>
+              <div class="admin-notes-content">
+                @if (selectedDetail.adminNotes) {
+                  <p>{{ selectedDetail.adminNotes }}</p>
+                } @else {
+                  <p class="text-muted italic">No internal admin notes added yet.</p>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeDetailModal()">Close</button>
+          @if (selectedDetail) {
+            <button
+              class="btn btn-primary"
+              (click)="
+                openStatusModal({
+                  encryptedRequestId: selectedDetail.encryptedRequestId,
+                  requestNo: selectedDetail.requestNo,
+                  currentStatus: selectedDetail.status,
+                  currentNotes: selectedDetail.adminNotes,
+                })
+              "
+            >
+              Update Status & Notes
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- 2. Update Status & Admin Notes Modal -->
+  @if (isStatusModalOpen) {
+    <div class="modal-backdrop" (click)="closeStatusModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div>
+            <h3>Update Status & Admin Notes</h3>
+            <p class="modal-subtitle text-muted">
+              Request #{{ targetRequestForUpdate?.requestNo }}
+            </p>
+          </div>
+          <button class="close-btn" (click)="closeStatusModal()" aria-label="Close modal">✕</button>
+        </div>
+
+        <form [formGroup]="statusForm" (ngSubmit)="submitStatusUpdate()">
+          <div class="modal-body">
+            <!-- Status Dropdown -->
+            <div class="form-group mb-3">
+              <label class="form-label font-weight-600">Workflow Status *</label>
+              <select formControlName="status" class="form-control">
+                @for (st of availableStatuses; track st) {
+                  <option [value]="st">{{ st }}</option>
+                }
+              </select>
+              @if (statusForm.get('status')?.touched && statusForm.get('status')?.invalid) {
+                <div class="field-error">Please select a valid status.</div>
+              }
+            </div>
+
+            <!-- Admin Notes Textarea -->
+            <div class="form-group mb-2">
+              <div class="d-flex justify-content-between">
+                <label class="form-label font-weight-600"
+                  >Admin Notes / Customer Communication Log</label
+                >
+                <span class="char-count text-muted small">
+                  {{ statusForm.get('adminNotes')?.value?.length || 0 }} / 2000
+                </span>
+              </div>
+              <textarea
+                formControlName="adminNotes"
+                class="form-control"
+                rows="5"
+                placeholder="Record customer discussion details, timeline agreements, design workshop dates, or next action steps..."
+              ></textarea>
+              @if (statusForm.get('adminNotes')?.hasError('maxlength')) {
+                <div class="field-error">Admin notes cannot exceed 2000 characters.</div>
+              }
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              (click)="closeStatusModal()"
+              [disabled]="statusSubmitting"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="statusSubmitting || statusForm.invalid"
+            >
+              @if (statusSubmitting) {
+                <span>Saving...</span>
+              } @else {
+                <span>Save Changes</span>
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- 3. Image Lightbox Modal -->
+  @if (isLightboxOpen && activeLightboxImage) {
+    <div class="lightbox-backdrop" (click)="closeLightbox()">
+      <div class="lightbox-content" (click)="$event.stopPropagation()">
+        <button class="lightbox-close" (click)="closeLightbox()" aria-label="Close lightbox">
+          ✕
+        </button>
+        <img
+          [src]="getImageUrl(activeLightboxImage.imageUrl)"
+          (error)="onImageError($event)"
+          [alt]="activeLightboxImage.originalFileName"
+          class="lightbox-image"
+        />
+        <div class="lightbox-caption">
+          <span class="lightbox-title">{{ activeLightboxImage.originalFileName }}</span>
+          <span class="lightbox-meta text-muted">
+            {{ formatFileSize(activeLightboxImage.fileSize) }} • Image #{{
+              activeLightboxImage.displayOrder
+            }}
+          </span>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- 4. Confirmation Dialog -->
+  <app-confirmation-dialog
+    [isOpen]="isConfirmOpen"
+    [title]="confirmTitle"
+    [message]="confirmMessage"
+    confirmText="Yes, Update Status"
+    cancelText="Go Back"
+    [isDanger]="true"
+    [isSubmitting]="statusSubmitting"
+    (confirm)="onConfirmAction()"
+    (cancel)="onCancelConfirm()"
+  ></app-confirmation-dialog>
+</div>

@@ -1,4 +1,9 @@
-import { HttpInterceptorFn, HttpRequest, HttpHandlerFn, HttpErrorResponse } from '@angular/common/http';
+import {
+  HttpInterceptorFn,
+  HttpRequest,
+  HttpHandlerFn,
+  HttpErrorResponse,
+} from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, switchMap, throwError, BehaviorSubject, filter, take } from 'rxjs';
@@ -7,20 +12,23 @@ import { AuthService } from '../services/auth.service';
 let isRefreshing = false;
 const refreshTokenSubject = new BehaviorSubject<string | null>(null);
 
-export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, next: HttpHandlerFn) => {
+export const authInterceptor: HttpInterceptorFn = (
+  req: HttpRequest<unknown>,
+  next: HttpHandlerFn,
+) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
   let authReq = req.clone({
-    withCredentials: true
+    withCredentials: true,
   });
 
   const token = authService.token;
   if (token && !req.headers.has('Authorization')) {
     authReq = authReq.clone({
       setHeaders: {
-        Authorization: `Bearer ${token}`
-      }
+        Authorization: `Bearer ${token}`,
+      },
     });
   }
 
@@ -46,9 +54,9 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, ne
                   req.clone({
                     withCredentials: true,
                     setHeaders: {
-                      Authorization: `Bearer ${res.data.token}`
-                    }
-                  })
+                      Authorization: `Bearer ${res.data.token}`,
+                    },
+                  }),
                 );
               }
               authService.clearSessionAndRedirect();
@@ -58,7 +66,7 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, ne
               isRefreshing = false;
               authService.clearSessionAndRedirect();
               return throwError(() => refreshErr);
-            })
+            }),
           );
         } else {
           return refreshTokenSubject.pipe(
@@ -69,11 +77,11 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, ne
                 req.clone({
                   withCredentials: true,
                   setHeaders: {
-                    Authorization: `Bearer ${newToken}`
-                  }
-                })
+                    Authorization: `Bearer ${newToken}`,
+                  },
+                }),
               );
-            })
+            }),
           );
         }
       }
@@ -85,6 +93,6 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, ne
       }
 
       return throwError(() => error);
-    })
+    }),
   );
 };

@@ -28,3 +28,58 @@
     }
   }
 }
+
+.code-badge {
+  background-color: var(--admin-surface-alt, #f1e7d5);
+  padding: 0.2rem 0.45rem;
+  border-radius: 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8125rem;
+  color: var(--admin-text-secondary, #6b6a63);
+
+  &.secondary {
+    background-color: #f1f5f9;
+    color: #475569;
+  }
+}
+
+.product-stock-table {
+  min-width: 880px;
+
+  .col-product-name {
+    min-width: 220px;
+    max-width: 320px;
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: normal;
+    line-height: 1.35;
+  }
+
+  .col-code {
+    width: 130px;
+    white-space: nowrap;
+  }
+
+  .col-sku {
+    width: 130px;
+    white-space: nowrap;
+  }
+
+  .col-qty {
+    width: 130px;
+    white-space: nowrap;
+    text-align: right;
+  }
+
+  .col-status {
+    width: 110px;
+    white-space: nowrap;
+    text-align: center;
+  }
+
+  .col-actions {
+    width: 1%;
+    white-space: nowrap;
+    text-align: right;
+  }
+}

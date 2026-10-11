@@ -13,13 +13,13 @@ import { BreadcrumbItem } from '../../../../common/models/breadcrumb.model';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, BreadcrumbComponent],
   templateUrl: './add-category.html',
-  styleUrl: './add-category.scss'
+  styleUrl: './add-category.scss',
 })
 export class AddCategoryComponent implements OnInit {
   breadcrumbs: BreadcrumbItem[] = [
     { label: 'Home', url: '/admin/dashboard' },
     { label: 'Product Categories', url: '/admin/product-categories' },
-    { label: 'Add Category' }
+    { label: 'Add Category' },
   ];
   private fb = inject(FormBuilder);
   private categoryService = inject(AdminProductCategoryService);
@@ -36,9 +36,15 @@ export class AddCategoryComponent implements OnInit {
 
   initForm(): void {
     this.categoryForm = this.fb.group({
-      categoryName: ['', [CustomValidators.requiredNonEmpty, CustomValidators.pattern(/^.{2,100}$/, 'invalidLength')]],
+      categoryName: [
+        '',
+        [
+          CustomValidators.requiredNonEmpty,
+          CustomValidators.pattern(/^.{2,100}$/, 'invalidLength'),
+        ],
+      ],
       description: ['', [CustomValidators.pattern(/^[\s\S]{0,500}$/, 'invalidLength')]],
-      displayOrder: [0, [CustomValidators.nonNegativeInteger]]
+      displayOrder: [0, [CustomValidators.nonNegativeInteger]],
     });
   }
 
@@ -55,7 +61,7 @@ export class AddCategoryComponent implements OnInit {
     const payload: ProductCategoryCreateRequest = {
       categoryName: this.categoryForm.value.categoryName.trim(),
       description: this.categoryForm.value.description?.trim() || '',
-      displayOrder: Number(this.categoryForm.value.displayOrder) || 0
+      displayOrder: Number(this.categoryForm.value.displayOrder) || 0,
     };
 
     this.categoryService.create(payload).subscribe({
@@ -73,7 +79,7 @@ export class AddCategoryComponent implements OnInit {
       error: (err) => {
         this.submitting = false;
         this.errorMessage = err.error?.message || 'Server error occurred.';
-      }
+      },
     });
   }
 

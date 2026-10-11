@@ -1,35 +1,331 @@
 <div class="user-layout-container">
-  <!-- Header Navbar -->
-  <header class="user-navbar">
-    <div class="container nav-content">
-      <a routerLink="/" class="brand">Khel-Akhel</a>
+  <!-- Accessibility Skip Link -->
+  <a href="#main-content" class="skip-to-content">Skip to main content</a>
 
-      <nav class="nav-links">
-        <a routerLink="/" class="nav-link">Home</a>
-        <a routerLink="/products" class="nav-link">Products</a>
+  <!-- Storefront Header -->
+  <header class="storefront-header" role="banner">
+    <div class="container storefront-header-inner">
+      <!-- Mobile Menu Toggle Button -->
+      <button
+        type="button"
+        class="mobile-menu-toggle"
+        [attr.aria-expanded]="isMobileMenuOpen()"
+        aria-controls="storefrontMobileNav"
+        aria-label="Toggle navigation menu"
+        (click)="toggleMobileMenu()"
+      >
+        <span class="hamburger-box" aria-hidden="true">
+          <span class="hamburger-inner" [class.is-active]="isMobileMenuOpen()"></span>
+        </span>
+      </button>
+
+      <!-- Brand Mark & Identity -->
+      <a routerLink="/" class="brand-link" (click)="closeMobileMenu()" aria-label="Khel-Akhel Home">
+        <span class="brand-title">Khel-Akhel</span>
+        <span class="brand-tagline">Studio &amp; Living</span>
+      </a>
+
+      <!-- Desktop Primary Navigation -->
+      <nav class="desktop-nav" aria-label="Primary navigation">
+        <a
+          routerLink="/"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="nav-link"
+        >
+          Home
+        </a>
+        <a routerLink="/shop" routerLinkActive="active" class="nav-link">Shop</a>
+        <a routerLink="/about" routerLinkActive="active" class="nav-link">About</a>
+        <a routerLink="/contact" routerLinkActive="active" class="nav-link">Contact</a>
       </nav>
 
-      <div class="auth-actions">
-        @if (authService.isAuthenticated()) {
-          <span class="user-badge">{{ authService.currentUser()?.email }}</span>
-          <button class="btn btn-secondary btn-sm" (click)="logout()">Logout</button>
-        } @else {
-          <a routerLink="/login" class="btn btn-secondary btn-sm">Login</a>
-          <a routerLink="/register" class="btn btn-primary btn-sm">Register</a>
-        }
+      <!-- Header Right Utilities & Account -->
+      <div class="header-actions">
+        <!-- Wishlist Link -->
+        <a
+          routerLink="/wishlist"
+          class="action-icon-link"
+          aria-label="Wishlist"
+          title="Wishlist"
+        >
+          <svg
+            class="action-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path
+              d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
+            />
+          </svg>
+        </a>
+
+        <!-- Cart Link -->
+        <a
+          routerLink="/cart"
+          class="action-icon-link"
+          aria-label="Shopping Cart"
+          title="Shopping Cart"
+        >
+          <svg
+            class="action-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+            <path d="M3 6h18" />
+            <path d="M16 10a4 4 0 0 1-8 0" />
+          </svg>
+        </a>
+
+        <!-- Auth Navigation & User State -->
+        <div class="auth-wrapper">
+          @if (authService.isAuthenticated()) {
+            <div class="user-session-pill">
+              <span class="user-email-label" [title]="authService.currentUser()?.email || 'My Account'">
+                {{ authService.currentUser()?.email }}
+              </span>
+              <button
+                type="button"
+                class="btn-auth-logout"
+                (click)="logout()"
+                aria-label="Sign out of account"
+              >
+                Sign Out
+              </button>
+            </div>
+          } @else {
+            <div class="guest-auth-actions">
+              <a routerLink="/login" class="btn-auth-signin">Sign In</a>
+              <a routerLink="/register" class="btn-auth-join">Join</a>
+            </div>
+          }
+        </div>
       </div>
     </div>
   </header>
 
-  <!-- Page Main Body -->
-  <main class="container user-content">
+  <!-- Mobile Drawer Backdrop Overlay -->
+  <div
+    class="mobile-drawer-backdrop"
+    [class.is-open]="isMobileMenuOpen()"
+    (click)="closeMobileMenu()"
+    [attr.aria-hidden]="!isMobileMenuOpen()"
+  ></div>
+
+  <!-- Mobile Navigation Drawer -->
+  <aside
+    id="storefrontMobileNav"
+    class="mobile-nav-drawer"
+    [class.is-open]="isMobileMenuOpen()"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Mobile Navigation"
+  >
+    <div class="drawer-header">
+      <div class="drawer-brand">
+        <span class="brand-title">Khel-Akhel</span>
+        <span class="brand-tagline">Studio &amp; Living</span>
+      </div>
+      <button
+        type="button"
+        class="drawer-close-btn"
+        (click)="closeMobileMenu()"
+        aria-label="Close navigation menu"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <nav class="drawer-nav" aria-label="Mobile primary navigation">
+      <a
+        routerLink="/"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="drawer-nav-item"
+        (click)="closeMobileMenu()"
+      >
+        Home
+      </a>
+      <a
+        routerLink="/shop"
+        routerLinkActive="active"
+        class="drawer-nav-item"
+        (click)="closeMobileMenu()"
+      >
+        Shop
+      </a>
+      <a
+        routerLink="/about"
+        routerLinkActive="active"
+        class="drawer-nav-item"
+        (click)="closeMobileMenu()"
+      >
+        About Studio
+      </a>
+      <a
+        routerLink="/contact"
+        routerLinkActive="active"
+        class="drawer-nav-item"
+        (click)="closeMobileMenu()"
+      >
+        Contact &amp; Custom Works
+      </a>
+      <a
+        routerLink="/wishlist"
+        routerLinkActive="active"
+        class="drawer-nav-item drawer-nav-item-iconic"
+        (click)="closeMobileMenu()"
+      >
+        <svg
+          class="drawer-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path
+            d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
+          />
+        </svg>
+        Wishlist
+      </a>
+      <a
+        routerLink="/cart"
+        routerLinkActive="active"
+        class="drawer-nav-item drawer-nav-item-iconic"
+        (click)="closeMobileMenu()"
+      >
+        <svg
+          class="drawer-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+          <path d="M3 6h18" />
+          <path d="M16 10a4 4 0 0 1-8 0" />
+        </svg>
+        Shopping Cart
+      </a>
+    </nav>
+
+    <div class="drawer-footer">
+      @if (authService.isAuthenticated()) {
+        <div class="drawer-user-info">
+          <p class="drawer-user-meta">Signed in as</p>
+          <p class="drawer-user-email">{{ authService.currentUser()?.email }}</p>
+          <button type="button" class="btn-drawer-logout" (click)="logout()">
+            Sign Out
+          </button>
+        </div>
+      } @else {
+        <div class="drawer-auth-grid">
+          <a routerLink="/login" class="btn-drawer-login" (click)="closeMobileMenu()">Sign In</a>
+          <a routerLink="/register" class="btn-drawer-register" (click)="closeMobileMenu()">Join</a>
+        </div>
+      }
+
+      <div class="drawer-daras-tag">
+        <p class="tag-title">In Association with DARAS</p>
+        <p class="tag-sub">Art &bull; Objects &bull; Contemporary Living</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Page Main Content Container -->
+  <main id="main-content" class="storefront-main" tabindex="-1">
     <router-outlet></router-outlet>
   </main>
 
-  <!-- Footer -->
-  <footer class="user-footer">
-    <div class="container footer-content">
-      <p>&copy; 2026 Khel-Akhel E-Commerce. All rights reserved.</p>
+  <!-- Storefront Footer -->
+  <footer class="storefront-footer" role="contentinfo">
+    <div class="container footer-content-grid">
+      <!-- Column 1: Brand & Studio Heritage -->
+      <div class="footer-col brand-col">
+        <h3 class="footer-brand-title">Khel-Akhel</h3>
+        <p class="footer-brand-tagline">Studio &bull; Objects &bull; Living</p>
+        <p class="footer-brand-desc">
+          A creative studio and lifestyle brand celebrating authentic craft, contemporary objects,
+          and curated living. Connected to DARAS.
+        </p>
+        <div class="footer-association-badge">
+          <span>Associated with DARAS</span>
+        </div>
+      </div>
+
+      <!-- Column 2: Studio & Shop -->
+      <div class="footer-col">
+        <h4 class="footer-heading">Studio &amp; Shop</h4>
+        <ul class="footer-links">
+          <li><a routerLink="/shop">All Collections</a></li>
+          <li><a routerLink="/about">About Khel-Akhel</a></li>
+          <li><a routerLink="/press">Press &amp; Publications</a></li>
+          <li><a routerLink="/contact">Murals &amp; Commissions</a></li>
+        </ul>
+      </div>
+
+      <!-- Column 3: Customer Care -->
+      <div class="footer-col">
+        <h4 class="footer-heading">Customer Care</h4>
+        <ul class="footer-links">
+          <li><a routerLink="/orders">Orders &amp; Tracking</a></li>
+          <li><a routerLink="/faq">Frequently Asked Questions</a></li>
+          <li><a routerLink="/contact">Studio Assistance</a></li>
+          <li><a routerLink="/returns">Shipping &amp; Delivery</a></li>
+        </ul>
+      </div>
+
+      <!-- Column 4: Legal & Policies -->
+      <div class="footer-col">
+        <h4 class="footer-heading">Policies</h4>
+        <ul class="footer-links">
+          <li><a routerLink="/terms">Terms &amp; Conditions</a></li>
+          <li><a routerLink="/privacy">Privacy Policy</a></li>
+          <li><a routerLink="/returns">Returns &amp; Refund Policy</a></li>
+          <li><a routerLink="/cookie-policy">Cookie Policy</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Bottom Bar -->
+    <div class="footer-bottom-wrapper">
+      <div class="container footer-bottom-inner">
+        <p class="footer-copyright">
+          &copy; 2026 Khel-Akhel Studio. All rights reserved. In association with DARAS.
+        </p>
+        <p class="footer-disciplines">
+          Art Prints &bull; Photography &bull; Lighting &bull; Murals &bull; Sculptures &bull; Living
+        </p>
+      </div>
     </div>
   </footer>
 </div>

@@ -7,11 +7,11 @@ import {
   ProductListRequest,
   ProductListResponse,
   ProductResponse,
-  ProductUpdateRequest
+  ProductUpdateRequest,
 } from '../models/product.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AdminProductService {
   constructor(private api: ApiService) {}

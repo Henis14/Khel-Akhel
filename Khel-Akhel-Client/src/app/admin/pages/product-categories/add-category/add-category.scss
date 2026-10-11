@@ -11,13 +11,13 @@
     font-family: Georgia, 'Times New Roman', serif;
     font-size: 1.625rem;
     font-weight: 700;
-    color: var(--ka-text, #1E2430);
+    color: var(--ka-text, #1e2430);
     margin: 0 0 0.25rem 0;
   }
 
   .subtitle {
     font-size: 0.875rem;
-    color: var(--ka-text-secondary, #6B6A63);
+    color: var(--ka-text-secondary, #6b6a63);
     margin: 0;
   }
 }
@@ -29,9 +29,9 @@
 }
 
 .card {
-  background: var(--ka-surface, #FBF9F4);
+  background: var(--ka-surface, #fbf9f4);
   border-radius: var(--admin-radius-lg, 12px);
-  border: 1px solid var(--ka-border, #D9D3C6);
+  border: 1px solid var(--ka-border, #d9d3c6);
   box-shadow: 0 2px 6px rgba(31, 53, 87, 0.04);
   padding: 1.5rem;
 }
@@ -43,7 +43,7 @@
     gap: 1rem;
     margin-bottom: 1.5rem;
     padding-bottom: 1rem;
-    border-bottom: 1px solid var(--ka-border, #D9D3C6);
+    border-bottom: 1px solid var(--ka-border, #d9d3c6);
 
     .header-icon-avatar {
       width: 44px;
@@ -54,21 +54,21 @@
       justify-content: center;
 
       &.blue {
-        background-color: rgba(31, 53, 87, 0.10);
-        color: var(--ka-navy, #1F3557);
+        background-color: rgba(31, 53, 87, 0.1);
+        color: var(--ka-navy, #1f3557);
       }
     }
 
     h3 {
       font-size: 1.125rem;
       font-weight: 600;
-      color: var(--ka-text, #1E2430);
+      color: var(--ka-text, #1e2430);
       margin: 0;
     }
 
     p {
       font-size: 0.825rem;
-      color: var(--ka-text-secondary, #6B6A63);
+      color: var(--ka-text-secondary, #6b6a63);
       margin: 0.15rem 0 0 0;
     }
   }
@@ -95,11 +95,11 @@
       label {
         font-size: 0.85rem;
         font-weight: 600;
-        color: var(--ka-text, #1E2430);
+        color: var(--ka-text, #1e2430);
         margin-bottom: 0.4rem;
 
         .req {
-          color: var(--ka-error, #A83F32);
+          color: var(--ka-error, #a83f32);
         }
       }
 
@@ -112,20 +112,22 @@
           width: 100%;
           padding: 0.65rem 0.85rem;
           font-size: 0.875rem;
-          border: 1px solid var(--ka-border, #D9D3C6);
+          border: 1px solid var(--ka-border, #d9d3c6);
           border-radius: 8px;
-          background-color: var(--ka-white, #FFFFFF);
-          color: var(--ka-text, #1E2430);
+          background-color: var(--ka-white, #ffffff);
+          color: var(--ka-text, #1e2430);
           outline: none;
-          transition: border-color 0.2s ease, box-shadow 0.2s ease;
+          transition:
+            border-color 0.2s ease,
+            box-shadow 0.2s ease;
 
           &:focus {
-            border-color: var(--ka-navy, #1F3557);
+            border-color: var(--ka-navy, #1f3557);
             box-shadow: 0 0 0 3px rgba(31, 53, 87, 0.12);
           }
 
           &.is-invalid {
-            border-color: var(--ka-error, #A83F32);
+            border-color: var(--ka-error, #a83f32);
           }
         }
 
@@ -137,13 +139,13 @@
 
       .form-hint {
         font-size: 0.775rem;
-        color: var(--ka-text-muted, #8A887F);
+        color: var(--ka-text-muted, #8a887f);
         margin-top: 0.35rem;
       }
 
       .invalid-feedback {
         font-size: 0.775rem;
-        color: var(--ka-error, #A83F32);
+        color: var(--ka-error, #a83f32);
         margin-top: 0.35rem;
       }
     }
@@ -169,24 +171,24 @@
     transition: all 0.2s ease;
 
     &.btn-cancel {
-      background: var(--ka-surface, #FBF9F4);
-      border: 1px solid var(--ka-navy, #1F3557);
-      color: var(--ka-navy, #1F3557);
+      background: var(--ka-surface, #fbf9f4);
+      border: 1px solid var(--ka-navy, #1f3557);
+      color: var(--ka-navy, #1f3557);
 
       &:hover {
-        background-color: var(--ka-navy, #1F3557);
+        background-color: var(--ka-navy, #1f3557);
         color: #ffffff;
       }
     }
 
     &.btn-primary {
-      background: var(--ka-navy, #1F3557);
-      border: 1px solid var(--ka-navy, #1F3557);
+      background: var(--ka-navy, #1f3557);
+      border: 1px solid var(--ka-navy, #1f3557);
       color: #ffffff;
 
       &:hover:not(:disabled) {
-        background-color: var(--ka-dark-navy, #162A45);
-        border-color: var(--ka-dark-navy, #162A45);
+        background-color: var(--ka-dark-navy, #162a45);
+        border-color: var(--ka-dark-navy, #162a45);
       }
 
       &:disabled {
@@ -208,7 +210,7 @@
   &.alert-success {
     background-color: rgba(45, 115, 112, 0.12);
     border: 1px solid rgba(45, 115, 112, 0.25);
-    color: #2D7370;
+    color: #2d7370;
   }
 
   &.alert-danger {

@@ -72,7 +72,10 @@ export class CustomValidators {
   /**
    * Cross-field validator ensuring Selling Price <= MRP.
    */
-  static sellingPriceLessOrEqualMrp(mrpKey: string = 'mrp', priceKey: string = 'sellingPrice'): ValidatorFn {
+  static sellingPriceLessOrEqualMrp(
+    mrpKey: string = 'mrp',
+    priceKey: string = 'sellingPrice',
+  ): ValidatorFn {
     return (group: AbstractControl): ValidationErrors | null => {
       const mrp = group.get(mrpKey)?.value;
       const price = group.get(priceKey)?.value;

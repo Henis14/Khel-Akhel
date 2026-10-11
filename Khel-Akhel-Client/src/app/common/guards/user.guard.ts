@@ -20,6 +20,6 @@ export const userGuard: CanActivateFn = (route, state) => {
     }),
     catchError(() => {
       return of(router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } }));
-    })
+    }),
   );
 };

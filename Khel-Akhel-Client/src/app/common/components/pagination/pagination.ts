@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './pagination.html',
-  styleUrl: './pagination.scss'
+  styleUrl: './pagination.scss',
 })
 export class PaginationComponent {
   @Input() pageIndex: number = 1;

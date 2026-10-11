@@ -5,11 +5,11 @@ import { ApiResponse } from '../../common/models/api-response.model';
 import {
   CustomerAddressCreateRequest,
   CustomerAddressResponse,
-  CustomerAddressUpdateRequest
+  CustomerAddressUpdateRequest,
 } from '../models/customer-address.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AdminCustomerAddressService {
   constructor(private api: ApiService) {}

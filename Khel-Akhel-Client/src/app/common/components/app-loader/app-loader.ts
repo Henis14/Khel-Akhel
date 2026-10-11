@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './app-loader.html',
-  styleUrl: './app-loader.scss'
+  styleUrl: './app-loader.scss',
 })
 export class AppLoaderComponent {
   @Input() size: 'small' | 'medium' = 'medium';

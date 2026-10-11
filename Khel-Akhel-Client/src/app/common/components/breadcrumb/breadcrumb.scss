@@ -16,7 +16,7 @@
   line-height: 1.25rem; /* 20px */
   overflow-x: auto;
   scrollbar-width: none; /* Hide scrollbar for clean look */
-  
+
   &::-webkit-scrollbar {
     display: none;
   }
@@ -29,24 +29,24 @@
   white-space: nowrap;
 
   .breadcrumb-link {
-    color: var(--admin-text-secondary, #64748b);
+    color: var(--ka-text-secondary, #6b6a63);
     text-decoration: none;
-    font-weight: 400;
+    font-weight: 500;
     transition: color 0.15s ease;
 
     &:hover {
-      color: var(--admin-primary, #2563eb);
+      color: var(--ka-terracotta, #b45132);
     }
   }
 
   .breadcrumb-current {
-    color: var(--admin-text-primary, #0f172a);
+    color: var(--ka-text, #1e2430);
     font-weight: 600;
     cursor: default;
   }
 
   .breadcrumb-separator {
-    color: var(--admin-text-muted, #94a3b8);
+    color: var(--ka-text-muted, #8a887f);
     display: inline-flex;
     align-items: center;
     justify-content: center;

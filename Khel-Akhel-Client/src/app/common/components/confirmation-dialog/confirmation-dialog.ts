@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './confirmation-dialog.html',
-  styleUrl: './confirmation-dialog.scss'
+  styleUrl: './confirmation-dialog.scss',
 })
 export class ConfirmationDialogComponent {
   @Input() isOpen: boolean = false;

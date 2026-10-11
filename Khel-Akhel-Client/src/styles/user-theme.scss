@@ -1,18 +1,221 @@
-/* Khel-Akhel User Theme Styles */
 :root {
-  --user-primary: #1976d2;
-  --user-primary-dark: #115293;
-  --user-accent: #ff9800;
-  --user-bg: #f4f6f8;
-  --user-surface: #ffffff;
-  --user-text-primary: #212121;
-  --user-text-secondary: #666666;
-  --user-border: #e2e8f0;
+  /* ------------------------------------------------------------------------
+     1. Brand Color Palette
+     ------------------------------------------------------------------------ */
+  /* Core Brand Colors */
+  --user-navy: #1f3557; /* Deep Navy (Primary brand anchor) */
+  --user-navy-hover: #162a45; /* Darkened Navy for button hovers */
+  --user-navy-dark: #122137; /* Deepest Navy for high contrast */
+  --user-navy-light: #2c4a75; /* Medium Navy for accents */
+  --user-navy-soft: rgba(31, 53, 87, 0.07);
+
+  --user-terracotta: #b45132; /* Terracotta (Primary warm accent) */
+  --user-terracotta-hover: #923f28; /* Deepened Terracotta for hovers */
+  --user-terracotta-light: #c9684b; /* Light Terracotta */
+  --user-terracotta-soft: rgba(180, 81, 50, 0.08);
+
+  --user-ochre: #d9a441; /* Warm Ochre (Lustrous craft accent) */
+  --user-ochre-hover: #b07b22; /* Deepened Ochre */
+  --user-ochre-light: #e5b95c; /* Light Ochre */
+  --user-ochre-soft: rgba(217, 164, 65, 0.12);
+
+  --user-ivory: #f5f1e8; /* Ivory (Base warm canvas) */
+
+  /* ------------------------------------------------------------------------
+     2. Surface & Background Tokens
+     ------------------------------------------------------------------------ */
+  --user-bg: #f5f1e8; /* Main warm storefront canvas */
+  --user-surface: #fbf9f4; /* Elevated surface: cards, modals, sheets */
+  --user-surface-alt: #f1e7d5; /* Subtle tinted contrast surface */
+  --user-surface-elevated: #ffffff; /* Clean white elevated panels */
+  --user-surface-translucent: rgba(245, 241, 232, 0.94); /* Frosted header */
+  --user-surface-drawer: #fbf9f4; /* Mobile navigation drawer */
+
+  /* ------------------------------------------------------------------------
+     3. Typography & Text Color Tokens (WCAG AA / AAA Accessible)
+     ------------------------------------------------------------------------ */
+  --user-text-primary: #1e2430; /* High contrast body and headings */
+  --user-text-secondary: #565c65; /* Secondary descriptive text */
+  --user-text-muted: #7e848d; /* Meta, captions, timestamps */
+  --user-text-subtle: #9c9990; /* Minimal decorative text */
+  --user-text-inverse: #ffffff; /* White on dark backgrounds */
+  --user-text-on-navy: #f5f1e8; /* Warm Ivory text on Deep Navy surfaces */
+  --user-text-on-terracotta: #ffffff;
+
+  /* Font Families */
+  --user-font-serif: Georgia, 'Times New Roman', Cambria, serif;
+  --user-font-sans:
+    'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Font Weights */
+  --user-fw-regular: 400;
+  --user-fw-medium: 500;
+  --user-fw-semibold: 600;
+  --user-fw-bold: 700;
+
+  /* Restrained Type Scale */
+  --user-fs-display: clamp(2rem, 3.5vw + 1rem, 3.25rem);
+  --user-fs-h1: clamp(1.75rem, 2.4vw + 1rem, 2.5rem);
+  --user-fs-h2: clamp(1.35rem, 1.6vw + 0.8rem, 1.875rem);
+  --user-fs-h3: clamp(1.15rem, 1vw + 0.75rem, 1.35rem);
+  --user-fs-body: 1rem;
+  --user-fs-body-sm: 0.875rem;
+  --user-fs-caption: 0.75rem;
+  --user-fs-button: 0.875rem;
+
+  /* Line Heights & Letter Spacing */
+  --user-lh-tight: 1.2;
+  --user-lh-heading: 1.3;
+  --user-lh-normal: 1.55;
+  --user-lh-relaxed: 1.7;
+
+  --user-tracking-tight: -0.02em;
+  --user-tracking-normal: 0;
+  --user-tracking-wide: 0.05em;
+  --user-tracking-wider: 0.12em;
+  --user-tracking-widest: 0.2em;
+
+  /* ------------------------------------------------------------------------
+     4. Borders & Dividers
+     ------------------------------------------------------------------------ */
+  --user-border: #d9d3c6; /* Standard structural borders */
+  --user-border-subtle: #e8e2d6; /* Subtle dividers & card outlines */
+  --user-border-strong: #bfb5a3; /* Active or prominent borders */
+  --user-border-navy: rgba(31, 53, 87, 0.18);
+  --user-border-dark-section: rgba(245, 241, 232, 0.15); /* Dividers on navy */
+
+  /* ------------------------------------------------------------------------
+     5. Feedback & Semantic States
+     ------------------------------------------------------------------------ */
+  --user-success: #2d7370; /* Deep craft teal */
+  --user-success-bg: rgba(45, 115, 112, 0.12);
+  --user-success-border: rgba(45, 115, 112, 0.28);
+
+  --user-warning: #b07b22; /* Muted amber */
+  --user-warning-bg: rgba(217, 164, 65, 0.14);
+  --user-warning-border: rgba(217, 164, 65, 0.3);
+
+  --user-error: #a83f32; /* Crimson terracotta */
+  --user-error-bg: rgba(168, 63, 50, 0.12);
+  --user-error-border: rgba(168, 63, 50, 0.28);
+
+  --user-info: #1f3557; /* Deep navy */
+  --user-info-bg: rgba(31, 53, 87, 0.08);
+  --user-info-border: rgba(31, 53, 87, 0.2);
+
+  /* Disabled State Tokens */
+  --user-disabled-bg: #e8e4da;
+  --user-disabled-text: #9a978e;
+  --user-disabled-border: #d4cebf;
+
+  /* Focus & Interactive States */
+  --user-focus-ring: 0 0 0 3px rgba(31, 53, 87, 0.22);
+  --user-focus-ring-terracotta: 0 0 0 3px rgba(180, 81, 50, 0.28);
+
+  /* ------------------------------------------------------------------------
+     6. Spacing, Sizing & Layout Tokens
+     ------------------------------------------------------------------------ */
+  --user-space-3xs: 0.25rem; /* 4px */
+  --user-space-2xs: 0.5rem; /* 8px */
+  --user-space-xs: 0.75rem; /* 12px */
+  --user-space-sm: 1rem; /* 16px */
+  --user-space-md: 1.5rem; /* 24px */
+  --user-space-lg: 2rem; /* 32px */
+  --user-space-xl: 3rem; /* 48px */
+  --user-space-2xl: 4.5rem; /* 72px */
+  --user-space-3xl: 6rem; /* 96px */
+
+  /* Containers & Gutters */
+  --user-container-max: 1280px;
+  --user-container-narrow: 920px;
+  --user-gutter: clamp(1rem, 3.5vw, 2.5rem);
+
+  /* Layout Heights */
+  --user-header-height: 72px;
+  --user-header-height-mobile: 60px;
+  --user-mobile-drawer-width: min(340px, 86vw);
+
+  /* Border Radii */
+  --user-radius-xs: 3px;
+  --user-radius-sm: 6px;
+  --user-radius-md: 10px;
+  --user-radius-lg: 16px;
+  --user-radius-pill: 9999px;
+
+  /* Elevation Shadows */
+  --user-shadow-xs: 0 1px 2px rgba(31, 53, 87, 0.04);
+  --user-shadow-sm: 0 2px 6px rgba(31, 53, 87, 0.06);
+  --user-shadow-md: 0 6px 16px -2px rgba(31, 53, 87, 0.08);
+  --user-shadow-lg: 0 14px 28px -4px rgba(31, 53, 87, 0.12);
+  --user-shadow-drawer: 8px 0 24px rgba(31, 53, 87, 0.15);
+
+  /* Transitions */
+  --user-transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --user-transition-base: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --user-transition-smooth: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ------------------------------------------------------------------------
+     7. Backward Compatibility Bridges
+     ------------------------------------------------------------------------ */
+  --user-primary: var(--user-navy);
+  --user-primary-dark: var(--user-navy-dark);
+  --user-accent: var(--user-terracotta);
 }
 
+/* ==========================================================================
+   Storefront Root Container Scoping
+   ========================================================================== */
 .user-layout-container {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--user-font-sans);
   color: var(--user-text-primary);
   background-color: var(--user-bg);
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  width: 100%;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Skip to main content accessibility link */
+.skip-to-content {
+  position: absolute;
+  top: -100px;
+  left: 1rem;
+  z-index: 10000;
+  background-color: var(--user-navy);
+  color: #ffffff;
+  padding: 0.65rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: var(--user-fw-semibold);
+  border-radius: var(--user-radius-sm);
+  text-decoration: none;
+  box-shadow: var(--user-shadow-md);
+  transition: top var(--user-transition-fast);
+
+  &:focus {
+    top: 1rem;
+    outline: 2px solid var(--user-ochre);
+    outline-offset: 2px;
+  }
+}
+
+/* Focus visible utility */
+.user-layout-container :focus-visible {
+  outline: 2px solid var(--user-navy);
+  outline-offset: 2px;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .user-layout-container *,
+  .user-layout-container *::before,
+  .user-layout-container *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -8,7 +8,7 @@ import { AuthService } from '../../../common/services/auth.service';
   standalone: true,
   imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
   templateUrl: './admin-layout.html',
-  styleUrl: './admin-layout.scss'
+  styleUrl: './admin-layout.scss',
 })
 export class AdminLayoutComponent implements OnInit {
   private authService = inject(AuthService);
@@ -30,7 +30,8 @@ export class AdminLayoutComponent implements OnInit {
     if (url.includes('/admin/products')) this.productsMenuOpen = true;
     if (url.includes('/admin/product-categories')) this.categoriesMenuOpen = true;
     if (url.includes('/admin/product-stock')) this.stockMenuOpen = true;
-    if (url.includes('/admin/customers') || url.includes('/admin/customer-addresses')) this.customersMenuOpen = true;
+    if (url.includes('/admin/customers') || url.includes('/admin/customer-addresses'))
+      this.customersMenuOpen = true;
   }
 
   toggleSidebar(): void {
@@ -53,7 +54,7 @@ export class AdminLayoutComponent implements OnInit {
       },
       error: () => {
         this.router.navigate(['/admin/login']);
-      }
+      },
     });
   }
 }

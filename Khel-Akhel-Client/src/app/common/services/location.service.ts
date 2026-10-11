@@ -5,7 +5,7 @@ import { ApiResponse } from '../models/api-response.model';
 import { CountryResponse, StateResponse } from '../models/location.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class LocationService {
   constructor(private api: ApiService) {}

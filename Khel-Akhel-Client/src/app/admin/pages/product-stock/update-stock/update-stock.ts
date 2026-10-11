@@ -5,7 +5,10 @@ import { Router } from '@angular/router';
 import { AdminProductStockService } from '../../../services/admin-product-stock.service';
 import { AdminProductService } from '../../../services/admin-product.service';
 import { ProductResponse } from '../../../models/product.model';
-import { ProductStockAddRequest, ProductStockUpdateRequest } from '../../../models/product-stock.model';
+import {
+  ProductStockAddRequest,
+  ProductStockUpdateRequest,
+} from '../../../models/product-stock.model';
 import { CustomValidators } from '../../../../common/validators/custom.validators';
 import { BreadcrumbComponent } from '../../../../common/components/breadcrumb/breadcrumb';
 import { BreadcrumbItem } from '../../../../common/models/breadcrumb.model';
@@ -15,13 +18,13 @@ import { BreadcrumbItem } from '../../../../common/models/breadcrumb.model';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, BreadcrumbComponent],
   templateUrl: './update-stock.html',
-  styleUrl: './update-stock.scss'
+  styleUrl: './update-stock.scss',
 })
 export class UpdateStockComponent implements OnInit {
   breadcrumbs: BreadcrumbItem[] = [
     { label: 'Home', url: '/admin/dashboard' },
     { label: 'Product Stock', url: '/admin/product-stock' },
-    { label: 'Add / Update Stock' }
+    { label: 'Add / Update Stock' },
   ];
   private fb = inject(FormBuilder);
   private stockService = inject(AdminProductStockService);
@@ -47,13 +50,16 @@ export class UpdateStockComponent implements OnInit {
   initForms(): void {
     this.addStockForm = this.fb.group({
       encryptedProductId: ['', [CustomValidators.requiredNonEmpty]],
-      quantity: [1, [CustomValidators.requiredNonEmpty, CustomValidators.positiveNumber]]
+      quantity: [1, [CustomValidators.requiredNonEmpty, CustomValidators.positiveNumber]],
     });
 
     this.setStockForm = this.fb.group({
       encryptedProductId: ['', [CustomValidators.requiredNonEmpty]],
-      availableQuantity: [0, [CustomValidators.requiredNonEmpty, CustomValidators.nonNegativeInteger]],
-      reservedQuantity: [0, [CustomValidators.nonNegativeInteger]]
+      availableQuantity: [
+        0,
+        [CustomValidators.requiredNonEmpty, CustomValidators.nonNegativeInteger],
+      ],
+      reservedQuantity: [0, [CustomValidators.nonNegativeInteger]],
     });
   }
 
@@ -73,7 +79,7 @@ export class UpdateStockComponent implements OnInit {
       },
       error: () => {
         this.loadingProducts = false;
-      }
+      },
     });
   }
 
@@ -95,7 +101,7 @@ export class UpdateStockComponent implements OnInit {
 
     const payload: ProductStockAddRequest = {
       encryptedProductId: this.addStockForm.value.encryptedProductId,
-      quantity: Number(this.addStockForm.value.quantity)
+      quantity: Number(this.addStockForm.value.quantity),
     };
 
     this.stockService.addStock(payload).subscribe({
@@ -113,7 +119,7 @@ export class UpdateStockComponent implements OnInit {
       error: (err) => {
         this.submitting = false;
         this.errorMessage = err.error?.message || 'Server error occurred while adding stock.';
-      }
+      },
     });
   }
 
@@ -130,7 +136,7 @@ export class UpdateStockComponent implements OnInit {
     const payload: ProductStockUpdateRequest = {
       encryptedProductId: this.setStockForm.value.encryptedProductId,
       availableQuantity: Number(this.setStockForm.value.availableQuantity),
-      reservedQuantity: Number(this.setStockForm.value.reservedQuantity) || 0
+      reservedQuantity: Number(this.setStockForm.value.reservedQuantity) || 0,
     };
 
     this.stockService.updateStock(payload).subscribe({
@@ -148,7 +154,7 @@ export class UpdateStockComponent implements OnInit {
       error: (err) => {
         this.submitting = false;
         this.errorMessage = err.error?.message || 'Server error occurred while updating stock.';
-      }
+      },
     });
   }
 

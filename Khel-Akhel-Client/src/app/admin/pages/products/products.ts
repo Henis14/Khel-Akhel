@@ -4,7 +4,11 @@ import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AdminProductService } from '../../services/admin-product.service';
 import { AdminProductCategoryService } from '../../services/admin-product-category.service';
-import { ProductCreateRequest, ProductResponse, ProductUpdateRequest } from '../../models/product.model';
+import {
+  ProductCreateRequest,
+  ProductResponse,
+  ProductUpdateRequest,
+} from '../../models/product.model';
 import { ProductCategoryResponse } from '../../models/product-category.model';
 import { CustomValidators } from '../../../common/validators/custom.validators';
 import { REGEX_PATTERNS } from '../../../common/constants/regex.constants';
@@ -24,15 +28,15 @@ import { AppLoaderComponent } from '../../../common/components/app-loader/app-lo
     PaginationComponent,
     ConfirmationDialogComponent,
     BreadcrumbComponent,
-    AppLoaderComponent
+    AppLoaderComponent,
   ],
   templateUrl: './products.html',
-  styleUrl: './products.scss'
+  styleUrl: './products.scss',
 })
 export class ProductsComponent implements OnInit {
   breadcrumbs: BreadcrumbItem[] = [
     { label: 'Home', url: '/admin/dashboard' },
-    { label: 'Products' }
+    { label: 'Products' },
   ];
   private productService = inject(AdminProductService);
   private categoryService = inject(AdminProductCategoryService);
@@ -71,22 +75,34 @@ export class ProductsComponent implements OnInit {
   }
 
   initForm(): void {
-    this.productForm = this.fb.group({
-      encryptedCategoryId: ['', [CustomValidators.requiredNonEmpty]],
-      productName: ['', [CustomValidators.requiredNonEmpty]],
-      sku: ['', [CustomValidators.requiredNonEmpty, CustomValidators.pattern(REGEX_PATTERNS.SKU, 'invalidSku')]],
-      shortDescription: [''],
-      description: [''],
-      mrp: [0, [CustomValidators.nonNegativeNumber, CustomValidators.maxDecimalPlaces(2)]],
-      sellingPrice: [0, [CustomValidators.nonNegativeNumber, CustomValidators.maxDecimalPlaces(2)]],
-      isFeatured: [false],
-      isNewArrival: [false],
-      isBestSeller: [false],
-      isTrending: [false],
-      isCustomerFavourite: [false]
-    }, {
-      validators: [CustomValidators.sellingPriceLessOrEqualMrp('mrp', 'sellingPrice')]
-    });
+    this.productForm = this.fb.group(
+      {
+        encryptedCategoryId: ['', [CustomValidators.requiredNonEmpty]],
+        productName: ['', [CustomValidators.requiredNonEmpty]],
+        sku: [
+          '',
+          [
+            CustomValidators.requiredNonEmpty,
+            CustomValidators.pattern(REGEX_PATTERNS.SKU, 'invalidSku'),
+          ],
+        ],
+        shortDescription: [''],
+        description: [''],
+        mrp: [0, [CustomValidators.nonNegativeNumber, CustomValidators.maxDecimalPlaces(2)]],
+        sellingPrice: [
+          0,
+          [CustomValidators.nonNegativeNumber, CustomValidators.maxDecimalPlaces(2)],
+        ],
+        isFeatured: [false],
+        isNewArrival: [false],
+        isBestSeller: [false],
+        isTrending: [false],
+        isCustomerFavourite: [false],
+      },
+      {
+        validators: [CustomValidators.sellingPriceLessOrEqualMrp('mrp', 'sellingPrice')],
+      },
+    );
   }
 
   loadCategories(): void {
@@ -99,7 +115,7 @@ export class ProductsComponent implements OnInit {
       },
       error: () => {
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -112,7 +128,7 @@ export class ProductsComponent implements OnInit {
         pageIndex: this.pageIndex,
         pageSize: this.pageSize,
         search: this.searchQuery.trim() || undefined,
-        encryptedCategoryId: this.selectedCategoryFilter || undefined
+        encryptedCategoryId: this.selectedCategoryFilter || undefined,
       })
       .subscribe({
         next: (res) => {
@@ -127,7 +143,7 @@ export class ProductsComponent implements OnInit {
           this.loading = false;
           this.errorMessage = err.error?.message || 'Failed to load products.';
           this.cdr.markForCheck();
-        }
+        },
       });
   }
 
@@ -163,7 +179,7 @@ export class ProductsComponent implements OnInit {
       isNewArrival: false,
       isBestSeller: false,
       isTrending: false,
-      isCustomerFavourite: false
+      isCustomerFavourite: false,
     });
     this.isModalOpen = true;
   }
@@ -183,7 +199,7 @@ export class ProductsComponent implements OnInit {
       isNewArrival: product.isNewArrival,
       isBestSeller: product.isBestSeller,
       isTrending: product.isTrending,
-      isCustomerFavourite: product.isCustomerFavourite
+      isCustomerFavourite: product.isCustomerFavourite,
     });
     this.isModalOpen = true;
   }
@@ -223,7 +239,7 @@ export class ProductsComponent implements OnInit {
         isNewArrival: !!this.productForm.value.isNewArrival,
         isBestSeller: !!this.productForm.value.isBestSeller,
         isTrending: !!this.productForm.value.isTrending,
-        isCustomerFavourite: !!this.productForm.value.isCustomerFavourite
+        isCustomerFavourite: !!this.productForm.value.isCustomerFavourite,
       };
 
       this.productService.update(updatePayload).subscribe({
@@ -240,7 +256,7 @@ export class ProductsComponent implements OnInit {
         error: (err) => {
           this.formSubmitting = false;
           this.errorMessage = err.error?.message || 'Failed to update product.';
-        }
+        },
       });
     } else {
       const createPayload: ProductCreateRequest = {
@@ -255,7 +271,7 @@ export class ProductsComponent implements OnInit {
         isNewArrival: !!this.productForm.value.isNewArrival,
         isBestSeller: !!this.productForm.value.isBestSeller,
         isTrending: !!this.productForm.value.isTrending,
-        isCustomerFavourite: !!this.productForm.value.isCustomerFavourite
+        isCustomerFavourite: !!this.productForm.value.isCustomerFavourite,
       };
 
       this.productService.create(createPayload).subscribe({
@@ -272,7 +288,7 @@ export class ProductsComponent implements OnInit {
         error: (err) => {
           this.formSubmitting = false;
           this.errorMessage = err.error?.message || 'Failed to create product.';
-        }
+        },
       });
     }
   }
@@ -294,7 +310,7 @@ export class ProductsComponent implements OnInit {
         error: (err) => {
           this.isActionSubmitting = false;
           this.errorMessage = err.error?.message || 'Failed to delete product.';
-        }
+        },
       });
     };
     this.isConfirmOpen = true;

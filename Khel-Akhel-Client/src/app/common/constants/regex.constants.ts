@@ -8,5 +8,5 @@ export const REGEX_PATTERNS = {
   ALPHA_SPACE: /^[A-Za-z ]{2,100}$/,
   ACCOUNT_NO: /^DRC[0-9]{6}$/,
   PRODUCT_CODE: /^DRP[0-9]{6}$/,
-  CITY: /^[A-Za-z][A-Za-z .'-]{1,99}$/
+  CITY: /^[A-Za-z][A-Za-z .'-]{1,99}$/,
 };

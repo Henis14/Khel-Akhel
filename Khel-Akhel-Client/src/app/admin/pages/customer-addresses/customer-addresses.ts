@@ -3,7 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { AdminCustomerAddressService } from '../../services/admin-customer-address.service';
 import { LocationService } from '../../../common/services/location.service';
-import { CustomerAddressCreateRequest, CustomerAddressResponse, CustomerAddressUpdateRequest } from '../../models/customer-address.model';
+import {
+  CustomerAddressCreateRequest,
+  CustomerAddressResponse,
+  CustomerAddressUpdateRequest,
+} from '../../models/customer-address.model';
 import { CountryResponse, StateResponse } from '../../../common/models/location.model';
 import { CustomValidators } from '../../../common/validators/custom.validators';
 import { REGEX_PATTERNS } from '../../../common/constants/regex.constants';
@@ -15,15 +19,21 @@ import { AppLoaderComponent } from '../../../common/components/app-loader/app-lo
 @Component({
   selector: 'app-customer-addresses',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ConfirmationDialogComponent, BreadcrumbComponent, AppLoaderComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    ConfirmationDialogComponent,
+    BreadcrumbComponent,
+    AppLoaderComponent,
+  ],
   templateUrl: './customer-addresses.html',
-  styleUrl: './customer-addresses.scss'
+  styleUrl: './customer-addresses.scss',
 })
 export class CustomerAddressesComponent implements OnInit {
   breadcrumbs: BreadcrumbItem[] = [
     { label: 'Home', url: '/admin/dashboard' },
     { label: 'Customers', url: '/admin/customers' },
-    { label: 'Customer Addresses' }
+    { label: 'Customer Addresses' },
   ];
   private addressService = inject(AdminCustomerAddressService);
   private locationService = inject(LocationService);
@@ -63,16 +73,43 @@ export class CustomerAddressesComponent implements OnInit {
     this.addressForm = this.fb.group({
       addressTitle: ['Home', [CustomValidators.requiredNonEmpty]],
       addressType: ['Shipping', [CustomValidators.requiredNonEmpty]],
-      fullName: ['', [CustomValidators.requiredNonEmpty, CustomValidators.pattern(/^.{2,200}$/, 'invalidLength')]],
-      mobileNo: ['', [CustomValidators.requiredNonEmpty, CustomValidators.pattern(REGEX_PATTERNS.MOBILE, 'invalidMobile')]],
-      addressLine1: ['', [CustomValidators.requiredNonEmpty, CustomValidators.pattern(/^.{1,255}$/, 'invalidLine1')]],
+      fullName: [
+        '',
+        [
+          CustomValidators.requiredNonEmpty,
+          CustomValidators.pattern(/^.{2,200}$/, 'invalidLength'),
+        ],
+      ],
+      mobileNo: [
+        '',
+        [
+          CustomValidators.requiredNonEmpty,
+          CustomValidators.pattern(REGEX_PATTERNS.MOBILE, 'invalidMobile'),
+        ],
+      ],
+      addressLine1: [
+        '',
+        [CustomValidators.requiredNonEmpty, CustomValidators.pattern(/^.{1,255}$/, 'invalidLine1')],
+      ],
       addressLine2: ['', [CustomValidators.pattern(/^[\s\S]{0,255}$/, 'invalidLine2')]],
       landmark: ['', [CustomValidators.pattern(/^[\s\S]{0,150}$/, 'invalidLandmark')]],
       countryId: ['', [CustomValidators.requiredNonEmpty]],
-      stateId: ['', [CustomValidators.requiredNonEmpty]],
-      city: ['', [CustomValidators.requiredNonEmpty, CustomValidators.pattern(REGEX_PATTERNS.CITY, 'invalidCity')]],
-      pincode: ['', [CustomValidators.requiredNonEmpty, CustomValidators.pattern(REGEX_PATTERNS.PINCODE, 'invalidPincode')]],
-      isDefault: [false]
+      stateId: [{ value: '', disabled: true }, [CustomValidators.requiredNonEmpty]],
+      city: [
+        '',
+        [
+          CustomValidators.requiredNonEmpty,
+          CustomValidators.pattern(REGEX_PATTERNS.CITY, 'invalidCity'),
+        ],
+      ],
+      pincode: [
+        '',
+        [
+          CustomValidators.requiredNonEmpty,
+          CustomValidators.pattern(REGEX_PATTERNS.PINCODE, 'invalidPincode'),
+        ],
+      ],
+      isDefault: [false],
     });
   }
 
@@ -89,7 +126,7 @@ export class CustomerAddressesComponent implements OnInit {
       error: () => {
         this.countriesLoading = false;
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -109,14 +146,15 @@ export class CustomerAddressesComponent implements OnInit {
         this.loading = false;
         this.errorMessage = err.error?.message || 'Failed to load customer addresses.';
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
   onCountryChange(countryIdVal: string | number): void {
     const countryId = Number(countryIdVal);
     this.states = [];
-    this.addressForm.patchValue({ stateId: '' });
+    this.addressForm.get('stateId')?.setValue('');
+    this.addressForm.get('stateId')?.disable();
 
     if (!countryId || isNaN(countryId)) {
       return;
@@ -128,13 +166,14 @@ export class CustomerAddressesComponent implements OnInit {
         this.statesLoading = false;
         if (res.success) {
           this.states = res.data || [];
+          this.addressForm.get('stateId')?.enable();
         }
         this.cdr.markForCheck();
       },
       error: () => {
         this.statesLoading = false;
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -147,11 +186,12 @@ export class CustomerAddressesComponent implements OnInit {
       addressType: 'Shipping',
       countryId: '',
       stateId: '',
-      isDefault: false
+      isDefault: false,
     });
+    this.addressForm.get('stateId')?.disable();
 
     if (this.countries.length > 0) {
-      const defaultIndia = this.countries.find(c => c.countryCode === 'IN') || this.countries[0];
+      const defaultIndia = this.countries.find((c) => c.countryCode === 'IN') || this.countries[0];
       this.addressForm.patchValue({ countryId: defaultIndia.id });
       this.onCountryChange(defaultIndia.id);
     }
@@ -162,7 +202,7 @@ export class CustomerAddressesComponent implements OnInit {
     this.isEditMode = true;
     this.selectedAddress = address;
 
-    this.addressForm.patchValue({
+    this.addressForm.reset({
       addressTitle: address.addressTitle,
       addressType: address.addressType,
       fullName: address.fullName,
@@ -172,19 +212,38 @@ export class CustomerAddressesComponent implements OnInit {
       landmark: address.landmark,
       city: address.city,
       pincode: address.pincode,
-      isDefault: address.isDefault
+      isDefault: address.isDefault,
+      countryId: '',
+      stateId: '',
     });
+    this.addressForm.get('stateId')?.disable();
 
-    if (address.countryId) {
-      this.addressForm.patchValue({ countryId: address.countryId });
+    // Resolve country by ID first, then fallback to country name for legacy records
+    const targetCountryId =
+      address.countryId ||
+      this.countries.find(
+        (c) => c.countryName.toLowerCase() === (address.country || '').trim().toLowerCase(),
+      )?.id;
+
+    if (targetCountryId) {
+      this.addressForm.patchValue({ countryId: targetCountryId });
       this.statesLoading = true;
-      this.locationService.getStates(address.countryId).subscribe({
+      this.locationService.getStates(targetCountryId).subscribe({
         next: (res) => {
           this.statesLoading = false;
           if (res.success) {
             this.states = res.data || [];
-            if (address.stateId) {
-              this.addressForm.patchValue({ stateId: address.stateId });
+            this.addressForm.get('stateId')?.enable();
+
+            // Resolve state by ID first, then fallback to state name for legacy records
+            const targetStateId =
+              address.stateId ||
+              this.states.find(
+                (s) => s.stateName.toLowerCase() === (address.state || '').trim().toLowerCase(),
+              )?.id;
+
+            if (targetStateId) {
+              this.addressForm.patchValue({ stateId: targetStateId });
             }
           }
           this.cdr.markForCheck();
@@ -192,7 +251,7 @@ export class CustomerAddressesComponent implements OnInit {
         error: () => {
           this.statesLoading = false;
           this.cdr.markForCheck();
-        }
+        },
       });
     }
 
@@ -212,26 +271,29 @@ export class CustomerAddressesComponent implements OnInit {
     this.formSubmitting = true;
     this.errorMessage = null;
 
-    const selectedCountry = this.countries.find(c => c.id === Number(this.addressForm.value.countryId));
-    const selectedState = this.states.find(s => s.id === Number(this.addressForm.value.stateId));
+    const formValues = this.addressForm.getRawValue();
+    const selectedCountry = this.countries.find(
+      (c) => c.id === Number(formValues.countryId),
+    );
+    const selectedState = this.states.find((s) => s.id === Number(formValues.stateId));
 
     if (this.isEditMode && this.selectedAddress) {
       const updatePayload: CustomerAddressUpdateRequest = {
         encryptedAddressId: this.selectedAddress.encryptedAddressId,
-        addressTitle: this.addressForm.value.addressTitle.trim(),
-        addressType: this.addressForm.value.addressType.trim(),
-        fullName: this.addressForm.value.fullName.trim(),
-        mobileNo: this.addressForm.value.mobileNo.trim(),
-        addressLine1: this.addressForm.value.addressLine1.trim(),
-        addressLine2: this.addressForm.value.addressLine2?.trim() || '',
-        landmark: this.addressForm.value.landmark?.trim() || '',
-        countryId: Number(this.addressForm.value.countryId),
-        stateId: Number(this.addressForm.value.stateId),
-        city: this.addressForm.value.city.trim(),
+        addressTitle: formValues.addressTitle?.trim(),
+        addressType: formValues.addressType?.trim(),
+        fullName: formValues.fullName?.trim(),
+        mobileNo: formValues.mobileNo?.trim(),
+        addressLine1: formValues.addressLine1?.trim(),
+        addressLine2: formValues.addressLine2?.trim() || '',
+        landmark: formValues.landmark?.trim() || '',
+        countryId: Number(formValues.countryId),
+        stateId: Number(formValues.stateId),
+        city: formValues.city?.trim(),
         state: selectedState?.stateName || '',
         country: selectedCountry?.countryName || '',
-        pincode: this.addressForm.value.pincode.trim(),
-        isDefault: !!this.addressForm.value.isDefault
+        pincode: formValues.pincode?.trim(),
+        isDefault: !!formValues.isDefault,
       };
 
       this.addressService.update(updatePayload).subscribe({
@@ -250,24 +312,24 @@ export class CustomerAddressesComponent implements OnInit {
           this.formSubmitting = false;
           this.errorMessage = err.error?.message || 'Failed to update address.';
           this.cdr.markForCheck();
-        }
+        },
       });
     } else {
       const createPayload: CustomerAddressCreateRequest = {
-        addressTitle: this.addressForm.value.addressTitle.trim(),
-        addressType: this.addressForm.value.addressType.trim(),
-        fullName: this.addressForm.value.fullName.trim(),
-        mobileNo: this.addressForm.value.mobileNo.trim(),
-        addressLine1: this.addressForm.value.addressLine1.trim(),
-        addressLine2: this.addressForm.value.addressLine2?.trim() || '',
-        landmark: this.addressForm.value.landmark?.trim() || '',
-        countryId: Number(this.addressForm.value.countryId),
-        stateId: Number(this.addressForm.value.stateId),
-        city: this.addressForm.value.city.trim(),
+        addressTitle: formValues.addressTitle?.trim(),
+        addressType: formValues.addressType?.trim(),
+        fullName: formValues.fullName?.trim(),
+        mobileNo: formValues.mobileNo?.trim(),
+        addressLine1: formValues.addressLine1?.trim(),
+        addressLine2: formValues.addressLine2?.trim() || '',
+        landmark: formValues.landmark?.trim() || '',
+        countryId: Number(formValues.countryId),
+        stateId: Number(formValues.stateId),
+        city: formValues.city?.trim(),
         state: selectedState?.stateName || '',
         country: selectedCountry?.countryName || '',
-        pincode: this.addressForm.value.pincode.trim(),
-        isDefault: !!this.addressForm.value.isDefault
+        pincode: formValues.pincode?.trim(),
+        isDefault: !!formValues.isDefault,
       };
 
       this.addressService.create(createPayload).subscribe({
@@ -286,7 +348,7 @@ export class CustomerAddressesComponent implements OnInit {
           this.formSubmitting = false;
           this.errorMessage = err.error?.message || 'Failed to create address.';
           this.cdr.markForCheck();
-        }
+        },
       });
     }
   }
@@ -308,7 +370,7 @@ export class CustomerAddressesComponent implements OnInit {
         error: (err) => {
           this.isActionSubmitting = false;
           this.errorMessage = err.error?.message || 'Failed to delete address.';
-        }
+        },
       });
     };
     this.isConfirmOpen = true;

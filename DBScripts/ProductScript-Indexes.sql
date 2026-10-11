@@ -107,3 +107,77 @@ BEGIN
     WHERE [IsDeleted] = 0;
 END;
 GO
+
+-- =========================================================================
+-- Commissioned Projects Indexes
+-- =========================================================================
+
+-- Commission Category Name (Filtered Unique Index)
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'UQ_drs_commission_category_mst_CategoryName' AND object_id = OBJECT_ID('drs_commission_category_mst'))
+BEGIN
+    CREATE UNIQUE NONCLUSTERED INDEX [UQ_drs_commission_category_mst_CategoryName]
+    ON [dbo].[drs_commission_category_mst] ([CategoryName])
+    WHERE [IsDeleted] = 0;
+END;
+GO
+
+-- Commission Category Active List Index
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_drs_commission_category_mst_IsActive' AND object_id = OBJECT_ID('drs_commission_category_mst'))
+BEGIN
+    CREATE NONCLUSTERED INDEX [IX_drs_commission_category_mst_IsActive]
+    ON [dbo].[drs_commission_category_mst] ([IsActive], [DisplayOrder])
+    WHERE [IsDeleted] = 0;
+END;
+GO
+
+-- Commission Request Number (Permanent Unique Index)
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'UQ_drs_commission_request_mst_RequestNo' AND object_id = OBJECT_ID('drs_commission_request_mst'))
+BEGIN
+    CREATE UNIQUE NONCLUSTERED INDEX [UQ_drs_commission_request_mst_RequestNo]
+    ON [dbo].[drs_commission_request_mst] ([RequestNo]);
+END;
+GO
+
+-- Commission Request Status & CreatedDate Filter/Sorting Index
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_drs_commission_request_mst_Status_CreatedDate' AND object_id = OBJECT_ID('drs_commission_request_mst'))
+BEGIN
+    CREATE NONCLUSTERED INDEX [IX_drs_commission_request_mst_Status_CreatedDate]
+    ON [dbo].[drs_commission_request_mst] ([Status], [CreatedDate] DESC)
+    WHERE [IsDeleted] = 0;
+END;
+GO
+
+-- Commission Request Category FK Index
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_drs_commission_request_mst_category_id' AND object_id = OBJECT_ID('drs_commission_request_mst'))
+BEGIN
+    CREATE NONCLUSTERED INDEX [IX_drs_commission_request_mst_category_id]
+    ON [dbo].[drs_commission_request_mst] ([category_id]);
+END;
+GO
+
+-- Commission Request Email Index
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_drs_commission_request_mst_Email' AND object_id = OBJECT_ID('drs_commission_request_mst'))
+BEGIN
+    CREATE NONCLUSTERED INDEX [IX_drs_commission_request_mst_Email]
+    ON [dbo].[drs_commission_request_mst] ([Email])
+    WHERE [IsDeleted] = 0;
+END;
+GO
+
+-- Commission Request MobileNo Index
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_drs_commission_request_mst_MobileNo' AND object_id = OBJECT_ID('drs_commission_request_mst'))
+BEGIN
+    CREATE NONCLUSTERED INDEX [IX_drs_commission_request_mst_MobileNo]
+    ON [dbo].[drs_commission_request_mst] ([MobileNo])
+    WHERE [IsDeleted] = 0;
+END;
+GO
+
+-- Commission Request Image Request FK & Display Order Index
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_drs_commission_request_image_mst_request_id' AND object_id = OBJECT_ID('drs_commission_request_image_mst'))
+BEGIN
+    CREATE NONCLUSTERED INDEX [IX_drs_commission_request_image_mst_request_id]
+    ON [dbo].[drs_commission_request_image_mst] ([commission_request_id], [DisplayOrder])
+    WHERE [IsDeleted] = 0;
+END;
+GO

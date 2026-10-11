@@ -2,7 +2,11 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { AdminProductCategoryService } from '../../services/admin-product-category.service';
-import { ProductCategoryCreateRequest, ProductCategoryResponse, ProductCategoryUpdateRequest } from '../../models/product-category.model';
+import {
+  ProductCategoryCreateRequest,
+  ProductCategoryResponse,
+  ProductCategoryUpdateRequest,
+} from '../../models/product-category.model';
 import { CustomValidators } from '../../../common/validators/custom.validators';
 import { ConfirmationDialogComponent } from '../../../common/components/confirmation-dialog/confirmation-dialog';
 import { BreadcrumbComponent } from '../../../common/components/breadcrumb/breadcrumb';
@@ -12,14 +16,20 @@ import { AppLoaderComponent } from '../../../common/components/app-loader/app-lo
 @Component({
   selector: 'app-product-categories',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ConfirmationDialogComponent, BreadcrumbComponent, AppLoaderComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    ConfirmationDialogComponent,
+    BreadcrumbComponent,
+    AppLoaderComponent,
+  ],
   templateUrl: './product-categories.html',
-  styleUrl: './product-categories.scss'
+  styleUrl: './product-categories.scss',
 })
 export class ProductCategoriesComponent implements OnInit {
   breadcrumbs: BreadcrumbItem[] = [
     { label: 'Home', url: '/admin/dashboard' },
-    { label: 'Product Categories' }
+    { label: 'Product Categories' },
   ];
   private categoryService = inject(AdminProductCategoryService);
   private fb = inject(FormBuilder);
@@ -49,9 +59,15 @@ export class ProductCategoriesComponent implements OnInit {
 
   initForm(): void {
     this.categoryForm = this.fb.group({
-      categoryName: ['', [CustomValidators.requiredNonEmpty, CustomValidators.pattern(/^.{2,100}$/, 'invalidLength')]],
+      categoryName: [
+        '',
+        [
+          CustomValidators.requiredNonEmpty,
+          CustomValidators.pattern(/^.{2,100}$/, 'invalidLength'),
+        ],
+      ],
       description: ['', [CustomValidators.pattern(/^[\s\S]{0,500}$/, 'invalidLength')]],
-      displayOrder: [0, [CustomValidators.nonNegativeInteger]]
+      displayOrder: [0, [CustomValidators.nonNegativeInteger]],
     });
   }
 
@@ -71,7 +87,7 @@ export class ProductCategoriesComponent implements OnInit {
         this.loading = false;
         this.errorMessage = err.error?.message || 'Failed to load categories.';
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -81,7 +97,7 @@ export class ProductCategoriesComponent implements OnInit {
     this.categoryForm.reset({
       categoryName: '',
       description: '',
-      displayOrder: 0
+      displayOrder: 0,
     });
     this.isModalOpen = true;
   }
@@ -92,7 +108,7 @@ export class ProductCategoriesComponent implements OnInit {
     this.categoryForm.patchValue({
       categoryName: category.categoryName,
       description: category.description,
-      displayOrder: category.displayOrder
+      displayOrder: category.displayOrder,
     });
     this.isModalOpen = true;
   }
@@ -115,7 +131,7 @@ export class ProductCategoriesComponent implements OnInit {
         encryptedCategoryId: this.selectedCategory.encryptedCategoryId,
         categoryName: this.categoryForm.value.categoryName.trim(),
         description: this.categoryForm.value.description?.trim() || '',
-        displayOrder: Number(this.categoryForm.value.displayOrder) || 0
+        displayOrder: Number(this.categoryForm.value.displayOrder) || 0,
       };
 
       this.categoryService.update(updatePayload).subscribe({
@@ -132,13 +148,13 @@ export class ProductCategoriesComponent implements OnInit {
         error: (err) => {
           this.formSubmitting = false;
           this.errorMessage = err.error?.message || 'Failed to update category.';
-        }
+        },
       });
     } else {
       const createPayload: ProductCategoryCreateRequest = {
         categoryName: this.categoryForm.value.categoryName.trim(),
         description: this.categoryForm.value.description?.trim() || '',
-        displayOrder: Number(this.categoryForm.value.displayOrder) || 0
+        displayOrder: Number(this.categoryForm.value.displayOrder) || 0,
       };
 
       this.categoryService.create(createPayload).subscribe({
@@ -155,7 +171,7 @@ export class ProductCategoriesComponent implements OnInit {
         error: (err) => {
           this.formSubmitting = false;
           this.errorMessage = err.error?.message || 'Failed to create category.';
-        }
+        },
       });
     }
   }
@@ -175,7 +191,7 @@ export class ProductCategoriesComponent implements OnInit {
         error: (err) => {
           this.isActionSubmitting = false;
           this.errorMessage = err.error?.message || 'Failed to delete category.';
-        }
+        },
       });
     };
     this.isConfirmOpen = true;

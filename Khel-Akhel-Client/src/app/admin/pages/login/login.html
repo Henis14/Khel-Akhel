@@ -6,8 +6,6 @@
       <div class="art-panel__grain"></div>
     </div>
 
-    
-
     <!-- Layer 10: Content Safe Area (ALWAYS ABOVE DECORATIONS, NO OVERLAP) -->
     <div class="art-content">
       <div class="brand-header">
@@ -22,8 +20,12 @@
   <section class="login-panel" aria-labelledby="admin-login-title">
     <div class="login-card">
       <div class="login-header">
-        <p class="eyebrow">{{ isForgotPasswordMode() ? 'PASSWORD ASSISTANCE' : 'ADMINISTRATIVE ACCESS' }}</p>
-        <h2 id="admin-login-title">{{ isForgotPasswordMode() ? 'Reset Admin Password' : 'Sign In' }}</h2>
+        <p class="eyebrow">
+          {{ isForgotPasswordMode() ? 'PASSWORD ASSISTANCE' : 'ADMINISTRATIVE ACCESS' }}
+        </p>
+        <h2 id="admin-login-title">
+          {{ isForgotPasswordMode() ? 'Reset Admin Password' : 'Sign In' }}
+        </h2>
         <p class="subtitle">
           {{
             isForgotPasswordMode()
@@ -49,7 +51,6 @@
               class="form-control"
               [class.is-invalid]="f['userName'].touched && f['userName'].invalid"
               formControlName="userName"
-              
               autocomplete="username"
             />
             @if (f['userName'].touched && f['userName'].invalid) {
@@ -70,7 +71,6 @@
                 class="form-control password-input"
                 [class.is-invalid]="f['password'].touched && f['password'].invalid"
                 formControlName="password"
-                
                 autocomplete="current-password"
               />
               <button
@@ -81,13 +81,37 @@
                 [title]="showPassword() ? 'Hide password' : 'Show password'"
               >
                 @if (!showPassword()) {
-                  <svg class="eye-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <svg
+                    class="eye-icon"
+                    viewBox="0 0 24 24"
+                    width="18"
+                    height="18"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                     <circle cx="12" cy="12" r="3"></circle>
                   </svg>
                 } @else {
-                  <svg class="eye-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                  <svg
+                    class="eye-icon"
+                    viewBox="0 0 24 24"
+                    width="18"
+                    height="18"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"
+                    ></path>
                     <line x1="1" y1="1" x2="23" y2="23"></line>
                   </svg>
                 }
@@ -138,19 +162,31 @@
                 @if (f['captcha'].errors?.['required']) {
                   <span>CAPTCHA is required.</span>
                 }
-                @if (f['captcha'].errors?.['minlength'] || f['captcha'].errors?.['maxlength'] || f['captcha'].errors?.['pattern']) {
+                @if (
+                  f['captcha'].errors?.['minlength'] ||
+                  f['captcha'].errors?.['maxlength'] ||
+                  f['captcha'].errors?.['pattern']
+                ) {
                   <span>CAPTCHA must be 5 characters (3 letters + 2 digits).</span>
                 }
               </div>
             }
           </div>
 
-          <button type="submit" class="btn btn-primary btn-block" [disabled]="loading() || loginForm.invalid">
+          <button
+            type="submit"
+            class="btn btn-primary btn-block"
+            [disabled]="loading() || loginForm.invalid"
+          >
             <span>{{ loading() ? 'Signing In...' : 'Sign In' }}</span>
           </button>
 
           <div class="card-footer-action">
-            <button type="button" class="btn-link forgot-password-link" (click)="toggleForgotPasswordMode(true)">
+            <button
+              type="button"
+              class="btn-link forgot-password-link"
+              (click)="toggleForgotPasswordMode(true)"
+            >
               Forgot Password?
             </button>
           </div>
@@ -177,7 +213,6 @@
               class="form-control"
               [class.is-invalid]="ff['userName'].touched && ff['userName'].invalid"
               formControlName="userName"
-            
               autocomplete="username"
             />
             @if (ff['userName'].touched && ff['userName'].invalid) {
@@ -189,12 +224,20 @@
             }
           </div>
 
-          <button type="submit" class="btn btn-primary btn-block" [disabled]="forgotLoading() || forgotForm.invalid">
+          <button
+            type="submit"
+            class="btn btn-primary btn-block"
+            [disabled]="forgotLoading() || forgotForm.invalid"
+          >
             <span>{{ forgotLoading() ? 'Submitting...' : 'Submit Request' }}</span>
           </button>
 
           <div class="card-footer-action">
-            <button type="button" class="btn-link back-to-login-link" (click)="toggleForgotPasswordMode(false)">
+            <button
+              type="button"
+              class="btn-link back-to-login-link"
+              (click)="toggleForgotPasswordMode(false)"
+            >
               ← Back to Login
             </button>
           </div>

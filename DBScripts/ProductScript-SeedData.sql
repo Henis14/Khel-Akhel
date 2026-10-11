@@ -187,3 +187,36 @@ CROSS APPLY
     (N'Puducherry', 'PY')
 ) AS s(StateName, StateCode)
 WHERE c.CountryCode = 'IN';
+
+GO
+
+-- =========================================================================
+-- Seed Data: Commission Project Categories
+-- =========================================================================
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[drs_commission_category_mst]') AND type IN (N'U'))
+BEGIN
+    DECLARE @CommissionCategories TABLE (
+        CategoryName NVARCHAR(100),
+        Description NVARCHAR(500),
+        DisplayOrder INT
+    );
+
+    INSERT INTO @CommissionCategories (CategoryName, Description, DisplayOrder) VALUES
+    (N'Art Installations', N'Custom architectural, experiential, and site-specific art installations.', 1),
+    (N'Sculptures', N'Bespoke 3D artistic sculptures in metal, stone, wood, or mixed media.', 2),
+    (N'Wall Murals', N'Handcrafted artistic wall murals and textured artwork for indoor or outdoor spaces.', 3),
+    (N'Furniture', N'Bespoke studio furniture pieces crafted to custom design specifications.', 4),
+    (N'Event Decor', N'Curated artistic decor and aesthetic styling for premium events and exhibitions.', 5),
+    (N'Lighting', N'Artisanal handcrafted lighting fixtures, sculptural lamps, and custom luminaires.', 6),
+    (N'Wearables', N'Limited-edition wearable art, bespoke textiles, and customized apparel.', 7),
+    (N'Others', N'Other customized creative projects and specialized commissioned works.', 8);
+
+    INSERT INTO [dbo].[drs_commission_category_mst] ([CategoryName], [Description], [DisplayOrder], [IsActive], [IsDeleted], [CreatedDate])
+    SELECT c.CategoryName, c.Description, c.DisplayOrder, 1, 0, GETDATE()
+    FROM @CommissionCategories c
+    WHERE NOT EXISTS (
+        SELECT 1 FROM [dbo].[drs_commission_category_mst] existing
+        WHERE existing.[CategoryName] = c.CategoryName AND existing.[IsDeleted] = 0
+    );
+END;
+GO

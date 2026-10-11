@@ -10,7 +10,7 @@ import { CustomValidators } from '../../../common/validators/custom.validators';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './login.html',
-  styleUrl: './login.scss'
+  styleUrl: './login.scss',
 })
 export class AdminLoginComponent implements OnInit {
   private fb = inject(FormBuilder);
@@ -61,13 +61,13 @@ export class AdminLoginComponent implements OnInit {
           CustomValidators.requiredNonEmpty,
           Validators.minLength(5),
           Validators.maxLength(5),
-          Validators.pattern(/^[a-zA-Z0-9]{5}$/)
-        ]
-      ]
+          Validators.pattern(/^[a-zA-Z0-9]{5}$/),
+        ],
+      ],
     });
 
     this.forgotForm = this.fb.group({
-      userName: ['', [CustomValidators.requiredNonEmpty]]
+      userName: ['', [CustomValidators.requiredNonEmpty]],
     });
 
     this.loadCaptcha();
@@ -99,7 +99,7 @@ export class AdminLoginComponent implements OnInit {
       },
       error: () => {
         this.captchaLoading.set(false);
-      }
+      },
     });
   }
 
@@ -117,7 +117,7 @@ export class AdminLoginComponent implements OnInit {
       password: this.loginForm.value.password.trim(),
       captchaId: this.captchaId() || undefined,
       captcha: this.loginForm.value.captcha.trim(),
-      deviceInfo: navigator.userAgent
+      deviceInfo: navigator.userAgent,
     };
 
     this.authService.login(payload).subscribe({
@@ -166,7 +166,7 @@ export class AdminLoginComponent implements OnInit {
         } else {
           this.errorMessage.set('An unexpected error occurred during login. Please try again.');
         }
-      }
+      },
     });
   }
 
@@ -197,7 +197,7 @@ export class AdminLoginComponent implements OnInit {
         this.forgotLoading.set(false);
         if (res.success) {
           this.forgotSuccessMessage.set(
-            'If an account with this Email/Mobile exists, password reset instructions have been initiated.'
+            'If an account with this Email/Mobile exists, password reset instructions have been initiated.',
           );
         } else {
           this.forgotErrorMessage.set(res.message || 'Failed to process password reset request.');
@@ -206,9 +206,10 @@ export class AdminLoginComponent implements OnInit {
       error: (err) => {
         this.forgotLoading.set(false);
         this.forgotErrorMessage.set(
-          err.error?.message || 'An error occurred while requesting password reset. Please try again.'
+          err.error?.message ||
+            'An error occurred while requesting password reset. Please try again.',
         );
-      }
+      },
     });
   }
 }

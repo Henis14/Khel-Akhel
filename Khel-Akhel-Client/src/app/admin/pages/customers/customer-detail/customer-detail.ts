@@ -17,13 +17,13 @@ import { AppLoaderComponent } from '../../../../common/components/app-loader/app
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, BreadcrumbComponent, AppLoaderComponent],
   templateUrl: './customer-detail.html',
-  styleUrl: './customer-detail.scss'
+  styleUrl: './customer-detail.scss',
 })
 export class CustomerDetailComponent implements OnInit {
   breadcrumbs: BreadcrumbItem[] = [
     { label: 'Home', url: '/admin/dashboard' },
     { label: 'Customers', url: '/admin/customers' },
-    { label: 'Customer Details' }
+    { label: 'Customer Details' },
   ];
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -65,14 +65,16 @@ export class CustomerDetailComponent implements OnInit {
     if (!dateStr) return null;
     const d = new Date(dateStr);
     if (!isNaN(d.getTime())) return d;
-    
+
     // Parse DD/MM/YYYY HH:mm:ss or DD-MM-YYYY HH:mm:ss
     const parts = dateStr.split(/[\sT\/-]+/);
     if (parts.length >= 3) {
       const day = parseInt(parts[0], 10);
       const month = parseInt(parts[1], 10) - 1;
       const year = parseInt(parts[2], 10);
-      let hours = 0, minutes = 0, seconds = 0;
+      let hours = 0,
+        minutes = 0,
+        seconds = 0;
       if (parts.length >= 4) hours = parseInt(parts[3], 10) || 0;
       if (parts.length >= 5) minutes = parseInt(parts[4], 10) || 0;
       if (parts.length >= 6) seconds = parseInt(parts[5], 10) || 0;
@@ -84,10 +86,34 @@ export class CustomerDetailComponent implements OnInit {
 
   initEditForm(): void {
     this.editForm = this.fb.group({
-      firstName: ['', [CustomValidators.requiredNonEmpty, CustomValidators.pattern(REGEX_PATTERNS.NAME, 'invalidName')]],
-      lastName: ['', [CustomValidators.requiredNonEmpty, CustomValidators.pattern(REGEX_PATTERNS.NAME, 'invalidName')]],
-      email: ['', [CustomValidators.requiredNonEmpty, CustomValidators.pattern(REGEX_PATTERNS.EMAIL, 'invalidEmail')]],
-      mobileNo: ['', [CustomValidators.requiredNonEmpty, CustomValidators.pattern(REGEX_PATTERNS.MOBILE, 'invalidMobile')]]
+      firstName: [
+        '',
+        [
+          CustomValidators.requiredNonEmpty,
+          CustomValidators.pattern(REGEX_PATTERNS.NAME, 'invalidName'),
+        ],
+      ],
+      lastName: [
+        '',
+        [
+          CustomValidators.requiredNonEmpty,
+          CustomValidators.pattern(REGEX_PATTERNS.NAME, 'invalidName'),
+        ],
+      ],
+      email: [
+        '',
+        [
+          CustomValidators.requiredNonEmpty,
+          CustomValidators.pattern(REGEX_PATTERNS.EMAIL, 'invalidEmail'),
+        ],
+      ],
+      mobileNo: [
+        '',
+        [
+          CustomValidators.requiredNonEmpty,
+          CustomValidators.pattern(REGEX_PATTERNS.MOBILE, 'invalidMobile'),
+        ],
+      ],
     });
   }
 
@@ -111,7 +137,7 @@ export class CustomerDetailComponent implements OnInit {
         this.loading = false;
         this.errorMessage = err.error?.message || 'Failed to load customer details.';
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -129,7 +155,7 @@ export class CustomerDetailComponent implements OnInit {
       error: () => {
         this.addressesLoading = false;
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -144,7 +170,7 @@ export class CustomerDetailComponent implements OnInit {
       firstName: this.customer.firstName,
       lastName: this.customer.lastName,
       email: this.customer.email,
-      mobileNo: this.customer.mobileNo
+      mobileNo: this.customer.mobileNo,
     });
     this.isEditModalOpen = true;
   }
@@ -166,7 +192,7 @@ export class CustomerDetailComponent implements OnInit {
       firstName: this.editForm.value.firstName.trim(),
       lastName: this.editForm.value.lastName.trim(),
       email: this.editForm.value.email.trim(),
-      mobileNo: this.editForm.value.mobileNo.trim()
+      mobileNo: this.editForm.value.mobileNo.trim(),
     };
 
     this.customerService.update(this.encryptedId, payload).subscribe({
@@ -183,7 +209,7 @@ export class CustomerDetailComponent implements OnInit {
       error: (err) => {
         this.editSubmitting = false;
         this.errorMessage = err.error?.message || 'Failed to update customer details.';
-      }
+      },
     });
   }
 

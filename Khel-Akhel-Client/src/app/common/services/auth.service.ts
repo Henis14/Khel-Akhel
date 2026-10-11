@@ -3,11 +3,16 @@ import { Router } from '@angular/router';
 import { Observable, BehaviorSubject, of, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { ApiService } from './api.service';
-import { PortalLoginRequest, AuthResponseData, UserSession, CaptchaResponseData } from '../models/auth.model';
+import {
+  PortalLoginRequest,
+  AuthResponseData,
+  UserSession,
+  CaptchaResponseData,
+} from '../models/auth.model';
 import { ApiResponse } from '../models/api-response.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private accessTokenSubject = new BehaviorSubject<string | null>(null);
@@ -25,7 +30,7 @@ export class AuthService {
 
   constructor(
     private apiService: ApiService,
-    private router: Router
+    private router: Router,
   ) {}
 
   /**
@@ -64,7 +69,7 @@ export class AuthService {
         if (res.success && res.data?.token) {
           this.setSession(res.data.token, res.data);
         }
-      })
+      }),
     );
   }
 
@@ -80,7 +85,7 @@ export class AuthService {
       catchError((err) => {
         this.clearSession();
         return throwError(() => err);
-      })
+      }),
     );
   }
 
@@ -92,7 +97,7 @@ export class AuthService {
       catchError(() => {
         this.clearSessionAndRedirect();
         return of({ success: true, statusCode: 200, message: 'LOGOUT_SUCCESS', data: null });
-      })
+      }),
     );
   }
 
@@ -142,7 +147,7 @@ export class AuthService {
       email: email,
       role: role,
       isAdmin: isAdminBool,
-      token: token
+      token: token,
     };
 
     this.currentUser.set(session);
@@ -158,7 +163,7 @@ export class AuthService {
       decoded?.Role,
       decoded?.roles,
       decoded?.['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'],
-      decoded?.['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role']
+      decoded?.['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role'],
     ];
 
     for (const cand of candidates) {
@@ -183,7 +188,7 @@ export class AuthService {
       decoded?.isAdmin,
       decoded?.IsAdmin,
       decoded?.is_admin,
-      roleStr
+      roleStr,
     ];
 
     for (const cand of candidates) {
@@ -222,7 +227,7 @@ export class AuthService {
           binaryStr
             .split('')
             .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-            .join('')
+            .join(''),
         );
       }
 

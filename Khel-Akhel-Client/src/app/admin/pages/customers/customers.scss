@@ -61,3 +61,66 @@
   font-size: 0.8125rem;
   color: var(--admin-text-secondary);
 }
+
+.customers-table {
+  min-width: 960px;
+
+  .col-account-no {
+    width: 135px;
+    white-space: nowrap;
+  }
+
+  .col-customer {
+    min-width: 160px;
+    max-width: 240px;
+
+    .user-name {
+      white-space: normal;
+      overflow-wrap: break-word;
+      word-break: normal;
+      line-height: 1.35;
+    }
+  }
+
+  .col-email {
+    min-width: 190px;
+    max-width: 260px;
+
+    .email-text {
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      font-size: 0.8125rem;
+      color: var(--ka-text-secondary, #6b6a63);
+      line-height: 1.35;
+    }
+  }
+
+  .col-mobile {
+    width: 120px;
+    white-space: nowrap;
+  }
+
+  .col-role {
+    width: 95px;
+    white-space: nowrap;
+    text-align: center;
+  }
+
+  .col-status {
+    width: 95px;
+    white-space: nowrap;
+    text-align: center;
+  }
+
+  .col-date {
+    width: 110px;
+    white-space: nowrap;
+  }
+
+  .col-actions {
+    width: 1%;
+    white-space: nowrap;
+    text-align: right;
+  }
+}

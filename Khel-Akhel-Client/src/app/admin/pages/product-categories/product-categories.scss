@@ -13,3 +13,48 @@
   font-weight: 600;
   color: var(--admin-primary);
 }
+
+.product-categories-table {
+  min-width: 840px;
+
+  .col-order {
+    width: 100px;
+    white-space: nowrap;
+    text-align: center;
+  }
+
+  .col-category-name {
+    min-width: 160px;
+    max-width: 240px;
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: normal;
+    line-height: 1.35;
+  }
+
+  .col-description {
+    min-width: 240px;
+    max-width: 420px;
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: normal;
+    line-height: 1.45;
+  }
+
+  .col-status {
+    width: 95px;
+    white-space: nowrap;
+    text-align: center;
+  }
+
+  .col-date {
+    width: 110px;
+    white-space: nowrap;
+  }
+
+  .col-actions {
+    width: 1%;
+    white-space: nowrap;
+    text-align: right;
+  }
+}

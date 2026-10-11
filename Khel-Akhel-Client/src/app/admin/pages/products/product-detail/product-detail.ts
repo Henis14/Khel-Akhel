@@ -20,13 +20,13 @@ import { environment } from '../../../../../environments/environment';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink, BreadcrumbComponent, AppLoaderComponent],
   templateUrl: './product-detail.html',
-  styleUrl: './product-detail.scss'
+  styleUrl: './product-detail.scss',
 })
 export class ProductDetailComponent implements OnInit {
   breadcrumbs: BreadcrumbItem[] = [
     { label: 'Home', url: '/admin/dashboard' },
     { label: 'Products', url: '/admin/products' },
-    { label: 'Product Details' }
+    { label: 'Product Details' },
   ];
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -81,7 +81,9 @@ export class ProductDetailComponent implements OnInit {
       const day = parseInt(parts[0], 10);
       const month = parseInt(parts[1], 10) - 1;
       const year = parseInt(parts[2], 10);
-      let hours = 0, minutes = 0, seconds = 0;
+      let hours = 0,
+        minutes = 0,
+        seconds = 0;
       if (parts.length >= 4) hours = parseInt(parts[3], 10) || 0;
       if (parts.length >= 5) minutes = parseInt(parts[4], 10) || 0;
       if (parts.length >= 6) seconds = parseInt(parts[5], 10) || 0;
@@ -92,22 +94,45 @@ export class ProductDetailComponent implements OnInit {
   }
 
   initEditForm(): void {
-    this.editForm = this.fb.group({
-      encryptedCategoryId: ['', [CustomValidators.requiredNonEmpty]],
-      productName: ['', [CustomValidators.requiredNonEmpty]],
-      sku: ['', [CustomValidators.requiredNonEmpty, CustomValidators.pattern(REGEX_PATTERNS.SKU, 'invalidSku')]],
-      shortDescription: [''],
-      description: [''],
-      mrp: [0, [CustomValidators.requiredNonEmpty, CustomValidators.nonNegativeNumber, CustomValidators.maxDecimalPlaces(2)]],
-      sellingPrice: [0, [CustomValidators.requiredNonEmpty, CustomValidators.nonNegativeNumber, CustomValidators.maxDecimalPlaces(2)]],
-      isFeatured: [false],
-      isNewArrival: [false],
-      isBestSeller: [false],
-      isTrending: [false],
-      isCustomerFavourite: [false]
-    }, {
-      validators: [CustomValidators.sellingPriceLessOrEqualMrp('mrp', 'sellingPrice')]
-    });
+    this.editForm = this.fb.group(
+      {
+        encryptedCategoryId: ['', [CustomValidators.requiredNonEmpty]],
+        productName: ['', [CustomValidators.requiredNonEmpty]],
+        sku: [
+          '',
+          [
+            CustomValidators.requiredNonEmpty,
+            CustomValidators.pattern(REGEX_PATTERNS.SKU, 'invalidSku'),
+          ],
+        ],
+        shortDescription: [''],
+        description: [''],
+        mrp: [
+          0,
+          [
+            CustomValidators.requiredNonEmpty,
+            CustomValidators.nonNegativeNumber,
+            CustomValidators.maxDecimalPlaces(2),
+          ],
+        ],
+        sellingPrice: [
+          0,
+          [
+            CustomValidators.requiredNonEmpty,
+            CustomValidators.nonNegativeNumber,
+            CustomValidators.maxDecimalPlaces(2),
+          ],
+        ],
+        isFeatured: [false],
+        isNewArrival: [false],
+        isBestSeller: [false],
+        isTrending: [false],
+        isCustomerFavourite: [false],
+      },
+      {
+        validators: [CustomValidators.sellingPriceLessOrEqualMrp('mrp', 'sellingPrice')],
+      },
+    );
   }
 
   loadCategories(): void {
@@ -120,7 +145,7 @@ export class ProductDetailComponent implements OnInit {
       },
       error: () => {
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -144,7 +169,7 @@ export class ProductDetailComponent implements OnInit {
         this.loading = false;
         this.errorMessage = err.error?.message || 'Failed to load product details.';
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -163,7 +188,7 @@ export class ProductDetailComponent implements OnInit {
       error: () => {
         this.imagesLoading = false;
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -206,7 +231,7 @@ export class ProductDetailComponent implements OnInit {
         this.uploadingNewImages = false;
         input.value = '';
         this.errorMessage = err.error?.message || 'Failed to upload images.';
-      }
+      },
     });
   }
 
@@ -225,7 +250,7 @@ export class ProductDetailComponent implements OnInit {
       },
       error: (err) => {
         this.errorMessage = err.error?.message || 'Failed to update default image.';
-      }
+      },
     });
   }
 
@@ -254,7 +279,7 @@ export class ProductDetailComponent implements OnInit {
       },
       error: (err) => {
         this.errorMessage = err.error?.message || 'Failed to delete image.';
-      }
+      },
     });
   }
 
@@ -273,7 +298,7 @@ export class ProductDetailComponent implements OnInit {
       isNewArrival: this.product.isNewArrival,
       isBestSeller: this.product.isBestSeller,
       isTrending: this.product.isTrending,
-      isCustomerFavourite: this.product.isCustomerFavourite
+      isCustomerFavourite: this.product.isCustomerFavourite,
     });
 
     this.isEditModalOpen = true;
@@ -313,7 +338,7 @@ export class ProductDetailComponent implements OnInit {
       isNewArrival: !!this.editForm.value.isNewArrival,
       isBestSeller: !!this.editForm.value.isBestSeller,
       isTrending: !!this.editForm.value.isTrending,
-      isCustomerFavourite: !!this.editForm.value.isCustomerFavourite
+      isCustomerFavourite: !!this.editForm.value.isCustomerFavourite,
     };
 
     this.productService.update(payload).subscribe({
@@ -330,7 +355,7 @@ export class ProductDetailComponent implements OnInit {
       error: (err) => {
         this.editSubmitting = false;
         this.errorMessage = err.error?.message || 'Failed to update product details.';
-      }
+      },
     });
   }
 

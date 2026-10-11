@@ -1,8 +1,12 @@
 <div class="dashboard-page">
   <div class="page-header">
     <app-breadcrumb [items]="breadcrumbs"></app-breadcrumb>
-    <h1>Dashboard</h1>
-    <p class="subtitle">Overview of system metrics and current activity</p>
+    <div class="header-content">
+      <div class="header-titles">
+        <h1>Dashboard</h1>
+        <p class="subtitle">Overview of system metrics and current activity</p>
+      </div>
+    </div>
   </div>
 
   @if (errorMessage) {
@@ -16,7 +20,14 @@
       <!-- Stat Card 1 -->
       <div class="stat-card card">
         <div class="stat-icon icon-customers">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
             <circle cx="9" cy="7" r="4"></circle>
           </svg>
@@ -30,7 +41,14 @@
       <!-- Stat Card 2 -->
       <div class="stat-card card">
         <div class="stat-icon icon-products">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
             <line x1="3" y1="6" x2="21" y2="6"></line>
           </svg>
@@ -44,7 +62,14 @@
       <!-- Stat Card 3 -->
       <div class="stat-card card">
         <div class="stat-icon icon-categories">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <line x1="8" y1="6" x2="21" y2="6"></line>
             <line x1="8" y1="12" x2="21" y2="12"></line>
             <line x1="8" y1="18" x2="21" y2="18"></line>
@@ -60,8 +85,17 @@
       <!-- Stat Card 4 -->
       <div class="stat-card card">
         <div class="stat-icon icon-stock">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
+            ></path>
           </svg>
         </div>
         <div class="stat-info">
@@ -69,6 +103,28 @@
           <span class="stat-value">{{ totalStockRecords }}</span>
         </div>
       </div>
+
+      <!-- Stat Card 5: Commissioned Projects -->
+      <a routerLink="/admin/commissioned-projects" class="stat-card card text-decoration-none" style="cursor: pointer; text-decoration: none;">
+        <div class="stat-icon icon-commissions">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">Custom Projects</span>
+          <span class="stat-value">{{ totalCommissionRequests }}</span>
+        </div>
+      </a>
     </div>
 
     <!-- Recent Products Section -->
@@ -79,27 +135,33 @@
       </div>
 
       <div class="table-responsive">
-        <table class="table">
+        <table class="table dashboard-products-table">
           <thead>
             <tr>
-              <th>Product Name</th>
-              <th>Category</th>
-              <th>SKU</th>
-              <th>Selling Price</th>
-              <th>Available Qty</th>
-              <th>Status</th>
+              <th class="col-product-name">Product Name</th>
+              <th class="col-category">Category</th>
+              <th class="col-sku">SKU</th>
+              <th class="col-price text-right">Selling Price</th>
+              <th class="col-qty text-right">Available Qty</th>
+              <th class="col-status text-center">Status</th>
             </tr>
           </thead>
           <tbody>
             @for (p of recentProducts; track p.encryptedProductId) {
               <tr>
-                <td class="font-weight-600">{{ p.productName }}</td>
-                <td>{{ p.categoryName || 'General' }}</td>
-                <td><code>{{ p.sku }}</code></td>
-                <td>₹{{ p.sellingPrice }}</td>
-                <td>{{ p.availableQty }}</td>
-                <td>
-                  <span class="badge" [class.badge-success]="p.isActive" [class.badge-danger]="!p.isActive">
+                <td class="col-product-name font-weight-600">{{ p.productName }}</td>
+                <td class="col-category">{{ p.categoryName || 'General' }}</td>
+                <td class="col-sku">
+                  <code>{{ p.sku }}</code>
+                </td>
+                <td class="col-price text-right font-weight-600">₹{{ p.sellingPrice }}</td>
+                <td class="col-qty text-right">{{ p.availableQty }}</td>
+                <td class="col-status text-center">
+                  <span
+                    class="badge"
+                    [class.badge-success]="p.isActive"
+                    [class.badge-danger]="!p.isActive"
+                  >
                     {{ p.isActive ? 'Active' : 'Inactive' }}
                   </span>
                 </td>

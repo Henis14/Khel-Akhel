@@ -1,0 +1,35 @@
+<main class="not-found-wrapper" role="main" aria-labelledby="not-found-heading">
+  <div class="card not-found-card">
+    <div class="brand-eyebrow" aria-label="Brand">
+      <span class="brand-name">Khel-Akhel</span>
+      <span class="brand-dot" aria-hidden="true">&bull;</span>
+      <span class="brand-studio">Studio &amp; Living</span>
+    </div>
+
+    <div class="error-code-badge" aria-hidden="true">404</div>
+
+    <h1 id="not-found-heading" class="not-found-title">Page Not Found</h1>
+
+    <p class="not-found-message">
+      The page or collection you are looking for might have been moved, renamed, or is temporarily unavailable.
+    </p>
+
+    <div class="not-found-actions">
+      <a routerLink="/" class="btn btn-primary" aria-label="Return to Khel-Akhel home page">
+        Return to Home
+      </a>
+      <button
+        type="button"
+        class="btn btn-secondary"
+        (click)="goBack()"
+        aria-label="Go back to previous page"
+      >
+        Go Back
+      </button>
+    </div>
+
+    <div class="not-found-craft-note">
+      <p>Art Prints &bull; Photography &bull; Lighting &bull; Murals &bull; Contemporary Living</p>
+    </div>
+  </div>
+</main>

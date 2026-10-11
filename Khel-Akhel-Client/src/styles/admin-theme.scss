@@ -3,49 +3,49 @@
    ========================================================================== */
 :root {
   /* Core Brand Colors */
-  --ka-navy: #1F3557;
-  --ka-navy-hover: #162A45;
-  --ka-dark-navy: #162A45;
-  --ka-terracotta: #B45132;
-  --ka-terracotta-hover: #923F28;
-  --ka-ochre: #D9A441;
-  --ka-teal: #2D7370;
-  --ka-olive: #737B4C;
+  --ka-navy: #1f3557;
+  --ka-navy-hover: #162a45;
+  --ka-dark-navy: #162a45;
+  --ka-terracotta: #b45132;
+  --ka-terracotta-hover: #923f28;
+  --ka-ochre: #d9a441;
+  --ka-teal: #2d7370;
+  --ka-olive: #737b4c;
 
   /* Surfaces & Backgrounds */
-  --ka-bg: #F5F1E8;
-  --ka-surface: #FBF9F4;
-  --ka-surface-alt: #F1E7D5;
-  --ka-surface-hover: #F5F1E8;
-  --ka-white: #FFFFFF;
+  --ka-bg: #f5f1e8;
+  --ka-surface: #fbf9f4;
+  --ka-surface-alt: #f1e7d5;
+  --ka-surface-hover: #f5f1e8;
+  --ka-white: #ffffff;
 
   /* Text Typography Colors */
-  --ka-text: #1E2430;
-  --ka-text-secondary: #6B6A63;
-  --ka-text-muted: #8A887F;
-  --ka-text-disabled: #9A978E;
+  --ka-text: #1e2430;
+  --ka-text-secondary: #6b6a63;
+  --ka-text-muted: #8a887f;
+  --ka-text-disabled: #9a978e;
 
   /* Borders & Dividers */
-  --ka-border: #D9D3C6;
-  --ka-border-light: #E7E1D6;
-  --ka-border-strong: #BFB5A3;
+  --ka-border: #d9d3c6;
+  --ka-border-light: #e7e1d6;
+  --ka-border-strong: #bfb5a3;
 
   /* Semantic Status Colors */
-  --ka-error: #A83F32;
+  --ka-error: #a83f32;
   --ka-error-bg: rgba(168, 63, 50, 0.12);
   --ka-error-border: rgba(168, 63, 50, 0.25);
 
-  --ka-warning: #B07B22;
+  --ka-warning: #b07b22;
   --ka-warning-bg: rgba(217, 164, 65, 0.14);
   --ka-warning-border: rgba(217, 164, 65, 0.28);
 
-  --ka-success: #2D7370;
+  --ka-success: #2d7370;
   --ka-success-bg: rgba(45, 115, 112, 0.12);
   --ka-success-border: rgba(45, 115, 112, 0.25);
 
-  --ka-info: #1F3557;
-  --ka-info-bg: rgba(31, 53, 87, 0.10);
-  --ka-info-border: rgba(31, 53, 87, 0.20);
+  --ka-info: #1f3557;
+  --ka-info-bg: rgba(31, 53, 87, 0.1);
+  --ka-info-border: rgba(31, 53, 87, 0.2);
 
   /* Legacy --admin Variable Mapping for 100% Theme Consistency */
   --admin-primary: var(--ka-navy);
@@ -56,8 +56,8 @@
 
   --admin-bg: var(--ka-bg);
   --admin-surface: var(--ka-surface);
-  --admin-surface-alt: #F1E7D5;
-  --admin-surface-hover: #F5F1E8;
+  --admin-surface-alt: #f1e7d5;
+  --admin-surface-hover: #f5f1e8;
 
   --admin-border: var(--ka-border);
   --admin-border-strong: var(--ka-border-strong);
@@ -96,13 +96,13 @@
   --admin-input-border: var(--ka-border);
   --admin-input-focus: var(--ka-navy);
   --admin-input-focus-ring: rgba(31, 53, 87, 0.12);
-  --admin-input-disabled: #E8E4DA;
+  --admin-input-disabled: #e8e4da;
 
   /* Elevation & Shadows */
   --admin-shadow-xs: 0 1px 2px 0 rgba(31, 53, 87, 0.04);
   --admin-shadow-sm: 0 2px 4px 0 rgba(31, 53, 87, 0.06);
   --admin-shadow-md: 0 4px 8px -1px rgba(31, 53, 87, 0.08);
-  --admin-shadow-lg: 0 10px 20px -3px rgba(31, 53, 87, 0.10);
+  --admin-shadow-lg: 0 10px 20px -3px rgba(31, 53, 87, 0.1);
 
   /* Border Radius */
   --admin-radius-sm: 6px;
@@ -112,7 +112,14 @@
 }
 
 .admin-layout-container {
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family:
+    'Inter',
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
   color: var(--ka-text);
   background-color: var(--ka-bg);
   min-height: 100vh;

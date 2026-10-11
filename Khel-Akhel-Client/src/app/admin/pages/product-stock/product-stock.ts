@@ -3,7 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { AdminProductStockService } from '../../services/admin-product-stock.service';
 import { AdminProductService } from '../../services/admin-product.service';
-import { ProductStockAddRequest, ProductStockResponse, ProductStockUpdateRequest } from '../../models/product-stock.model';
+import {
+  ProductStockAddRequest,
+  ProductStockResponse,
+  ProductStockUpdateRequest,
+} from '../../models/product-stock.model';
 import { ProductResponse } from '../../models/product.model';
 import { CustomValidators } from '../../../common/validators/custom.validators';
 import { PaginationComponent } from '../../../common/components/pagination/pagination';
@@ -14,14 +18,20 @@ import { AppLoaderComponent } from '../../../common/components/app-loader/app-lo
 @Component({
   selector: 'app-product-stock',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, PaginationComponent, BreadcrumbComponent, AppLoaderComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    PaginationComponent,
+    BreadcrumbComponent,
+    AppLoaderComponent,
+  ],
   templateUrl: './product-stock.html',
-  styleUrl: './product-stock.scss'
+  styleUrl: './product-stock.scss',
 })
 export class ProductStockComponent implements OnInit {
   breadcrumbs: BreadcrumbItem[] = [
     { label: 'Home', url: '/admin/dashboard' },
-    { label: 'Product Stock' }
+    { label: 'Product Stock' },
   ];
   private stockService = inject(AdminProductStockService);
   private productService = inject(AdminProductService);
@@ -61,12 +71,12 @@ export class ProductStockComponent implements OnInit {
   initForms(): void {
     this.addStockForm = this.fb.group({
       encryptedProductId: ['', [CustomValidators.requiredNonEmpty]],
-      quantity: [1, [CustomValidators.positiveNumber]]
+      quantity: [1, [CustomValidators.positiveNumber]],
     });
 
     this.updateStockForm = this.fb.group({
       availableQuantity: [0, [CustomValidators.nonNegativeInteger]],
-      reservedQuantity: [0, [CustomValidators.nonNegativeInteger]]
+      reservedQuantity: [0, [CustomValidators.nonNegativeInteger]],
     });
   }
 
@@ -77,7 +87,7 @@ export class ProductStockComponent implements OnInit {
           this.productsList = res.data.products || [];
         }
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -90,7 +100,7 @@ export class ProductStockComponent implements OnInit {
         pageIndex: this.pageIndex,
         pageSize: this.pageSize,
         search: this.searchQuery.trim() || undefined,
-        lowStockOnly: this.lowStockOnly || undefined
+        lowStockOnly: this.lowStockOnly || undefined,
       })
       .subscribe({
         next: (res) => {
@@ -105,7 +115,7 @@ export class ProductStockComponent implements OnInit {
           this.loading = false;
           this.errorMessage = err.error?.message || 'Failed to load stock records.';
           this.cdr.markForCheck();
-        }
+        },
       });
   }
 
@@ -128,8 +138,9 @@ export class ProductStockComponent implements OnInit {
 
   openAddModal(): void {
     this.addStockForm.reset({
-      encryptedProductId: this.productsList.length > 0 ? this.productsList[0].encryptedProductId : '',
-      quantity: 1
+      encryptedProductId:
+        this.productsList.length > 0 ? this.productsList[0].encryptedProductId : '',
+      quantity: 1,
     });
     this.isAddModalOpen = true;
   }
@@ -138,7 +149,7 @@ export class ProductStockComponent implements OnInit {
     this.selectedStock = stock;
     this.updateStockForm.patchValue({
       availableQuantity: stock.availableQty,
-      reservedQuantity: stock.reservedQty
+      reservedQuantity: stock.reservedQty,
     });
     this.isUpdateModalOpen = true;
   }
@@ -159,7 +170,7 @@ export class ProductStockComponent implements OnInit {
 
     const payload: ProductStockAddRequest = {
       encryptedProductId: this.addStockForm.value.encryptedProductId,
-      quantity: Number(this.addStockForm.value.quantity)
+      quantity: Number(this.addStockForm.value.quantity),
     };
 
     this.stockService.addStock(payload).subscribe({
@@ -176,7 +187,7 @@ export class ProductStockComponent implements OnInit {
       error: (err) => {
         this.formSubmitting = false;
         this.errorMessage = err.error?.message || 'Failed to add stock.';
-      }
+      },
     });
   }
 
@@ -192,7 +203,7 @@ export class ProductStockComponent implements OnInit {
     const payload: ProductStockUpdateRequest = {
       encryptedProductId: this.selectedStock.encryptedProductId,
       availableQuantity: Number(this.updateStockForm.value.availableQuantity),
-      reservedQuantity: Number(this.updateStockForm.value.reservedQuantity)
+      reservedQuantity: Number(this.updateStockForm.value.reservedQuantity),
     };
 
     this.stockService.updateStock(payload).subscribe({
@@ -209,7 +220,7 @@ export class ProductStockComponent implements OnInit {
       error: (err) => {
         this.formSubmitting = false;
         this.errorMessage = err.error?.message || 'Failed to update stock.';
-      }
+      },
     });
   }
 }

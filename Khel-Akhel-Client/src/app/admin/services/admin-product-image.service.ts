@@ -5,12 +5,15 @@ import { ApiResponse } from '../../common/models/api-response.model';
 import { ProductImage, ProductImageUploadResponse } from '../models/product-image.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AdminProductImageService {
   constructor(private api: ApiService) {}
 
-  uploadImages(encryptedProductId: string, files: File[]): Observable<ApiResponse<ProductImageUploadResponse>> {
+  uploadImages(
+    encryptedProductId: string,
+    files: File[],
+  ): Observable<ApiResponse<ProductImageUploadResponse>> {
     const formData = new FormData();
     formData.append('EncryptedProductId', encryptedProductId);
     files.forEach((file) => {

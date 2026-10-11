@@ -8,7 +8,7 @@ import { BreadcrumbItem } from '../../models/breadcrumb.model';
   standalone: true,
   imports: [CommonModule, RouterLink],
   templateUrl: './breadcrumb.html',
-  styleUrl: './breadcrumb.scss'
+  styleUrl: './breadcrumb.scss',
 })
 export class BreadcrumbComponent {
   @Input() items: BreadcrumbItem[] = [];

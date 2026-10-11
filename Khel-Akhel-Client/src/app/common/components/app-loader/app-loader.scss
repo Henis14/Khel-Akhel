@@ -37,8 +37,8 @@
 
   .spinner {
     border-style: solid;
-    border-color: var(--admin-border, #e2e8f0);
-    border-top-color: var(--admin-primary, #2563eb);
+    border-color: var(--ka-border, #d9d3c6);
+    border-top-color: var(--ka-navy, #1f3557);
     border-radius: 50%;
     animation: app-spin 0.75s linear infinite;
     flex-shrink: 0;
@@ -46,7 +46,7 @@
 
   .loader-text {
     font-weight: 500;
-    color: var(--admin-text-secondary, #475569);
+    color: var(--ka-text-secondary, #6b6a63);
     text-align: center;
     line-height: 1.4;
   }
