@@ -220,3 +220,81 @@ BEGIN
     );
 END;
 GO
+
+-- =========================================================================
+-- Seed Data: About Page Error & Status Messages
+-- =========================================================================
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[drs_error_message_mst]') AND type IN (N'U'))
+BEGIN
+    DECLARE @AboutMessages TABLE (
+        MessageCode VARCHAR(100),
+        MessageText NVARCHAR(500),
+        MessageType VARCHAR(20),
+        HttpStatusCode INT
+    );
+
+    INSERT INTO @AboutMessages (MessageCode, MessageText, MessageType, HttpStatusCode) VALUES
+    ('ABOUT_CREATED', 'About content entry created successfully.', 'SUCCESS', 200),
+    ('ABOUT_UPDATED', 'About content entry updated successfully.', 'SUCCESS', 200),
+    ('ABOUT_DELETED', 'About content entry deleted successfully.', 'SUCCESS', 200),
+    ('ABOUT_PUBLISHED', 'About content entry published successfully.', 'SUCCESS', 200),
+    ('ABOUT_UNPUBLISHED', 'About content entry unpublished successfully.', 'SUCCESS', 200),
+    ('ABOUT_IMAGE_UPLOADED', 'About image uploaded successfully.', 'SUCCESS', 200),
+    ('ABOUT_IMAGE_DELETED', 'About image deleted successfully.', 'SUCCESS', 200),
+    ('ABOUT_IMAGES_REORDERED', 'About images reordered successfully.', 'SUCCESS', 200),
+    ('ABOUT_NOT_FOUND', 'About content record not found.', 'ERROR', 404),
+    ('ABOUT_IMAGE_NOT_FOUND', 'About image record not found.', 'ERROR', 404),
+    ('MAXIMUM_ABOUT_IMAGES_EXCEEDED', 'Maximum 15 images allowed per About section.', 'ERROR', 400),
+    ('INVALID_ABOUT_ID', 'Invalid About content ID specified.', 'ERROR', 400);
+
+    INSERT INTO [dbo].[drs_error_message_mst] ([MessageCode], [MessageText], [MessageType], [HttpStatusCode], [IsActive], [IsDeleted], [CreatedDate])
+    SELECT m.MessageCode, m.MessageText, m.MessageType, m.HttpStatusCode, 1, 0, GETDATE()
+    FROM @AboutMessages m
+    WHERE NOT EXISTS (
+        SELECT 1 FROM [dbo].[drs_error_message_mst] existing
+        WHERE existing.[MessageCode] = m.MessageCode AND existing.[IsDeleted] = 0
+    );
+END;
+GO
+
+-- =========================================================================
+-- Seed Data: Sample About / Studio Narratives
+-- =========================================================================
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[drs_about_mst]') AND type IN (N'U'))
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM [dbo].[drs_about_mst] WHERE [Heading] = 'All that comes, comes in play' AND [IsDeleted] = 0)
+    BEGIN
+        INSERT INTO [dbo].[drs_about_mst] (
+            [Heading], [Subheading], [ContentType], [ProjectOrEventTitle], [DisplayYear],
+            [ShortDescription], [DetailedDescription], [Credits], [Location], [ExternalUrl],
+            [DisplayOrder], [LayoutType], [IsPublished], [customer_id], [IsActive], [IsDeleted], [CreatedDate]
+        ) VALUES (
+            'All that comes, comes in play',
+            'All that flows, flows. All that goes, goes. All is One.',
+            'Studio Narrative',
+            'Khel-Akhel Studio Philosophy',
+            '2026',
+            'Khel-Akhel is a creative journey where art takes many forms, shaped by curiosity, experimentation and the natural flow of making.',
+            'There is no fixed beginning or end, only an unfolding. A play across forms, materials and ideas that becomes a way of seeing—bringing together art, objects, spaces and experiences as they emerge.
+
+Khel-Akhel is an invitation to play, explore and connect. All are welcome to look, interact, participate, immerse, reflect and perhaps discover something new along the way.',
+            NULL,
+            'India',
+            'https://www.khel-akhel.com',
+            1,
+            'grid-3',
+            1,
+            NULL,
+            1,
+            0,
+            GETDATE()
+        );
+    END;
+    ELSE
+    BEGIN
+        UPDATE [dbo].[drs_about_mst]
+        SET [Credits] = NULL
+        WHERE [Heading] = 'All that comes, comes in play' AND [Credits] = 'Khel-Akhel Studio Team';
+    END;
+END;
+GO

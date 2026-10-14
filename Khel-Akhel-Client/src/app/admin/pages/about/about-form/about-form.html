@@ -1,0 +1,457 @@
+<div class="about-form-page">
+  <!-- Page Header -->
+  <div class="page-header">
+    <app-breadcrumb [items]="breadcrumbs"></app-breadcrumb>
+    <div class="page-header-main">
+      <div class="header-titles">
+        <h1 class="page-title">
+          {{ isEditMode ? 'Edit Section: ' + (existingRecord?.heading || '') : 'Create About & Portfolio Section' }}
+        </h1>
+        <p class="page-subtitle">
+          Configure narrative text, select gallery presets, arrange project imagery, and preview the public presentation.
+        </p>
+      </div>
+
+      <!-- Mode Switcher Tabs -->
+      <div class="mode-tabs">
+        <button
+          type="button"
+          class="mode-tab-btn"
+          [class.active]="activeTab === 'edit'"
+          (click)="activeTab = 'edit'"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          </svg>
+          <span>Content Editor</span>
+        </button>
+        <button
+          type="button"
+          class="mode-tab-btn"
+          [class.active]="activeTab === 'preview'"
+          (click)="activeTab = 'preview'"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+          <span>Live Storefront Preview</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Alerts -->
+  @if (successMessage) {
+    <div class="alert alert-success" role="alert">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+      <span>{{ successMessage }}</span>
+    </div>
+  }
+
+  @if (errorMessage) {
+    <div class="alert alert-error" role="alert">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <div>
+        <strong>{{ errorMessage }}</strong>
+        @if (validationErrors.length > 0) {
+          <ul class="validation-error-list">
+            @for (err of validationErrors; track err) {
+              <li>{{ err }}</li>
+            }
+          </ul>
+        }
+      </div>
+    </div>
+  }
+
+  @if (loading) {
+    <div class="form-loader-container">
+      <app-loader></app-loader>
+      <p class="loader-text">Loading section details...</p>
+    </div>
+  } @else {
+    <!-- EDIT TAB -->
+    @if (activeTab === 'edit') {
+      <form [formGroup]="form" (ngSubmit)="save()" class="about-editor-form">
+        <!-- 1. Section Identity & Hierarchy -->
+        <section class="form-card">
+          <div class="card-header">
+            <span class="step-num">1</span>
+            <div class="header-desc">
+              <h3 class="card-title">Editorial Identity</h3>
+              <p class="card-subtitle">Define the primary heading, conceptual discipline, and contextual title.</p>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <!-- Heading -->
+            <div class="form-group span-full">
+              <label class="form-label" for="heading">
+                Section Heading <span class="required">*</span>
+              </label>
+              <input
+                id="heading"
+                type="text"
+                class="form-control"
+                formControlName="heading"
+                placeholder="e.g. All that comes, comes in play / 01 — Visual Art & Creative Practice"
+                [class.invalid]="form.get('heading')?.invalid && form.get('heading')?.touched"
+              />
+              @if (form.get('heading')?.invalid && form.get('heading')?.touched) {
+                <span class="field-error">Heading is required (minimum 2, maximum 200 characters).</span>
+              }
+            </div>
+
+            <!-- Subheading -->
+            <div class="form-group span-full">
+              <label class="form-label" for="subheading">Subheading / Secondary Statement</label>
+              <input
+                id="subheading"
+                type="text"
+                class="form-control"
+                formControlName="subheading"
+                placeholder="e.g. All that flows, flows. All that goes, goes. All is One."
+              />
+            </div>
+
+            <!-- Content Type / Discipline -->
+            <div class="form-group span-half">
+              <label class="form-label" for="contentType">Content Discipline / Category</label>
+              <input
+                id="contentType"
+                type="text"
+                class="form-control"
+                formControlName="contentType"
+                placeholder="Enter discipline or category (e.g. Visual Art, Architecture, Philosophy)..."
+              />
+            </div>
+
+            <!-- Project / Event Title -->
+            <div class="form-group span-quarter">
+              <label class="form-label" for="projectOrEventTitle">Project / Event Title</label>
+              <input
+                id="projectOrEventTitle"
+                type="text"
+                class="form-control"
+                formControlName="projectOrEventTitle"
+                placeholder="e.g. Serendipity Arts Festival"
+              />
+            </div>
+
+            <!-- Display Year -->
+            <div class="form-group span-quarter">
+              <label class="form-label" for="displayYear">Display Year / Date</label>
+              <input
+                id="displayYear"
+                type="text"
+                class="form-control"
+                formControlName="displayYear"
+                placeholder="e.g. 2026 / 2024–2026"
+              />
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. Visual Layout Selector -->
+        <section class="form-card">
+          <div class="card-header">
+            <span class="step-num">2</span>
+            <div class="header-desc">
+              <h3 class="card-title">Gallery Layout Architecture</h3>
+              <p class="card-subtitle">
+                Choose the visual grid system that best flatters this specific portfolio piece.
+              </p>
+            </div>
+          </div>
+
+          <app-gallery-layout-selector
+            [selectedLayout]="selectedLayout"
+            [imageCount]="currentEditorImages.length"
+            (layoutChange)="onLayoutChange($event)"
+          ></app-gallery-layout-selector>
+        </section>
+
+        <!-- 3. Visual Image Assets & Gallery Editor -->
+        <section class="form-card">
+          <div class="card-header">
+            <span class="step-num">3</span>
+            <div class="header-desc">
+              <h3 class="card-title">Gallery Visual Assets</h3>
+              <p class="card-subtitle">
+                Upload up to 15 high-resolution photographs. Reorder items to dictate their position in the chosen layout.
+              </p>
+            </div>
+          </div>
+
+          <app-image-gallery-editor
+            [existingImages]="initialExistingImages"
+            (imagesChanged)="onImagesChanged($event)"
+          ></app-image-gallery-editor>
+        </section>
+
+        <!-- 4. Narrative Descriptions -->
+        <section class="form-card">
+          <div class="card-header">
+            <span class="step-num">4</span>
+            <div class="header-desc">
+              <h3 class="card-title">Narrative & Editorial Description</h3>
+              <p class="card-subtitle">
+                Provide short synopsis leads and extended poetic or technical descriptions.
+              </p>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <!-- Short Description -->
+            <div class="form-group span-full">
+              <label class="form-label" for="shortDescription">
+                Short Lead Summary (max 1000 characters)
+              </label>
+              <textarea
+                id="shortDescription"
+                class="form-control textarea-short"
+                formControlName="shortDescription"
+                rows="3"
+                placeholder="Brief editorial synopsis displayed prominently beneath the section title..."
+              ></textarea>
+            </div>
+
+            <!-- Detailed Description -->
+            <div class="form-group span-full">
+              <label class="form-label" for="detailedDescription">
+                Detailed Narrative / Body Content (multiline supported)
+              </label>
+              <textarea
+                id="detailedDescription"
+                class="form-control textarea-long"
+                formControlName="detailedDescription"
+                rows="6"
+                placeholder="Extended artistic commentary, materials experimentation notes, scenography details, or philosophy..."
+              ></textarea>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. Metadata & Credits -->
+        <section class="form-card">
+          <div class="card-header">
+            <span class="step-num">5</span>
+            <div class="header-desc">
+              <h3 class="card-title">Credits, Location & Links</h3>
+              <p class="card-subtitle">Optional attribution, geographic location, and external link URL.</p>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <!-- Credits -->
+            <div class="form-group span-half">
+              <label class="form-label" for="credits">Artistic / Production Credits</label>
+              <input
+                id="credits"
+                type="text"
+                class="form-control"
+                formControlName="credits"
+                placeholder="e.g. Photography: Jane Doe; Exhibition Curator: Studio Team"
+              />
+            </div>
+
+            <!-- Location -->
+            <div class="form-group span-quarter">
+              <label class="form-label" for="location">Location / Venue</label>
+              <input
+                id="location"
+                type="text"
+                class="form-control"
+                formControlName="location"
+                placeholder="e.g. Goa, India / New Delhi"
+              />
+            </div>
+
+            <!-- Display Order -->
+            <div class="form-group span-quarter">
+              <label class="form-label" for="displayOrder">Vertical Display Order</label>
+              <input
+                id="displayOrder"
+                type="number"
+                min="0"
+                class="form-control"
+                formControlName="displayOrder"
+              />
+            </div>
+
+            <!-- External URL -->
+            <div class="form-group span-full">
+              <label class="form-label" for="externalUrl">External Repository / Publication URL</label>
+              <input
+                id="externalUrl"
+                type="url"
+                class="form-control"
+                formControlName="externalUrl"
+                placeholder="https://www.khel-akhel.com/projects/..."
+                [class.invalid]="form.get('externalUrl')?.invalid && form.get('externalUrl')?.touched"
+              />
+              @if (form.get('externalUrl')?.invalid && form.get('externalUrl')?.touched) {
+                <span class="field-error">Please provide a valid URL starting with http:// or https://.</span>
+              }
+            </div>
+          </div>
+        </section>
+
+        <!-- 6. Publishing Settings -->
+        <section class="form-card">
+          <div class="card-header">
+            <span class="step-num">6</span>
+            <div class="header-desc">
+              <h3 class="card-title">Publication & Visibility Status</h3>
+              <p class="card-subtitle">Control whether this section appears on the live public website.</p>
+            </div>
+          </div>
+
+          <div class="switches-row">
+            <label class="switch-control">
+              <input type="checkbox" formControlName="isPublished" />
+              <span class="switch-slider"></span>
+              <span class="switch-label">
+                <strong>Publish to Storefront</strong>
+                <small>Section will be immediately visible on /about when enabled</small>
+              </span>
+            </label>
+
+            <label class="switch-control">
+              <input type="checkbox" formControlName="isActive" />
+              <span class="switch-slider"></span>
+              <span class="switch-label">
+                <strong>Active Record</strong>
+                <small>Master status toggle</small>
+              </span>
+            </label>
+          </div>
+        </section>
+
+        <!-- Action Footer -->
+        <div class="form-actions-bar">
+          <button type="button" class="btn btn-outline-admin" (click)="cancel()" [disabled]="submitting">
+            Cancel
+          </button>
+          <button type="button" class="btn btn-outline-admin" (click)="activeTab = 'preview'">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            <span>Live Preview</span>
+          </button>
+          <button type="submit" class="btn btn-primary-admin" [disabled]="submitting || form.invalid">
+            @if (submitting) {
+              <span class="btn-spinner"></span>
+              <span>Saving...</span>
+            } @else {
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                <polyline points="7 3 7 8 15 8"></polyline>
+              </svg>
+              <span>{{ isEditMode ? 'Update Section' : 'Create Section' }}</span>
+            }
+          </button>
+        </div>
+      </form>
+    }
+
+    <!-- PREVIEW TAB -->
+    @if (activeTab === 'preview') {
+      <div class="preview-tab-wrapper">
+        <div class="preview-top-bar">
+          <div class="preview-badge-group">
+            <span class="live-indicator">LIVE PREVIEW</span>
+            <span class="layout-info">Layout: <strong>{{ selectedLayout }}</strong></span>
+            <span class="count-info">Assets: <strong>{{ currentEditorImages.length }}</strong></span>
+          </div>
+          <button type="button" class="btn btn-outline-admin" (click)="activeTab = 'edit'">
+            &larr; Back to Editor
+          </button>
+        </div>
+
+        <div class="preview-stage-container">
+          <article class="public-preview-article">
+            <!-- Header -->
+            <header class="preview-editorial-header">
+              <div class="preview-eyebrows">
+                @if (form.get('contentType')?.value) {
+                  <span class="eyebrow-text">{{ form.get('contentType')?.value }}</span>
+                }
+                @if (form.get('displayYear')?.value) {
+                  <span class="sep">&bull;</span>
+                  <span class="eyebrow-text">{{ form.get('displayYear')?.value }}</span>
+                }
+                @if (form.get('location')?.value) {
+                  <span class="sep">&bull;</span>
+                  <span class="eyebrow-text">{{ form.get('location')?.value }}</span>
+                }
+              </div>
+
+              <h1 class="preview-main-heading">
+                {{ form.get('heading')?.value || 'Untitled Section Heading' }}
+              </h1>
+
+              @if (form.get('subheading')?.value) {
+                <p class="preview-sub-heading">{{ form.get('subheading')?.value }}</p>
+              }
+            </header>
+
+            <!-- Gallery rendered in current layout -->
+            <div class="preview-gallery-holder">
+              <app-gallery-renderer
+                [images]="livePreviewImages"
+                [layoutType]="selectedLayout"
+                [interactive]="true"
+                [sectionTitle]="form.get('heading')?.value"
+              ></app-gallery-renderer>
+            </div>
+
+            <!-- Narrative Body -->
+            @if (form.get('shortDescription')?.value || form.get('detailedDescription')?.value) {
+              <div class="preview-narrative-box">
+                @if (form.get('shortDescription')?.value) {
+                  <p class="preview-lead">{{ form.get('shortDescription')?.value }}</p>
+                }
+                @if (form.get('detailedDescription')?.value) {
+                  <div class="preview-rich">{{ form.get('detailedDescription')?.value }}</div>
+                }
+              </div>
+            }
+
+            <!-- Credits & Links -->
+            @if (hasVisibleCredits(form.get('credits')?.value) || form.get('externalUrl')?.value) {
+              <footer class="preview-footer-line">
+                @if (hasVisibleCredits(form.get('credits')?.value)) {
+                  <p class="preview-credits">
+                    <strong>Credits:</strong> {{ form.get('credits')?.value }}
+                  </p>
+                }
+                @if (form.get('externalUrl')?.value) {
+                  <a [href]="form.get('externalUrl')?.value" target="_blank" class="preview-link">
+                    <span>View Project Resource</span>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                      <polyline points="15 3 21 3 21 9"></polyline>
+                      <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
+                  </a>
+                }
+              </footer>
+            }
+          </article>
+        </div>
+      </div>
+    }
+  }
+</div>

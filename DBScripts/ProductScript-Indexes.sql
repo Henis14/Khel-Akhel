@@ -181,3 +181,37 @@ BEGIN
     WHERE [IsDeleted] = 0;
 END;
 GO
+
+-- =========================================================================
+-- About Page Indexes
+-- =========================================================================
+
+-- Public Listing Index: Published & Active sections ordered by DisplayOrder
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_drs_about_mst_PublicList' AND object_id = OBJECT_ID('drs_about_mst'))
+BEGIN
+    CREATE NONCLUSTERED INDEX [IX_drs_about_mst_PublicList]
+    ON [dbo].[drs_about_mst] ([DisplayOrder], [ID])
+    INCLUDE ([Heading], [Subheading], [ContentType], [ProjectOrEventTitle], [DisplayYear], [ShortDescription], [Credits], [Location], [ExternalUrl], [LayoutType])
+    WHERE [IsDeleted] = 0 AND [IsActive] = 1 AND [IsPublished] = 1;
+END;
+GO
+
+-- Admin Listing & Filter Index: IsPublished, IsActive, DisplayOrder
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_drs_about_mst_Status_DisplayOrder' AND object_id = OBJECT_ID('drs_about_mst'))
+BEGIN
+    CREATE NONCLUSTERED INDEX [IX_drs_about_mst_Status_DisplayOrder]
+    ON [dbo].[drs_about_mst] ([IsPublished], [IsActive], [DisplayOrder])
+    WHERE [IsDeleted] = 0;
+END;
+GO
+
+-- About Images by about_id & DisplayOrder
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_drs_about_image_mst_about_id_DisplayOrder' AND object_id = OBJECT_ID('drs_about_image_mst'))
+BEGIN
+    CREATE NONCLUSTERED INDEX [IX_drs_about_image_mst_about_id_DisplayOrder]
+    ON [dbo].[drs_about_image_mst] ([about_id], [DisplayOrder])
+    WHERE [IsDeleted] = 0;
+END;
+GO
+
+

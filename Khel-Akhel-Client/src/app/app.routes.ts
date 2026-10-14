@@ -104,6 +104,27 @@ export const routes: Routes = [
             (m) => m.CommissionedProjectsComponent,
           ),
       },
+      {
+        path: 'about',
+        loadComponent: () =>
+          import('./admin/pages/about/about-list/about-list').then(
+            (m) => m.AboutListComponent,
+          ),
+      },
+      {
+        path: 'about/create',
+        loadComponent: () =>
+          import('./admin/pages/about/about-form/about-form').then(
+            (m) => m.AboutFormComponent,
+          ),
+      },
+      {
+        path: 'about/edit/:encryptedAboutId',
+        loadComponent: () =>
+          import('./admin/pages/about/about-form/about-form').then(
+            (m) => m.AboutFormComponent,
+          ),
+      },
       // Admin Child Wildcard: Catch any unknown URL beneath /admin while retaining admin layout and guards
       {
         path: '**',
@@ -124,6 +145,10 @@ export const routes: Routes = [
       {
         path: '',
         loadComponent: () => import('./user/pages/home/home').then((m) => m.UserHomeComponent),
+      },
+      {
+        path: 'about',
+        loadComponent: () => import('./user/pages/about/about').then((m) => m.About),
       },
       {
         path: 'products',

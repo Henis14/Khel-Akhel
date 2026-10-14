@@ -1,0 +1,232 @@
+<div class="image-gallery-editor">
+  <div class="editor-header">
+    <div class="header-info">
+      <h3 class="panel-title">Gallery Visual Assets</h3>
+      <p class="panel-subtitle">
+        Upload and sequence portfolio photographs. Drag items to adjust presentation order, or use the sequence arrows.
+      </p>
+    </div>
+
+    <!-- Image Counter Limit Pill -->
+    <div
+      class="counter-pill"
+      [class.warning]="items.length >= 12 && items.length < maxImages"
+      [class.limit-reached]="items.length >= maxImages"
+    >
+      <span class="pill-number">{{ items.length }} / {{ maxImages }}</span>
+      <span class="pill-label">Images</span>
+    </div>
+  </div>
+
+  <!-- Validation Error Alert -->
+  @if (errorMessage) {
+    <div class="alert-message error" role="alert">
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span>{{ errorMessage }}</span>
+      <button type="button" class="close-alert" (click)="errorMessage = null">&times;</button>
+    </div>
+  }
+
+  <!-- Upload Dropzone (disabled when 15 images reached) -->
+  @if (items.length < maxImages) {
+    <div
+      class="dropzone"
+      [class.drag-over]="isDragOver"
+      (dragenter)="onDragEnter($event)"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave($event)"
+      (drop)="onDrop($event)"
+      (click)="fileInput.click()"
+    >
+      <input
+        #fileInput
+        type="file"
+        multiple
+        accept="image/jpeg,image/png,image/webp,image/gif"
+        (change)="onFileSelected($event)"
+        style="display: none"
+      />
+      <div class="dropzone-content">
+        <div class="upload-icon-circle">
+          <svg
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+        </div>
+        <div class="dropzone-text">
+          <p class="primary-instruction">
+            <span class="highlight">Click to upload</span> or drag and drop artwork images
+          </p>
+          <p class="secondary-instruction">
+            JPEG, PNG, WEBP, or GIF &bull; Max 5 MB per file &bull; Up to {{ maxImages - items.length }} remaining
+          </p>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <div class="limit-notice-box">
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M12 16v-4"></path>
+        <path d="M12 8h.01"></path>
+      </svg>
+      <span>The maximum section limit of {{ maxImages }} images has been reached. Remove existing images to upload new files.</span>
+    </div>
+  }
+
+  <!-- Image Thumbnails List & Reordering -->
+  @if (items.length > 0) {
+    <div class="thumbnail-list-container">
+      <div class="list-meta">
+        <span class="meta-label">Arranged Sequence ({{ items.length }} items)</span>
+        <span class="meta-tip">Tip: Drag items or use arrows to adjust public exhibition order</span>
+      </div>
+
+      <div class="thumbnail-grid">
+        @for (item of items; track item.id; let i = $index) {
+          <div
+            class="thumb-card"
+            [class.dragging]="draggedIndex === i"
+            [class.drag-over]="dragOverIndex === i"
+            draggable="true"
+            (dragstart)="onItemDragStart($event, i)"
+            (dragover)="onItemDragOver($event, i)"
+            (drop)="onItemDrop($event, i)"
+            (dragend)="onItemDragEnd()"
+          >
+            <!-- Order Sequence Badge -->
+            <div class="order-badge" title="Display sequence #{{ item.displayOrder }}">
+              #{{ item.displayOrder }}
+            </div>
+
+            <!-- Status Tag -->
+            <div class="status-tag" [class.new]="!item.isExisting">
+              {{ item.isExisting ? 'Saved' : 'New' }}
+            </div>
+
+            <!-- Image Thumbnail -->
+            <div class="thumb-image-holder">
+              <img [src]="item.previewUrl" [alt]="item.fileName" />
+              <div class="drag-handle-hint" title="Drag to reorder">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <circle cx="9" cy="5" r="1"></circle>
+                  <circle cx="9" cy="12" r="1"></circle>
+                  <circle cx="9" cy="19" r="1"></circle>
+                  <circle cx="15" cy="5" r="1"></circle>
+                  <circle cx="15" cy="12" r="1"></circle>
+                  <circle cx="15" cy="19" r="1"></circle>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Card Details -->
+            <div class="thumb-details">
+              <p class="filename" [title]="item.fileName">{{ item.fileName }}</p>
+              @if (item.fileSize > 0) {
+                <span class="filesize">{{ formatFileSize(item.fileSize) }}</span>
+              }
+            </div>
+
+            <!-- Action Controls -->
+            <div class="thumb-actions">
+              <div class="order-arrows">
+                <button
+                  type="button"
+                  class="arrow-btn"
+                  [disabled]="i === 0"
+                  (click)="moveUp(i)"
+                  title="Move earlier"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <polyline points="18 15 12 9 6 15"></polyline>
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="arrow-btn"
+                  [disabled]="i === items.length - 1"
+                  (click)="moveDown(i)"
+                  title="Move later"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </button>
+              </div>
+
+              <button
+                type="button"
+                class="remove-btn"
+                (click)="removeImage(i)"
+                title="Remove image from gallery"
+              >
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  } @else {
+    <div class="empty-gallery-hint">
+      <p>No images selected yet. Upload high-resolution images to showcase this project or event.</p>
+    </div>
+  }
+</div>

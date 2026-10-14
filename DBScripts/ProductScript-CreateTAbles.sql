@@ -354,3 +354,69 @@ BEGIN
     );
 END;
 GO
+
+-- =========================================================================
+-- Dynamic About Page Tables
+-- =========================================================================
+
+-- 1. About Content Master Table
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[drs_about_mst]') AND type IN (N'U'))
+BEGIN
+    CREATE TABLE [dbo].[drs_about_mst] (
+        [ID]                  BIGINT          IDENTITY (1, 1) NOT NULL PRIMARY KEY,
+        [Heading]             NVARCHAR (200)  NOT NULL,
+        [Subheading]          NVARCHAR (250)  NULL,
+        [ContentType]         NVARCHAR (50)   NULL,
+        [ProjectOrEventTitle] NVARCHAR (200)  NULL,
+        [DisplayYear]         VARCHAR (50)    NULL,
+        [ShortDescription]    NVARCHAR (1000) NULL,
+        [DetailedDescription] NVARCHAR (MAX)  NULL,
+        [Credits]             NVARCHAR (1000) NULL,
+        [Location]            NVARCHAR (200)  NULL,
+        [ExternalUrl]         NVARCHAR (500)  NULL,
+        [DisplayOrder]        INT             DEFAULT 0 NOT NULL,
+        [LayoutType]          NVARCHAR (50)   DEFAULT 'grid-3' NOT NULL,
+        [IsPublished]         BIT             DEFAULT 0 NOT NULL,
+        [customer_id]         BIGINT          NULL,
+        [IsActive]            BIT             DEFAULT 1 NOT NULL,
+        [IsDeleted]           BIT             DEFAULT 0 NOT NULL,
+        [CreatedDate]         DATETIME        DEFAULT GETDATE() NOT NULL,
+        [ModifiedDate]        DATETIME        NULL
+    );
+END;
+GO
+
+-- Ensure LayoutType exists in existing drs_about_mst tables (idempotent)
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[drs_about_mst]') AND type IN (N'U'))
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM sys.columns 
+        WHERE object_id = OBJECT_ID(N'[dbo].[drs_about_mst]') 
+        AND name = 'LayoutType'
+    )
+    BEGIN
+        ALTER TABLE [dbo].[drs_about_mst] 
+        ADD [LayoutType] NVARCHAR (50) NOT NULL CONSTRAINT DF_drs_about_mst_LayoutType DEFAULT 'grid-3';
+    END;
+END;
+GO
+
+-- 2. About Image Master Table
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[drs_about_image_mst]') AND type IN (N'U'))
+BEGIN
+    CREATE TABLE [dbo].[drs_about_image_mst] (
+        [ID]               BIGINT         IDENTITY (1, 1) NOT NULL PRIMARY KEY,
+        [about_id]         BIGINT         NOT NULL,
+        [OriginalFileName] NVARCHAR (255) NOT NULL,
+        [StoredFileName]   NVARCHAR (255) NOT NULL,
+        [ImagePath]        NVARCHAR (500) NOT NULL,
+        [ContentType]      VARCHAR (100)  NOT NULL,
+        [FileSize]         BIGINT         NOT NULL,
+        [DisplayOrder]     INT            DEFAULT 1 NOT NULL,
+        [IsActive]         BIT            DEFAULT 1 NOT NULL,
+        [IsDeleted]        BIT            DEFAULT 0 NOT NULL,
+        [CreatedDate]      DATETIME       DEFAULT GETDATE() NOT NULL,
+        [ModifiedDate]     DATETIME       NULL
+    );
+END;
+GO

@@ -89,3 +89,25 @@ BEGIN
     ALTER TABLE [dbo].[drs_commission_request_image_mst] CHECK CONSTRAINT [FK_drs_commission_request_image_mst_request_id];
 END;
 GO
+
+-- =========================================================================
+-- About Page Foreign Keys
+-- =========================================================================
+
+-- About Optional Customer FK (Author/Admin)
+IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_drs_about_mst_customer_id]') AND parent_object_id = OBJECT_ID(N'[dbo].[drs_about_mst]'))
+BEGIN
+    ALTER TABLE [dbo].[drs_about_mst] WITH CHECK ADD CONSTRAINT [FK_drs_about_mst_customer_id]
+    FOREIGN KEY ([customer_id]) REFERENCES [dbo].[drs_customer_mst] ([ID]);
+    ALTER TABLE [dbo].[drs_about_mst] CHECK CONSTRAINT [FK_drs_about_mst_customer_id];
+END;
+GO
+
+-- About Image to About Master FK
+IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[dbo].[FK_drs_about_image_mst_about_id]') AND parent_object_id = OBJECT_ID(N'[dbo].[drs_about_image_mst]'))
+BEGIN
+    ALTER TABLE [dbo].[drs_about_image_mst] WITH CHECK ADD CONSTRAINT [FK_drs_about_image_mst_about_id]
+    FOREIGN KEY ([about_id]) REFERENCES [dbo].[drs_about_mst] ([ID]);
+    ALTER TABLE [dbo].[drs_about_image_mst] CHECK CONSTRAINT [FK_drs_about_image_mst_about_id];
+END;
+GO
