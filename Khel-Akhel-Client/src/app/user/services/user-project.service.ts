@@ -3,19 +3,19 @@ import { Observable } from 'rxjs';
 import { ApiService } from '../../common/services/api.service';
 import { ApiResponse } from '../../common/models/api-response.model';
 import { environment } from '../../../environments/environment';
-import { AboutPublic } from '../../admin/models/about.model';
+import { ProjectPublic } from '../../admin/models/project.model';
 
 @Injectable({
   providedIn: 'root',
 })
-export class UserAboutService {
+export class UserProjectService {
   constructor(private api: ApiService) {}
 
   /**
-   * Fetch all active, published About sections ordered by displayOrder for the public storefront.
+   * Fetch all active, published Project sections ordered by displayOrder for the public storefront.
    */
-  getPublicSections(): Observable<ApiResponse<AboutPublic[]>> {
-    return this.api.get<AboutPublic[]>('about/public');
+  getPublicProjects(): Observable<ApiResponse<ProjectPublic[]>> {
+    return this.api.get<ProjectPublic[]>('projects/public');
   }
 
   /**

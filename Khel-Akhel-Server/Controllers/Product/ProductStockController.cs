@@ -53,7 +53,7 @@ namespace Khel_Akhel_Server.Controllers.Product
         }
         #endregion
 
-        #region 6.1 AddStockByproductId
+        #region Add Product Stock API
         [HttpPost("add")]
         public async Task<IActionResult> AddStockByproductId(
             [FromBody] ProductStockAddRequest? request
@@ -256,7 +256,7 @@ namespace Khel_Akhel_Server.Controllers.Product
         }
         #endregion
 
-        #region 6.2 UpdateStockByproductId [PATCH]
+        #region Update Product Stock API
         [HttpPatch("update")]
         public async Task<IActionResult> UpdateStockByproductId(
             [FromBody] ProductStockUpdateRequest? request
@@ -434,7 +434,7 @@ namespace Khel_Akhel_Server.Controllers.Product
         }
         #endregion
 
-        #region 6.3 GetAllProductStock [GET / POST]
+        #region Get Product Stock List API
         [HttpGet("list")]
         [HttpPost("list")]
         public IActionResult GetAllProductStock(

@@ -58,7 +58,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
         }
         #endregion
 
-        #region 3.1 CustomerAddressCreate
+        #region Create Customer Address API
         [HttpPost("create")]
         public async Task<IActionResult> CustomerAddressCreate(
             [FromBody] CustomerAddressCreateRequest? request
@@ -361,7 +361,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
         }
         #endregion
 
-        #region 3.2 CustomerAddressUpdate [PATCH]
+        #region Update Customer Address API
         [HttpPatch("update")]
         public async Task<IActionResult> CustomerAddressUpdate(
             [FromBody] CustomerAddressUpdateRequest? request
@@ -821,7 +821,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
         }
         #endregion
 
-        #region 3.3 GetCustomerAddressById [GET]
+        #region Get Customer Address By Id API
         [HttpGet("{encryptedId}")]
         public IActionResult GetCustomerAddressById([FromRoute] string encryptedId)
         {
@@ -954,7 +954,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
         }
         #endregion
 
-        #region 3.4 GetCustomerAddresses [GET]
+        #region Get Customer Address List API
         [HttpGet("list")]
         public IActionResult GetCustomerAddresses([FromQuery] string? encryptedCustomerId = null)
         {
@@ -1056,7 +1056,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
         }
         #endregion
 
-        #region 3.5 CustomerAddressSoftDelete
+        #region Delete Customer Address API
         [HttpDelete("delete/{encryptedId?}")]
         [HttpPatch("delete/{encryptedId?}")]
         [HttpDelete("delete")]

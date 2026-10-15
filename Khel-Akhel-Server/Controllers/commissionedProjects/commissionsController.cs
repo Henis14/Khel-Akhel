@@ -81,7 +81,7 @@ namespace Khel_Akhel_Server.Controllers.commissionedProjects
         }
         #endregion
 
-        #region 1. Get Project Categories [GET /api/commissions/categories]
+        #region Get Commission Categories API
         /// <summary>
         /// Public endpoint to fetch all active commission project categories for customer dropdown.
         /// </summary>
@@ -159,7 +159,7 @@ namespace Khel_Akhel_Server.Controllers.commissionedProjects
         }
         #endregion
 
-        #region 2. Submit Commission Request [POST /api/commissions/create]
+        #region Create Commission Request API
         /// <summary>
         /// Public customer endpoint to submit a customized art/design project commission request with up to 3 sketches/images.
         /// </summary>
@@ -601,7 +601,7 @@ namespace Khel_Akhel_Server.Controllers.commissionedProjects
         }
         #endregion
 
-        #region 3. List Commission Requests (Admin) [GET /api/commissions/list]
+        #region Get Commission List API
         /// <summary>
         /// Admin endpoint to list, search, filter, and paginate commissioned project requests.
         /// </summary>
@@ -806,7 +806,7 @@ namespace Khel_Akhel_Server.Controllers.commissionedProjects
         }
         #endregion
 
-        #region 4. Get Commission Request Details (Admin) [GET /api/commissions/{encryptedId}]
+        #region Get Commission Detail API
         /// <summary>
         /// Admin endpoint to fetch full details of a specific commission request including reference sketches/images.
         /// </summary>
@@ -984,7 +984,7 @@ namespace Khel_Akhel_Server.Controllers.commissionedProjects
         }
         #endregion
 
-        #region 5. Update Status and Admin Notes (Admin) [PATCH /api/commissions/update-status]
+        #region Update Commission Status API
         /// <summary>
         /// Admin endpoint to update the review/communication status and notes for a commissioned project request.
         /// </summary>

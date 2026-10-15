@@ -1,20 +1,15 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  FormBuilder,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { AdminAboutService } from '../../../services/admin-about.service';
+import { AdminProjectService } from '../../../services/admin-project.service';
 import {
-  AboutCreatePayload,
-  AboutDetail,
-  AboutImage,
-  AboutImageOrderDto,
-  AboutUpdatePayload,
-} from '../../../models/about.model';
+  ProjectCreatePayload,
+  ProjectDetail,
+  ProjectImage,
+  ProjectImageOrderDto,
+  ProjectUpdatePayload,
+} from '../../../models/project.model';
 import {
   EditorImageItem,
   ImageGalleryEditorComponent,
@@ -29,7 +24,7 @@ import { BreadcrumbItem } from '../../../../common/models/breadcrumb.model';
 import { AppLoaderComponent } from '../../../../common/components/app-loader/app-loader';
 
 @Component({
-  selector: 'app-about-form',
+  selector: 'app-project-form',
   standalone: true,
   imports: [
     CommonModule,
@@ -41,20 +36,20 @@ import { AppLoaderComponent } from '../../../../common/components/app-loader/app
     ImageGalleryEditorComponent,
     GalleryRendererComponent,
   ],
-  templateUrl: './about-form.html',
-  styleUrl: './about-form.scss',
+  templateUrl: './project-form.html',
+  styleUrl: './project-form.scss',
 })
-export class AboutFormComponent implements OnInit {
+export class ProjectFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private aboutService = inject(AdminAboutService);
+  private projectService = inject(AdminProjectService);
   private cdr = inject(ChangeDetectorRef);
 
   isEditMode = false;
-  encryptedAboutId: string | null = null;
-  existingRecord: AboutDetail | null = null;
-  initialExistingImages: AboutImage[] = [];
+  encryptedProjectId: string | null = null;
+  existingRecord: ProjectDetail | null = null;
+  initialExistingImages: ProjectImage[] = [];
 
   form!: FormGroup;
   selectedLayout: string = 'grid-3';
@@ -63,7 +58,7 @@ export class AboutFormComponent implements OnInit {
   currentEditorImages: EditorImageItem[] = [];
   newFilesToUpload: File[] = [];
   removedImageIds: string[] = [];
-  imageOrders: AboutImageOrderDto[] = [];
+  imageOrders: ProjectImageOrderDto[] = [];
 
   // UI state
   loading = false;
@@ -75,18 +70,18 @@ export class AboutFormComponent implements OnInit {
 
   breadcrumbs: BreadcrumbItem[] = [
     { label: 'Home', url: '/admin/dashboard' },
-    { label: 'About Sections', url: '/admin/about' },
-    { label: 'New Section' },
+    { label: 'Projects', url: '/admin/projects' },
+    { label: 'New Project' },
   ];
 
   ngOnInit(): void {
     this.initForm();
     this.route.paramMap.subscribe((params) => {
-      const id = params.get('encryptedAboutId');
+      const id = params.get('encryptedProjectId') || params.get('encryptedAboutId');
       if (id) {
         this.isEditMode = true;
-        this.encryptedAboutId = id;
-        this.breadcrumbs[2] = { label: 'Edit Section' };
+        this.encryptedProjectId = id;
+        this.breadcrumbs[2] = { label: 'Edit Project' };
         this.loadRecord(id);
       }
     });
@@ -120,13 +115,21 @@ export class AboutFormComponent implements OnInit {
     this.loading = true;
     this.errorMessage = null;
 
-    this.aboutService.getById(id).subscribe({
+    this.projectService.getById(id).subscribe({
       next: (res) => {
         this.loading = false;
         if (res.success && res.data) {
           this.existingRecord = res.data;
           this.selectedLayout = res.data.layoutType || 'grid-3';
-          this.initialExistingImages = res.data.images || [];
+          const images = res.data.images || [];
+          this.initialExistingImages = images;
+          this.currentEditorImages = this.mapExistingImagesToEditorItems(images);
+          this.imageOrders = images
+            .filter((img) => !!img.encryptedImageId)
+            .map((img, idx) => ({
+              encryptedImageId: img.encryptedImageId!,
+              displayOrder: img.displayOrder || idx + 1,
+            }));
 
           this.form.patchValue({
             heading: res.data.heading || '',
@@ -144,7 +147,7 @@ export class AboutFormComponent implements OnInit {
             isActive: res.data.isActive ?? true,
           });
         } else {
-          this.errorMessage = res.message || 'Failed to load About section data.';
+          this.errorMessage = res.message || 'Failed to load Project section data.';
         }
         this.cdr.markForCheck();
       },
@@ -157,6 +160,18 @@ export class AboutFormComponent implements OnInit {
     });
   }
 
+  private mapExistingImagesToEditorItems(images: ProjectImage[]): EditorImageItem[] {
+    return (images || []).map((img, idx) => ({
+      id: img.encryptedImageId || `existing-${idx}`,
+      isExisting: true,
+      encryptedImageId: img.encryptedImageId,
+      previewUrl: this.projectService.getImageUrl(img.imageUrl || img.imagePath),
+      fileName: img.originalFileName || `Image ${idx + 1}`,
+      fileSize: img.fileSize || 0,
+      displayOrder: img.displayOrder || idx + 1,
+    }));
+  }
+
   onLayoutChange(layout: string): void {
     this.selectedLayout = layout;
   }
@@ -165,12 +180,13 @@ export class AboutFormComponent implements OnInit {
     allImages: EditorImageItem[];
     newFiles: File[];
     removeImageIds: string[];
-    imageOrders: AboutImageOrderDto[];
+    imageOrders: ProjectImageOrderDto[];
   }): void {
     this.currentEditorImages = event.allImages;
     this.newFilesToUpload = event.newFiles;
     this.removedImageIds = event.removeImageIds;
     this.imageOrders = event.imageOrders;
+    this.cdr.markForCheck();
   }
 
   get livePreviewImages(): GalleryImageItem[] {
@@ -194,9 +210,9 @@ export class AboutFormComponent implements OnInit {
 
     const fv = this.form.value;
 
-    if (this.isEditMode && this.encryptedAboutId) {
-      const updatePayload: AboutUpdatePayload = {
-        encryptedAboutId: this.encryptedAboutId,
+    if (this.isEditMode && this.encryptedProjectId) {
+      const updatePayload: ProjectUpdatePayload = {
+        encryptedProjectId: this.encryptedProjectId,
         heading: fv.heading,
         subheading: fv.subheading || null,
         contentType: fv.contentType || null,
@@ -216,16 +232,16 @@ export class AboutFormComponent implements OnInit {
         imageOrders: this.imageOrders,
       };
 
-      this.aboutService.update(updatePayload).subscribe({
+      this.projectService.update(updatePayload).subscribe({
         next: (res) => {
           this.submitting = false;
           if (res.success) {
-            this.successMessage = 'About content section updated successfully.';
+            this.successMessage = 'Project section updated successfully.';
             setTimeout(() => {
-              this.router.navigate(['/admin/about']);
+              this.router.navigate(['/admin/projects']);
             }, 1200);
           } else {
-            this.errorMessage = res.message || 'Failed to update About content.';
+            this.errorMessage = res.message || 'Failed to update Project section.';
             if (res.errors) this.validationErrors = res.errors;
           }
           this.cdr.markForCheck();
@@ -233,13 +249,13 @@ export class AboutFormComponent implements OnInit {
         error: (err) => {
           this.submitting = false;
           this.errorMessage =
-            err?.error?.message || 'Server error occurred while updating About section.';
+            err?.error?.message || 'Server error occurred while updating Project section.';
           if (err?.error?.errors) this.validationErrors = err.error.errors;
           this.cdr.markForCheck();
         },
       });
     } else {
-      const createPayload: AboutCreatePayload = {
+      const createPayload: ProjectCreatePayload = {
         heading: fv.heading,
         subheading: fv.subheading || null,
         contentType: fv.contentType || null,
@@ -257,16 +273,16 @@ export class AboutFormComponent implements OnInit {
         images: this.newFilesToUpload,
       };
 
-      this.aboutService.create(createPayload).subscribe({
+      this.projectService.create(createPayload).subscribe({
         next: (res) => {
           this.submitting = false;
           if (res.success) {
-            this.successMessage = 'New About section created successfully.';
+            this.successMessage = 'New Project section created successfully.';
             setTimeout(() => {
-              this.router.navigate(['/admin/about']);
+              this.router.navigate(['/admin/projects']);
             }, 1200);
           } else {
-            this.errorMessage = res.message || 'Failed to create About section.';
+            this.errorMessage = res.message || 'Failed to create Project section.';
             if (res.errors) this.validationErrors = res.errors;
           }
           this.cdr.markForCheck();
@@ -274,7 +290,7 @@ export class AboutFormComponent implements OnInit {
         error: (err) => {
           this.submitting = false;
           this.errorMessage =
-            err?.error?.message || 'Server error occurred while creating About section.';
+            err?.error?.message || 'Server error occurred while creating Project section.';
           if (err?.error?.errors) this.validationErrors = err.error.errors;
           this.cdr.markForCheck();
         },
@@ -283,7 +299,7 @@ export class AboutFormComponent implements OnInit {
   }
 
   cancel(): void {
-    this.router.navigate(['/admin/about']);
+    this.router.navigate(['/admin/projects']);
   }
 
   hasVisibleCredits(credits: string | null | undefined): boolean {

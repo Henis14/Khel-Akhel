@@ -1,14 +1,19 @@
-<div class="about-form-page">
+﻿<div class="project-form-page">
   <!-- Page Header -->
   <div class="page-header">
     <app-breadcrumb [items]="breadcrumbs"></app-breadcrumb>
     <div class="page-header-main">
       <div class="header-titles">
         <h1 class="page-title">
-          {{ isEditMode ? 'Edit Section: ' + (existingRecord?.heading || '') : 'Create About & Portfolio Section' }}
+          {{
+            isEditMode
+              ? 'Edit Section: ' + (existingRecord?.heading || '')
+              : 'Create Project & Portfolio Section'
+          }}
         </h1>
         <p class="page-subtitle">
-          Configure narrative text, select gallery presets, arrange project imagery, and preview the public presentation.
+          Configure narrative text, select gallery presets, arrange project imagery, and preview the
+          public presentation.
         </p>
       </div>
 
@@ -20,7 +25,14 @@
           [class.active]="activeTab === 'edit'"
           (click)="activeTab = 'edit'"
         >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
           </svg>
@@ -32,7 +44,14 @@
           [class.active]="activeTab === 'preview'"
           (click)="activeTab = 'preview'"
         >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
             <circle cx="12" cy="12" r="3"></circle>
           </svg>
@@ -45,7 +64,14 @@
   <!-- Notification Alerts -->
   @if (successMessage) {
     <div class="alert alert-success" role="alert">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
         <polyline points="22 4 12 14.01 9 11.01"></polyline>
       </svg>
@@ -55,7 +81,14 @@
 
   @if (errorMessage) {
     <div class="alert alert-error" role="alert">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
         <circle cx="12" cy="12" r="10"></circle>
         <line x1="12" y1="8" x2="12" y2="12"></line>
         <line x1="12" y1="16" x2="12.01" y2="16"></line>
@@ -81,14 +114,16 @@
   } @else {
     <!-- EDIT TAB -->
     @if (activeTab === 'edit') {
-      <form [formGroup]="form" (ngSubmit)="save()" class="about-editor-form">
+      <form [formGroup]="form" (ngSubmit)="save()" class="project-editor-form">
         <!-- 1. Section Identity & Hierarchy -->
         <section class="form-card">
           <div class="card-header">
             <span class="step-num">1</span>
             <div class="header-desc">
               <h3 class="card-title">Editorial Identity</h3>
-              <p class="card-subtitle">Define the primary heading, conceptual discipline, and contextual title.</p>
+              <p class="card-subtitle">
+                Define the primary heading, conceptual discipline, and contextual title.
+              </p>
             </div>
           </div>
 
@@ -107,7 +142,9 @@
                 [class.invalid]="form.get('heading')?.invalid && form.get('heading')?.touched"
               />
               @if (form.get('heading')?.invalid && form.get('heading')?.touched) {
-                <span class="field-error">Heading is required (minimum 2, maximum 200 characters).</span>
+                <span class="field-error"
+                  >Heading is required (minimum 2, maximum 200 characters).</span
+                >
               }
             </div>
 
@@ -187,7 +224,8 @@
             <div class="header-desc">
               <h3 class="card-title">Gallery Visual Assets</h3>
               <p class="card-subtitle">
-                Upload up to 15 high-resolution photographs. Reorder items to dictate their position in the chosen layout.
+                Upload up to 15 high-resolution photographs. Reorder items to dictate their position
+                in the chosen layout.
               </p>
             </div>
           </div>
@@ -247,7 +285,9 @@
             <span class="step-num">5</span>
             <div class="header-desc">
               <h3 class="card-title">Credits, Location & Links</h3>
-              <p class="card-subtitle">Optional attribution, geographic location, and external link URL.</p>
+              <p class="card-subtitle">
+                Optional attribution, geographic location, and external link URL.
+              </p>
             </div>
           </div>
 
@@ -290,17 +330,23 @@
 
             <!-- External URL -->
             <div class="form-group span-full">
-              <label class="form-label" for="externalUrl">External Repository / Publication URL</label>
+              <label class="form-label" for="externalUrl"
+                >External Repository / Publication URL</label
+              >
               <input
                 id="externalUrl"
                 type="url"
                 class="form-control"
                 formControlName="externalUrl"
                 placeholder="https://www.khel-akhel.com/projects/..."
-                [class.invalid]="form.get('externalUrl')?.invalid && form.get('externalUrl')?.touched"
+                [class.invalid]="
+                  form.get('externalUrl')?.invalid && form.get('externalUrl')?.touched
+                "
               />
               @if (form.get('externalUrl')?.invalid && form.get('externalUrl')?.touched) {
-                <span class="field-error">Please provide a valid URL starting with http:// or https://.</span>
+                <span class="field-error"
+                  >Please provide a valid URL starting with http:// or https://.</span
+                >
               }
             </div>
           </div>
@@ -312,7 +358,9 @@
             <span class="step-num">6</span>
             <div class="header-desc">
               <h3 class="card-title">Publication & Visibility Status</h3>
-              <p class="card-subtitle">Control whether this section appears on the live public website.</p>
+              <p class="card-subtitle">
+                Control whether this section appears on the live public website.
+              </p>
             </div>
           </div>
 
@@ -322,7 +370,7 @@
               <span class="switch-slider"></span>
               <span class="switch-label">
                 <strong>Publish to Storefront</strong>
-                <small>Section will be immediately visible on /about when enabled</small>
+                <small>Section will be immediately visible on /projects when enabled</small>
               </span>
             </label>
 
@@ -339,22 +387,45 @@
 
         <!-- Action Footer -->
         <div class="form-actions-bar">
-          <button type="button" class="btn btn-outline-admin" (click)="cancel()" [disabled]="submitting">
+          <button
+            type="button"
+            class="btn btn-outline-admin"
+            (click)="cancel()"
+            [disabled]="submitting"
+          >
             Cancel
           </button>
           <button type="button" class="btn btn-outline-admin" (click)="activeTab = 'preview'">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
               <circle cx="12" cy="12" r="3"></circle>
             </svg>
             <span>Live Preview</span>
           </button>
-          <button type="submit" class="btn btn-primary-admin" [disabled]="submitting || form.invalid">
+          <button
+            type="submit"
+            class="btn btn-primary-admin"
+            [disabled]="submitting || form.invalid"
+          >
             @if (submitting) {
               <span class="btn-spinner"></span>
               <span>Saving...</span>
             } @else {
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
                 <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
                 <polyline points="17 21 17 13 7 13 7 21"></polyline>
                 <polyline points="7 3 7 8 15 8"></polyline>
@@ -372,8 +443,12 @@
         <div class="preview-top-bar">
           <div class="preview-badge-group">
             <span class="live-indicator">LIVE PREVIEW</span>
-            <span class="layout-info">Layout: <strong>{{ selectedLayout }}</strong></span>
-            <span class="count-info">Assets: <strong>{{ currentEditorImages.length }}</strong></span>
+            <span class="layout-info"
+              >Layout: <strong>{{ selectedLayout }}</strong></span
+            >
+            <span class="count-info"
+              >Assets: <strong>{{ currentEditorImages.length }}</strong></span
+            >
           </div>
           <button type="button" class="btn btn-outline-admin" (click)="activeTab = 'edit'">
             &larr; Back to Editor
@@ -440,7 +515,14 @@
                 @if (form.get('externalUrl')?.value) {
                   <a [href]="form.get('externalUrl')?.value" target="_blank" class="preview-link">
                     <span>View Project Resource</span>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <svg
+                      width="13"
+                      height="13"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
                       <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
                       <polyline points="15 3 21 3 21 9"></polyline>
                       <line x1="10" y1="14" x2="21" y2="3"></line>

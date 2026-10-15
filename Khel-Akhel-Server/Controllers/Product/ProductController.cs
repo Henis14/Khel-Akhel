@@ -48,7 +48,7 @@ namespace Khel_Akhel_Server.Controllers.Product
         }
         #endregion
 
-        #region 5.1 ProductCreate
+        #region Create Product API
         [Authorize(Roles = "Admin")]
         [HttpPost("create")]
         public async Task<IActionResult> ProductCreate([FromBody] ProductCreateRequest? request)
@@ -336,7 +336,7 @@ namespace Khel_Akhel_Server.Controllers.Product
         }
         #endregion
 
-        #region 5.2 ProductUpdate [PATCH]
+        #region Update Product API
         [Authorize(Roles = "Admin")]
         [HttpPatch("update")]
         public async Task<IActionResult> ProductUpdate([FromBody] ProductUpdateRequest? request)
@@ -677,7 +677,7 @@ namespace Khel_Akhel_Server.Controllers.Product
         }
         #endregion
 
-        #region 5.3 ProductSoftDelete
+        #region Delete Product API
         [Authorize(Roles = "Admin")]
         [HttpDelete("delete/{encryptedId?}")]
         [HttpPatch("delete/{encryptedId?}")]
@@ -786,7 +786,7 @@ namespace Khel_Akhel_Server.Controllers.Product
         }
         #endregion
 
-        #region 5.4 GetProductById [GET]
+        #region Get Product By Id API
         [AllowAnonymous]
         [HttpGet("{encryptedId}")]
         public IActionResult GetProductById([FromRoute] string encryptedId)
@@ -910,7 +910,7 @@ namespace Khel_Akhel_Server.Controllers.Product
         }
         #endregion
 
-        #region 5.5 GetAllProduct & 5.6 SearchProducts [GET / POST]
+        #region Get Product List API
         [AllowAnonymous]
         [HttpGet("list")]
         [HttpPost("list")]

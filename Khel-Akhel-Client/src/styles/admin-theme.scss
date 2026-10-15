@@ -1,108 +1,82 @@
 /* ==========================================================================
-   Khel-Akhel Admin Global Color Tokens
+   Khel-Akhel Admin Global Color Tokens — Theme No. 6: Neutral Grey
    ========================================================================== */
 :root {
-  /* Core Brand Colors */
-  --ka-navy: #1f3557;
-  --ka-navy-hover: #162a45;
-  --ka-dark-navy: #162a45;
-  --ka-terracotta: #b45132;
-  --ka-terracotta-hover: #923f28;
-  --ka-ochre: #d9a441;
-  --ka-teal: #2d7370;
-  --ka-olive: #737b4c;
+  /* Theme No. 6: Neutral Grey Core Tokens */
+  --admin-primary: #263541;             /* Primary Dark Charcoal */
+  --admin-primary-hover: #344451;       /* Secondary Charcoal */
+  --admin-primary-active: #1e2a34;      /* Deep Charcoal Active */
+  --admin-primary-soft: rgba(38, 53, 65, 0.08);
+  --admin-primary-border: #263541;
+
+  --admin-secondary: #344451;           /* Secondary Charcoal */
+  --admin-secondary-hover: #263541;
 
   /* Surfaces & Backgrounds */
-  --ka-bg: #f5f1e8;
-  --ka-surface: #fbf9f4;
-  --ka-surface-alt: #f1e7d5;
-  --ka-surface-hover: #f5f1e8;
-  --ka-white: #ffffff;
+  --admin-bg: #F3F5F7;                  /* Main Page Background */
+  --admin-surface: #FFFFFF;             /* Card & Panel Background */
+  --admin-surface-alt: #EEF1F4;         /* Subtle Secondary Surface */
+  --admin-surface-hover: #F1F4F6;       /* Row Hover & Subtle Hover */
+  --admin-white: #FFFFFF;
 
-  /* Text Typography Colors */
-  --ka-text: #1e2430;
-  --ka-text-secondary: #6b6a63;
-  --ka-text-muted: #8a887f;
-  --ka-text-disabled: #9a978e;
+  /* Typography Colors */
+  --admin-text-primary: #25313B;        /* Primary Text */
+  --admin-text-secondary: #65727D;      /* Secondary Text */
+  --admin-text-muted: #84909A;          /* Muted Text */
+  --admin-text-disabled: #A0ABB5;
 
   /* Borders & Dividers */
-  --ka-border: #d9d3c6;
-  --ka-border-light: #e7e1d6;
-  --ka-border-strong: #bfb5a3;
+  --admin-border: #DCE2E7;              /* Borders & Dividers */
+  --admin-border-light: #E9EDF1;        /* Light Divider */
+  --admin-border-strong: #CBD3DA;       /* Strong Border / Input Border */
 
-  /* Semantic Status Colors */
-  --ka-error: #a83f32;
-  --ka-error-bg: rgba(168, 63, 50, 0.12);
-  --ka-error-border: rgba(168, 63, 50, 0.25);
-
-  --ka-warning: #b07b22;
-  --ka-warning-bg: rgba(217, 164, 65, 0.14);
-  --ka-warning-border: rgba(217, 164, 65, 0.28);
-
-  --ka-success: #2d7370;
-  --ka-success-bg: rgba(45, 115, 112, 0.12);
-  --ka-success-border: rgba(45, 115, 112, 0.25);
-
-  --ka-info: #1f3557;
-  --ka-info-bg: rgba(31, 53, 87, 0.1);
-  --ka-info-border: rgba(31, 53, 87, 0.2);
-
-  /* Legacy --admin Variable Mapping for 100% Theme Consistency */
-  --admin-primary: var(--ka-navy);
-  --admin-primary-hover: var(--ka-navy-hover);
-  --admin-primary-active: var(--ka-dark-navy);
-  --admin-primary-soft: rgba(31, 53, 87, 0.08);
-  --admin-primary-border: var(--ka-navy);
-
-  --admin-bg: var(--ka-bg);
-  --admin-surface: var(--ka-surface);
-  --admin-surface-alt: #f1e7d5;
-  --admin-surface-hover: #f5f1e8;
-
-  --admin-border: var(--ka-border);
-  --admin-border-strong: var(--ka-border-strong);
-
-  --admin-text-primary: var(--ka-text);
-  --admin-text-secondary: var(--ka-text-secondary);
-  --admin-text-muted: var(--ka-text-muted);
-  --admin-text-disabled: var(--ka-text-disabled);
-
-  --admin-status-success: var(--ka-success);
-  --admin-status-success-bg: var(--ka-success-bg);
-  --admin-status-success-border: var(--ka-success-border);
-
-  --admin-status-danger: var(--ka-error);
-  --admin-status-danger-bg: var(--ka-error-bg);
-  --admin-status-danger-border: var(--ka-error-border);
-
-  --admin-status-warning: var(--ka-warning);
-  --admin-status-warning-bg: var(--ka-warning-bg);
-  --admin-status-warning-border: var(--ka-warning-border);
-
-  --admin-status-info: var(--ka-info);
-  --admin-status-info-bg: var(--ka-info-bg);
-  --admin-status-info-border: var(--ka-info-border);
-
-  /* Sidebar Tokens */
-  --admin-sidebar-bg: var(--ka-dark-navy);
-  --admin-sidebar-border: rgba(217, 211, 198, 0.15);
-  --admin-sidebar-hover: rgba(245, 241, 232, 0.08);
-  --admin-sidebar-active: rgba(180, 81, 50, 0.18);
-  --admin-sidebar-text: rgba(245, 241, 232, 0.72);
-  --admin-sidebar-text-active: #ffffff;
+  /* Sidebar Tokens (Theme No. 6 Neutral Grey) */
+  --admin-sidebar-bg: #263541;          /* Sidebar Background */
+  --admin-sidebar-hover: #3B4A56;       /* Sidebar Hover Background */
+  --admin-sidebar-active: #DCE3E8;      /* Sidebar Active Background */
+  --admin-sidebar-text: #CBD3DA;        /* Sidebar Regular Text */
+  --admin-sidebar-text-active: #263541; /* Sidebar Active Text */
+  --admin-sidebar-border: rgba(220, 226, 231, 0.12);
 
   /* Form Controls */
-  --admin-input-bg: var(--ka-white);
-  --admin-input-border: var(--ka-border);
-  --admin-input-focus: var(--ka-navy);
-  --admin-input-focus-ring: rgba(31, 53, 87, 0.12);
-  --admin-input-disabled: #e8e4da;
+  --admin-input-bg: #FFFFFF;            /* Input Background */
+  --admin-input-border: #CBD3DA;        /* Input Border */
+  --admin-input-focus: #71818F;         /* Focus Outline */
+  --admin-input-focus-ring: rgba(113, 129, 143, 0.2);
+  --admin-input-disabled: #EEF1F4;
+
+  /* Tables */
+  --admin-table-th-bg: #E9EDF1;         /* Table Header Background */
+  --admin-table-th-text: #25313B;       /* Table Header Text */
+  --admin-table-hover-bg: #F1F4F6;      /* Table Row Hover Background */
+  --admin-table-border: #DCE2E7;
+
+  /* Semantic Status Indicators */
+  --admin-status-success: #2E7D32;
+  --admin-status-success-bg: #E8F5E9;
+  --admin-status-success-border: #A5D6A7;
+  --admin-status-success-text: #1B5E20;
+
+  --admin-status-danger: #D32F2F;
+  --admin-status-danger-bg: #FFEBEE;
+  --admin-status-danger-border: #FFCDD2;
+  --admin-status-danger-text: #C62828;
+
+  --admin-status-warning: #ED6C02;
+  --admin-status-warning-bg: #FFF3E0;
+  --admin-status-warning-border: #FFE0B2;
+  --admin-status-warning-text: #E65100;
+
+  --admin-status-info: #0288D1;
+  --admin-status-info-bg: #E1F5FE;
+  --admin-status-info-border: #B3E5FC;
+  --admin-status-info-text: #0277BD;
 
   /* Elevation & Shadows */
-  --admin-shadow-xs: 0 1px 2px 0 rgba(31, 53, 87, 0.04);
-  --admin-shadow-sm: 0 2px 4px 0 rgba(31, 53, 87, 0.06);
-  --admin-shadow-md: 0 4px 8px -1px rgba(31, 53, 87, 0.08);
-  --admin-shadow-lg: 0 10px 20px -3px rgba(31, 53, 87, 0.1);
+  --admin-shadow-xs: 0 1px 2px 0 rgba(38, 53, 65, 0.04);
+  --admin-shadow-sm: 0 2px 4px 0 rgba(38, 53, 65, 0.06);
+  --admin-shadow-md: 0 4px 8px -1px rgba(38, 53, 65, 0.08);
+  --admin-shadow-lg: 0 10px 20px -3px rgba(38, 53, 65, 0.1);
 
   /* Border Radius */
   --admin-radius-sm: 6px;
@@ -111,7 +85,57 @@
   --admin-radius-xl: 16px;
 }
 
+/* ==========================================================================
+   Admin Shell Scope: Cascade Theme No. 6 Tokens to all child elements
+   ========================================================================== */
+.admin-wrapper,
+.admin-login-shell,
 .admin-layout-container {
+  /* Brand Mapping to Theme No. 6 Neutral Grey */
+  --ka-navy: var(--admin-primary);
+  --ka-navy-hover: var(--admin-primary-hover);
+  --ka-dark-navy: var(--admin-primary);
+  --ka-terracotta: var(--admin-secondary);
+  --ka-terracotta-hover: var(--admin-primary);
+  --ka-ochre: var(--admin-input-focus);
+  --ka-teal: var(--admin-primary-hover);
+  --ka-olive: var(--admin-secondary);
+
+  /* Surfaces & Backgrounds */
+  --ka-bg: var(--admin-bg);
+  --ka-surface: var(--admin-surface);
+  --ka-surface-alt: var(--admin-surface-alt);
+  --ka-surface-hover: var(--admin-surface-hover);
+  --ka-white: var(--admin-white);
+
+  /* Text Typography Colors */
+  --ka-text: var(--admin-text-primary);
+  --ka-text-secondary: var(--admin-text-secondary);
+  --ka-text-muted: var(--admin-text-muted);
+  --ka-text-disabled: var(--admin-text-disabled);
+
+  /* Borders & Dividers */
+  --ka-border: var(--admin-border);
+  --ka-border-light: var(--admin-border-light);
+  --ka-border-strong: var(--admin-border-strong);
+
+  /* Semantic Status Colors */
+  --ka-error: var(--admin-status-danger);
+  --ka-error-bg: var(--admin-status-danger-bg);
+  --ka-error-border: var(--admin-status-danger-border);
+
+  --ka-warning: var(--admin-status-warning);
+  --ka-warning-bg: var(--admin-status-warning-bg);
+  --ka-warning-border: var(--admin-status-warning-border);
+
+  --ka-success: var(--admin-status-success);
+  --ka-success-bg: var(--admin-status-success-bg);
+  --ka-success-border: var(--admin-status-success-border);
+
+  --ka-info: var(--admin-status-info);
+  --ka-info-bg: var(--admin-status-info-bg);
+  --ka-info-border: var(--admin-status-info-border);
+
   font-family:
     'Inter',
     system-ui,
@@ -120,7 +144,7 @@
     'Segoe UI',
     Roboto,
     sans-serif;
-  color: var(--ka-text);
-  background-color: var(--ka-bg);
+  color: var(--admin-text-primary);
+  background-color: var(--admin-bg);
   min-height: 100vh;
 }

@@ -3,12 +3,12 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subject, Subscription, debounceTime, distinctUntilChanged } from 'rxjs';
-import { AdminAboutService } from '../../../services/admin-about.service';
+import { AdminProjectService } from '../../../services/admin-project.service';
 import {
-  AboutDetail,
-  AboutListFilter,
+  ProjectDetail,
+  ProjectListFilter,
   GALLERY_LAYOUT_OPTIONS,
-} from '../../../models/about.model';
+} from '../../../models/project.model';
 import { BreadcrumbComponent } from '../../../../common/components/breadcrumb/breadcrumb';
 import { BreadcrumbItem } from '../../../../common/models/breadcrumb.model';
 import { AppLoaderComponent } from '../../../../common/components/app-loader/app-loader';
@@ -17,7 +17,7 @@ import { ConfirmationDialogComponent } from '../../../../common/components/confi
 import { GalleryRendererComponent } from '../../../../common/components/gallery-renderer/gallery-renderer';
 
 @Component({
-  selector: 'app-about-list',
+  selector: 'app-project-list',
   standalone: true,
   imports: [
     CommonModule,
@@ -29,21 +29,21 @@ import { GalleryRendererComponent } from '../../../../common/components/gallery-
     ConfirmationDialogComponent,
     GalleryRendererComponent,
   ],
-  templateUrl: './about-list.html',
-  styleUrl: './about-list.scss',
+  templateUrl: './project-list.html',
+  styleUrl: './project-list.scss',
 })
-export class AboutListComponent implements OnInit, OnDestroy {
-  private aboutService = inject(AdminAboutService);
+export class ProjectListComponent implements OnInit, OnDestroy {
+  private projectService = inject(AdminProjectService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
 
   breadcrumbs: BreadcrumbItem[] = [
     { label: 'Home', url: '/admin/dashboard' },
-    { label: 'About Sections' },
+    { label: 'Projects' },
   ];
 
   // Data
-  sections: AboutDetail[] = [];
+  sections: ProjectDetail[] = [];
   readonly layoutPresets = GALLERY_LAYOUT_OPTIONS;
 
   // Pagination & Filtering
@@ -69,11 +69,11 @@ export class AboutListComponent implements OnInit, OnDestroy {
   isConfirmOpen = false;
   confirmTitle = '';
   confirmMessage = '';
-  itemToDelete: AboutDetail | null = null;
+  itemToDelete: ProjectDetail | null = null;
 
   // Live preview modal
   previewModalOpen = false;
-  previewSection: AboutDetail | null = null;
+  previewSection: ProjectDetail | null = null;
 
   ngOnInit(): void {
     this.searchSubscription = this.searchSubject
@@ -108,7 +108,7 @@ export class AboutListComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.errorMessage = null;
 
-    const filter: AboutListFilter = {
+    const filter: ProjectListFilter = {
       pageIndex: this.pageIndex,
       pageSize: this.pageSize,
       search: this.searchQuery,
@@ -122,33 +122,32 @@ export class AboutListComponent implements OnInit, OnDestroy {
       filter.isPublished = false;
     }
 
-    this.aboutService.getList(filter).subscribe({
+    this.projectService.getList(filter).subscribe({
       next: (res) => {
         this.loading = false;
         if (res.success && res.data) {
           this.sections = res.data.items || [];
           this.totalRecords = res.data.totalRecords || 0;
         } else {
-          this.errorMessage = res.message || 'Failed to load About content sections.';
+          this.errorMessage = res.message || 'Failed to load Project sections.';
         }
         this.cdr.markForCheck();
       },
       error: (err) => {
         this.loading = false;
         this.errorMessage =
-          err?.error?.message ||
-          'A network error occurred while retrieving About content sections.';
+          err?.error?.message || 'A network error occurred while retrieving Project sections.';
         this.cdr.markForCheck();
       },
     });
   }
 
   // Publication Toggle
-  togglePublish(section: AboutDetail): void {
+  togglePublish(section: ProjectDetail): void {
     const newStatus = !section.isPublished;
     this.loading = true;
 
-    this.aboutService.togglePublish(section.encryptedAboutId, newStatus).subscribe({
+    this.projectService.togglePublish(section.encryptedProjectId, newStatus).subscribe({
       next: (res) => {
         this.loading = false;
         if (res.success) {
@@ -169,9 +168,9 @@ export class AboutListComponent implements OnInit, OnDestroy {
   }
 
   // Delete
-  promptDelete(section: AboutDetail): void {
+  promptDelete(section: ProjectDetail): void {
     this.itemToDelete = section;
-    this.confirmTitle = 'Delete About Section';
+    this.confirmTitle = 'Delete Project';
     this.confirmMessage = `Are you sure you want to permanently remove "${section.heading}"? Associated image files will be archived.`;
     this.isConfirmOpen = true;
   }
@@ -182,21 +181,21 @@ export class AboutListComponent implements OnInit, OnDestroy {
     this.isConfirmOpen = false;
     this.loading = true;
 
-    this.aboutService.delete(sec.encryptedAboutId).subscribe({
+    this.projectService.delete(sec.encryptedProjectId).subscribe({
       next: (res) => {
         this.loading = false;
         if (res.success) {
-          this.successMessage = `Section "${sec.heading}" was deleted successfully.`;
+          this.successMessage = `Project "${sec.heading}" was deleted successfully.`;
           this.autoClearSuccess();
           this.loadSections();
         } else {
-          this.errorMessage = res.message || 'Failed to delete section.';
+          this.errorMessage = res.message || 'Failed to delete project.';
         }
         this.cdr.markForCheck();
       },
       error: (err) => {
         this.loading = false;
-        this.errorMessage = err?.error?.message || 'An error occurred while deleting section.';
+        this.errorMessage = err?.error?.message || 'An error occurred while deleting project.';
         this.cdr.markForCheck();
       },
     });
@@ -208,7 +207,7 @@ export class AboutListComponent implements OnInit, OnDestroy {
   }
 
   // Live Preview Modal
-  openPreview(section: AboutDetail): void {
+  openPreview(section: ProjectDetail): void {
     this.previewSection = section;
     this.previewModalOpen = true;
   }
@@ -220,11 +219,11 @@ export class AboutListComponent implements OnInit, OnDestroy {
 
   // Navigation
   navigateToAdd(): void {
-    this.router.navigate(['/admin/about/create']);
+    this.router.navigate(['/admin/projects/create']);
   }
 
-  navigateToEdit(section: AboutDetail): void {
-    this.router.navigate(['/admin/about/edit', section.encryptedAboutId]);
+  navigateToEdit(section: ProjectDetail): void {
+    this.router.navigate(['/admin/projects/edit', section.encryptedProjectId]);
   }
 
   getLayoutBadge(layoutId: string): string {
@@ -232,19 +231,19 @@ export class AboutListComponent implements OnInit, OnDestroy {
     return found ? `${found.badge}: ${found.title}` : layoutId || 'Grid-3';
   }
 
-  getImageThumb(section: AboutDetail): string | null {
+  getImageThumb(section: ProjectDetail): string | null {
     if (section.images && section.images.length > 0) {
-      return this.aboutService.getImageUrl(
-        section.images[0].imageUrl || section.images[0].imagePath
+      return this.projectService.getImageUrl(
+        section.images[0].imageUrl || section.images[0].imagePath,
       );
     }
     return null;
   }
 
-  getPreviewImages(section: AboutDetail) {
+  getPreviewImages(section: ProjectDetail) {
     if (!section.images) return [];
     return section.images.map((img) => ({
-      imageUrl: this.aboutService.getImageUrl(img.imageUrl || img.imagePath),
+      imageUrl: this.projectService.getImageUrl(img.imageUrl || img.imagePath),
       originalFileName: img.originalFileName,
       displayOrder: img.displayOrder,
     }));

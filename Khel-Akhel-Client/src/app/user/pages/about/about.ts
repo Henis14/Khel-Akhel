@@ -1,13 +1,6 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { UserAboutService } from '../../services/user-about.service';
-import { AboutPublic } from '../../../admin/models/about.model';
-import {
-  GalleryImageItem,
-  GalleryRendererComponent,
-} from '../../../common/components/gallery-renderer/gallery-renderer';
-import { AppLoaderComponent } from '../../../common/components/app-loader/app-loader';
 
 interface StudioDiscipline {
   code: string;
@@ -18,18 +11,12 @@ interface StudioDiscipline {
 @Component({
   selector: 'app-about',
   standalone: true,
-  imports: [CommonModule, RouterModule, GalleryRendererComponent, AppLoaderComponent],
+  imports: [CommonModule, RouterModule],
   templateUrl: './about.html',
   styleUrl: './about.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class About implements OnInit {
-  private aboutService = inject(UserAboutService);
-  private cdr = inject(ChangeDetectorRef);
-
-  sections: AboutPublic[] = [];
-  loading = true;
-  errorMessage: string | null = null;
-
+export class About {
   readonly studioDisciplines: StudioDiscipline[] = [
     {
       code: '01',
@@ -104,54 +91,4 @@ export class About implements OnInit {
         'Cross-disciplinary partnerships, creative commissions, and co-curated cultural projects worldwide.',
     },
   ];
-
-  ngOnInit(): void {
-    this.loadPublicAboutSections();
-  }
-
-  loadPublicAboutSections(): void {
-    this.loading = true;
-    this.errorMessage = null;
-
-    this.aboutService.getPublicSections().subscribe({
-      next: (res) => {
-        this.loading = false;
-        if (res.success && res.data) {
-          this.sections = res.data;
-        } else {
-          this.sections = [];
-        }
-        this.cdr.markForCheck();
-      },
-      error: (err) => {
-        this.loading = false;
-        this.errorMessage =
-          err?.error?.message ||
-          'Unable to load studio narratives at this time. Please check your connection and try again.';
-        this.cdr.markForCheck();
-      },
-    });
-  }
-
-  getSectionImages(section: AboutPublic): GalleryImageItem[] {
-    if (!section.images) return [];
-    return section.images.map((img) => ({
-      imageUrl: this.aboutService.getImageUrl(img.imageUrl || img.imagePath),
-      originalFileName: img.originalFileName,
-      displayOrder: img.displayOrder,
-    }));
-  }
-
-  isValidExternalUrl(url: string | null | undefined): boolean {
-    if (!url) return false;
-    return url.startsWith('http://') || url.startsWith('https://');
-  }
-
-  hasVisibleCredits(credits: string | null | undefined): boolean {
-    if (!credits) return false;
-    const trimmed = credits.trim();
-    if (!trimmed) return false;
-    const lower = trimmed.toLowerCase();
-    return lower !== 'khel-akhel studio team' && lower !== 'khel akhel studio team';
-  }
 }

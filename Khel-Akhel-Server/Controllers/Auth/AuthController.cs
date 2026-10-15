@@ -106,7 +106,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
         }
         #endregion
 
-        #region CAPTCHA
+        #region Get Captcha API
         [AllowAnonymous]
         [HttpGet("captcha")]
         [HttpGet("/api/admin/auth/captcha")]
@@ -142,7 +142,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
         }
         #endregion
 
-        #region 7.1 PortalLogin
+        #region Portal Login API
         [AllowAnonymous]
         [HttpPost("login")]
         [HttpPost("/api/admin/auth/login")]
@@ -456,7 +456,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
         }
         #endregion
 
-        #region 7.2 RefreshToken
+        #region Refresh Token API
         [AllowAnonymous]
         [HttpPost("refresh")]
         public IActionResult RefreshToken()
@@ -551,7 +551,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
         }
         #endregion
 
-        #region 7.3 PortalLogOut
+        #region Logout API
         [AllowAnonymous]
         [HttpPost("logout")]
         public async Task<IActionResult> PortalLogOut()
@@ -636,7 +636,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
         }
         #endregion
 
-        #region 7.4 ForgetPassword
+        #region Forgot Password API
         [AllowAnonymous]
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgetPassword([FromBody] ForgetPasswordRequest? request)
@@ -734,7 +734,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
         }
         #endregion
 
-        #region 7.5 ChangePassword
+        #region Change Password API
         [Authorize]
         [HttpPatch("change-password")]
         [HttpPost("change-password")]

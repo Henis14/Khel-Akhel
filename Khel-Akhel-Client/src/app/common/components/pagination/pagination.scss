@@ -5,14 +5,14 @@
   padding: 0.875rem 1.25rem;
   gap: 1rem;
   flex-wrap: wrap;
-  border-top: 1px solid var(--ka-border-light, #e7e1d6);
-  background-color: var(--ka-surface, #fbf9f4);
+  border-top: 1px solid var(--admin-border-light, #e9edf1);
+  background-color: var(--admin-surface, #ffffff);
 }
 
 .pagination-info {
   font-size: 0.8125rem;
   font-weight: 500;
-  color: var(--ka-text-secondary, #6b6a63);
+  color: var(--admin-text-secondary, #65727d);
 }
 
 .pagination-controls {

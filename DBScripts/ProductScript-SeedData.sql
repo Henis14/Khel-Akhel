@@ -1,6 +1,7 @@
 USE KhelAkhe_CRM;
 
 
+-- Error Message Seed Data
 INSERT  INTO [dbo].[drs_error_message_mst] ([MessageCode], [MessageText], [MessageType], [HttpStatusCode], [IsActive], [IsDeleted], [CreatedDate])
 VALUES                                    ('LOGIN_SUCCESS', 'Login successful.', 'SUCCESS', 200, 1, 0, GETDATE()),
 ('LOGOUT_SUCCESS', 'Logout successful.', 'SUCCESS', 200, 1, 0, GETDATE()),
@@ -46,13 +47,13 @@ VALUES                                    ('LOGIN_SUCCESS', 'Login successful.',
 ('SERVER_ERROR', 'An unexpected error occurred on the server.', 'ERROR', 500, 1, 0, GETDATE());
 GO
 
--- Backfill existing Customer Account numbers if missing
+-- Backfill Customer Account Numbers
 UPDATE [dbo].[drs_customer_mst]
 SET [Account_no] = 'DRC' + RIGHT('000000' + CAST(ID AS VARCHAR(6)), 6)
 WHERE [Account_no] IS NULL OR [Account_no] = '';
 GO
 
--- Synchronize Sequences with maximum existing numeric values
+-- Synchronize Sequences
 DECLARE @MaxCustId BIGINT = (
     SELECT ISNULL(MAX(CAST(RIGHT(Account_no, 6) AS BIGINT)), 0)
     FROM [dbo].[drs_customer_mst] WITH (NOLOCK)
@@ -77,6 +78,7 @@ BEGIN
 END
 GO
 
+-- Country Seed Data
 INSERT INTO dbo.drs_country_mst
 (
     CountryName,
@@ -134,6 +136,7 @@ VALUES
 (N'New Zealand', 'NZ', '+64');
 
 
+-- State Seed Data
 INSERT INTO dbo.drs_state_mst
 (
     country_id,
@@ -190,9 +193,7 @@ WHERE c.CountryCode = 'IN';
 
 GO
 
--- =========================================================================
--- Seed Data: Commission Project Categories
--- =========================================================================
+-- Commission Category Seed Data
 IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[drs_commission_category_mst]') AND type IN (N'U'))
 BEGIN
     DECLARE @CommissionCategories TABLE (
@@ -221,35 +222,33 @@ BEGIN
 END;
 GO
 
--- =========================================================================
--- Seed Data: About Page Error & Status Messages
--- =========================================================================
+-- Project Error Message Seed Data
 IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[drs_error_message_mst]') AND type IN (N'U'))
 BEGIN
-    DECLARE @AboutMessages TABLE (
+    DECLARE @ProjectMessages TABLE (
         MessageCode VARCHAR(100),
         MessageText NVARCHAR(500),
         MessageType VARCHAR(20),
         HttpStatusCode INT
     );
 
-    INSERT INTO @AboutMessages (MessageCode, MessageText, MessageType, HttpStatusCode) VALUES
-    ('ABOUT_CREATED', 'About content entry created successfully.', 'SUCCESS', 200),
-    ('ABOUT_UPDATED', 'About content entry updated successfully.', 'SUCCESS', 200),
-    ('ABOUT_DELETED', 'About content entry deleted successfully.', 'SUCCESS', 200),
-    ('ABOUT_PUBLISHED', 'About content entry published successfully.', 'SUCCESS', 200),
-    ('ABOUT_UNPUBLISHED', 'About content entry unpublished successfully.', 'SUCCESS', 200),
-    ('ABOUT_IMAGE_UPLOADED', 'About image uploaded successfully.', 'SUCCESS', 200),
-    ('ABOUT_IMAGE_DELETED', 'About image deleted successfully.', 'SUCCESS', 200),
-    ('ABOUT_IMAGES_REORDERED', 'About images reordered successfully.', 'SUCCESS', 200),
-    ('ABOUT_NOT_FOUND', 'About content record not found.', 'ERROR', 404),
-    ('ABOUT_IMAGE_NOT_FOUND', 'About image record not found.', 'ERROR', 404),
-    ('MAXIMUM_ABOUT_IMAGES_EXCEEDED', 'Maximum 15 images allowed per About section.', 'ERROR', 400),
-    ('INVALID_ABOUT_ID', 'Invalid About content ID specified.', 'ERROR', 400);
+    INSERT INTO @ProjectMessages (MessageCode, MessageText, MessageType, HttpStatusCode) VALUES
+    ('PROJECT_CREATED', 'Project entry created successfully.', 'SUCCESS', 200),
+    ('PROJECT_UPDATED', 'Project entry updated successfully.', 'SUCCESS', 200),
+    ('PROJECT_DELETED', 'Project entry deleted successfully.', 'SUCCESS', 200),
+    ('PROJECT_PUBLISHED', 'Project entry published successfully.', 'SUCCESS', 200),
+    ('PROJECT_UNPUBLISHED', 'Project entry unpublished successfully.', 'SUCCESS', 200),
+    ('PROJECT_IMAGE_UPLOADED', 'Project image uploaded successfully.', 'SUCCESS', 200),
+    ('PROJECT_IMAGE_DELETED', 'Project image deleted successfully.', 'SUCCESS', 200),
+    ('PROJECT_IMAGES_REORDERED', 'Project images reordered successfully.', 'SUCCESS', 200),
+    ('PROJECT_NOT_FOUND', 'Project record not found.', 'ERROR', 404),
+    ('PROJECT_IMAGE_NOT_FOUND', 'Project image record not found.', 'ERROR', 404),
+    ('MAXIMUM_PROJECT_IMAGES_EXCEEDED', 'Maximum 15 images allowed per Project.', 'ERROR', 400),
+    ('INVALID_PROJECT_ID', 'Invalid Project ID specified.', 'ERROR', 400);
 
     INSERT INTO [dbo].[drs_error_message_mst] ([MessageCode], [MessageText], [MessageType], [HttpStatusCode], [IsActive], [IsDeleted], [CreatedDate])
     SELECT m.MessageCode, m.MessageText, m.MessageType, m.HttpStatusCode, 1, 0, GETDATE()
-    FROM @AboutMessages m
+    FROM @ProjectMessages m
     WHERE NOT EXISTS (
         SELECT 1 FROM [dbo].[drs_error_message_mst] existing
         WHERE existing.[MessageCode] = m.MessageCode AND existing.[IsDeleted] = 0
@@ -257,14 +256,12 @@ BEGIN
 END;
 GO
 
--- =========================================================================
--- Seed Data: Sample About / Studio Narratives
--- =========================================================================
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[drs_about_mst]') AND type IN (N'U'))
+-- Project Showcase Seed Data
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[drs_project_mst]') AND type IN (N'U'))
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM [dbo].[drs_about_mst] WHERE [Heading] = 'All that comes, comes in play' AND [IsDeleted] = 0)
+    IF NOT EXISTS (SELECT 1 FROM [dbo].[drs_project_mst] WHERE [Heading] = 'All that comes, comes in play' AND [IsDeleted] = 0)
     BEGIN
-        INSERT INTO [dbo].[drs_about_mst] (
+        INSERT INTO [dbo].[drs_project_mst] (
             [Heading], [Subheading], [ContentType], [ProjectOrEventTitle], [DisplayYear],
             [ShortDescription], [DetailedDescription], [Credits], [Location], [ExternalUrl],
             [DisplayOrder], [LayoutType], [IsPublished], [customer_id], [IsActive], [IsDeleted], [CreatedDate]
@@ -292,7 +289,7 @@ Khel-Akhel is an invitation to play, explore and connect. All are welcome to loo
     END;
     ELSE
     BEGIN
-        UPDATE [dbo].[drs_about_mst]
+        UPDATE [dbo].[drs_project_mst]
         SET [Credits] = NULL
         WHERE [Heading] = 'All that comes, comes in play' AND [Credits] = 'Khel-Akhel Studio Team';
     END;

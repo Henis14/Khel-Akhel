@@ -4,25 +4,25 @@ import { ApiService } from '../../common/services/api.service';
 import { ApiResponse } from '../../common/models/api-response.model';
 import { environment } from '../../../environments/environment';
 import {
-  AboutCreatePayload,
-  AboutDetail,
-  AboutImage,
-  AboutImageOrderDto,
-  AboutListFilter,
-  AboutListResponse,
-  AboutUpdatePayload,
-} from '../models/about.model';
+  ProjectCreatePayload,
+  ProjectDetail,
+  ProjectImage,
+  ProjectImageOrderDto,
+  ProjectListFilter,
+  ProjectListResponse,
+  ProjectUpdatePayload,
+} from '../models/project.model';
 
 @Injectable({
   providedIn: 'root',
 })
-export class AdminAboutService {
+export class AdminProjectService {
   constructor(private api: ApiService) {}
 
   /**
-   * Fetch paginated list of About content sections with filtering and search.
+   * Fetch paginated list of Project content sections with filtering and search.
    */
-  getList(filter: AboutListFilter): Observable<ApiResponse<AboutListResponse>> {
+  getList(filter: ProjectListFilter): Observable<ApiResponse<ProjectListResponse>> {
     const params: Record<string, any> = {};
     if (filter.pageIndex !== undefined && filter.pageIndex !== null) params['pageIndex'] = filter.pageIndex;
     if (filter.pageSize !== undefined && filter.pageSize !== null) params['pageSize'] = filter.pageSize;
@@ -32,20 +32,20 @@ export class AdminAboutService {
     if (filter.isActive !== undefined && filter.isActive !== null) params['isActive'] = filter.isActive;
     if (filter.sortBy && filter.sortBy.trim()) params['sortBy'] = filter.sortBy.trim();
 
-    return this.api.get<AboutListResponse>('about/list', params);
+    return this.api.get<ProjectListResponse>('projects/list', params);
   }
 
   /**
-   * Retrieve administrative details of a single About section by encrypted ID.
+   * Retrieve administrative details of a single Project section by encrypted ID.
    */
-  getById(encryptedAboutId: string): Observable<ApiResponse<AboutDetail>> {
-    return this.api.get<AboutDetail>(`about/admin/${encodeURIComponent(encryptedAboutId)}`);
+  getById(encryptedProjectId: string): Observable<ApiResponse<ProjectDetail>> {
+    return this.api.get<ProjectDetail>(`projects/admin/${encodeURIComponent(encryptedProjectId)}`);
   }
 
   /**
-   * Create a new About section with optional initial images (multipart/form-data).
+   * Create a new Project section with optional initial images (multipart/form-data).
    */
-  create(payload: AboutCreatePayload): Observable<ApiResponse<AboutDetail>> {
+  create(payload: ProjectCreatePayload): Observable<ApiResponse<ProjectDetail>> {
     const formData = new FormData();
     formData.append('Heading', payload.heading.trim());
     if (payload.subheading?.trim()) formData.append('Subheading', payload.subheading.trim());
@@ -68,15 +68,15 @@ export class AdminAboutService {
       }
     }
 
-    return this.api.post<AboutDetail>('about/create', formData);
+    return this.api.post<ProjectDetail>('projects/create', formData);
   }
 
   /**
-   * Update an existing About section, manage images, reorder, and persist layout.
+   * Update an existing Project section, manage images, reorder, and persist layout.
    */
-  update(payload: AboutUpdatePayload): Observable<ApiResponse<AboutDetail>> {
+  update(payload: ProjectUpdatePayload): Observable<ApiResponse<ProjectDetail>> {
     const formData = new FormData();
-    formData.append('EncryptedAboutId', payload.encryptedAboutId);
+    formData.append('EncryptedProjectId', payload.encryptedProjectId);
     formData.append('Heading', payload.heading.trim());
     if (payload.subheading !== undefined && payload.subheading !== null) {
       formData.append('Subheading', payload.subheading.trim());
@@ -134,52 +134,52 @@ export class AdminAboutService {
       }
     }
 
-    // Backend supports both PUT and PATCH on /api/about/update
-    return this.api.put<AboutDetail>('about/update', formData);
+    // Backend supports both PUT and PATCH on /api/projects/update
+    return this.api.put<ProjectDetail>('projects/update', formData);
   }
 
   /**
-   * Toggle publication status for an About section.
+   * Toggle publication status for a Project section.
    */
-  togglePublish(encryptedAboutId: string, isPublished: boolean): Observable<ApiResponse<any>> {
+  togglePublish(encryptedProjectId: string, isPublished: boolean): Observable<ApiResponse<any>> {
     return this.api.patch<any>(
-      `about/${encodeURIComponent(encryptedAboutId)}/publish`,
-      { encryptedAboutId, isPublished }
+      `projects/${encodeURIComponent(encryptedProjectId)}/publish`,
+      { encryptedProjectId, isPublished }
     );
   }
 
   /**
-   * Soft-delete an About section and its associated images.
+   * Soft-delete a Project section and its associated images.
    */
-  delete(encryptedAboutId: string): Observable<ApiResponse<any>> {
-    return this.api.delete<any>(`about/delete/${encodeURIComponent(encryptedAboutId)}`);
+  delete(encryptedProjectId: string): Observable<ApiResponse<any>> {
+    return this.api.delete<any>(`projects/delete/${encodeURIComponent(encryptedProjectId)}`);
   }
 
   /**
-   * Upload additional images to an existing About section.
+   * Upload additional images to an existing Project section.
    */
-  uploadImages(encryptedAboutId: string, files: File[]): Observable<ApiResponse<AboutImage[]>> {
+  uploadImages(encryptedProjectId: string, files: File[]): Observable<ApiResponse<ProjectImage[]>> {
     const formData = new FormData();
-    formData.append('EncryptedAboutId', encryptedAboutId);
+    formData.append('EncryptedProjectId', encryptedProjectId);
     for (const file of files) {
       formData.append('Images', file, file.name);
     }
-    return this.api.post<AboutImage[]>('about/images/upload', formData);
+    return this.api.post<ProjectImage[]>('projects/images/upload', formData);
   }
 
   /**
-   * Delete a specific image from an About section.
+   * Delete a specific image from a Project section.
    */
   deleteImage(encryptedImageId: string): Observable<ApiResponse<any>> {
-    return this.api.delete<any>(`about/images/${encodeURIComponent(encryptedImageId)}`);
+    return this.api.delete<any>(`projects/images/${encodeURIComponent(encryptedImageId)}`);
   }
 
   /**
-   * Reorder images for an About section.
+   * Reorder images for a Project section.
    */
-  reorderImages(encryptedAboutId: string, imageOrders: AboutImageOrderDto[]): Observable<ApiResponse<any>> {
-    return this.api.put<any>('about/images/reorder', {
-      encryptedAboutId,
+  reorderImages(encryptedProjectId: string, imageOrders: ProjectImageOrderDto[]): Observable<ApiResponse<any>> {
+    return this.api.put<any>('projects/images/reorder', {
+      encryptedProjectId,
       imageOrders,
     });
   }

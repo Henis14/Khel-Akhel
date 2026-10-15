@@ -13,26 +13,31 @@
 
     .header-titles {
       h1 {
-        font-family: Georgia, 'Times New Roman', serif;
+        font-family:
+          'Inter',
+          system-ui,
+          -apple-system,
+          sans-serif;
         font-size: 1.625rem;
         font-weight: 700;
-        color: var(--ka-text, #1e2430);
+        color: var(--admin-text-primary, #25313b);
         margin: 0 0 0.25rem 0;
+        letter-spacing: -0.015em;
       }
 
       .subtitle {
         font-size: 0.875rem;
-        color: var(--ka-text-secondary, #6b6a63);
+        color: var(--admin-text-secondary, #65727d);
         margin: 0;
       }
     }
   }
 
   .table-card {
-    background: var(--ka-surface, #fbf9f4);
+    background: var(--admin-surface, #ffffff);
     border-radius: var(--admin-radius-lg, 12px);
-    border: 1px solid var(--ka-border, #d9d3c6);
-    box-shadow: 0 1px 3px rgba(31, 53, 87, 0.04);
+    border: 1px solid var(--admin-border, #dce2e7);
+    box-shadow: var(--admin-shadow-sm, 0 1px 3px rgba(38, 53, 65, 0.04));
     overflow: hidden;
   }
 
@@ -88,12 +93,13 @@
       text-align: center;
 
       code {
-        background-color: var(--admin-surface-alt, #f1e7d5);
+        background-color: var(--admin-surface-alt, #eef1f4);
         padding: 0.2rem 0.45rem;
         border-radius: 4px;
+        border: 1px solid var(--admin-border, #dce2e7);
         font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
         font-size: 0.8125rem;
-        color: var(--ka-navy, #1f3557);
+        color: var(--admin-primary, #263541);
       }
     }
 
@@ -126,12 +132,12 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 0.875rem;
-  color: var(--ka-text, #1e2430);
+  color: var(--admin-text-primary, #25313b);
 
   input[type='checkbox'] {
     width: 1.1rem;
     height: 1.1rem;
     cursor: pointer;
-    accent-color: var(--ka-navy, #1f3557);
+    accent-color: var(--admin-primary, #263541);
   }
 }

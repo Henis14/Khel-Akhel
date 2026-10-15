@@ -105,25 +105,40 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'about',
+        path: 'projects',
         loadComponent: () =>
-          import('./admin/pages/about/about-list/about-list').then(
-            (m) => m.AboutListComponent,
+          import('./admin/pages/projects/project-list/project-list').then(
+            (m) => m.ProjectListComponent,
           ),
+      },
+      {
+        path: 'projects/create',
+        loadComponent: () =>
+          import('./admin/pages/projects/project-form/project-form').then(
+            (m) => m.ProjectFormComponent,
+          ),
+      },
+      {
+        path: 'projects/edit/:encryptedProjectId',
+        loadComponent: () =>
+          import('./admin/pages/projects/project-form/project-form').then(
+            (m) => m.ProjectFormComponent,
+          ),
+      },
+      // Backward compatibility redirects for legacy /admin/about URLs
+      {
+        path: 'about',
+        redirectTo: 'projects',
+        pathMatch: 'full',
       },
       {
         path: 'about/create',
-        loadComponent: () =>
-          import('./admin/pages/about/about-form/about-form').then(
-            (m) => m.AboutFormComponent,
-          ),
+        redirectTo: 'projects/create',
+        pathMatch: 'full',
       },
       {
         path: 'about/edit/:encryptedAboutId',
-        loadComponent: () =>
-          import('./admin/pages/about/about-form/about-form').then(
-            (m) => m.AboutFormComponent,
-          ),
+        redirectTo: 'projects/edit/:encryptedAboutId',
       },
       // Admin Child Wildcard: Catch any unknown URL beneath /admin while retaining admin layout and guards
       {
@@ -147,6 +162,11 @@ export const routes: Routes = [
         loadComponent: () => import('./user/pages/home/home').then((m) => m.UserHomeComponent),
       },
       {
+        path: 'projects',
+        loadComponent: () =>
+          import('./user/pages/projects/projects').then((m) => m.ProjectsComponent),
+      },
+      {
         path: 'about',
         loadComponent: () => import('./user/pages/about/about').then((m) => m.About),
       },
@@ -154,6 +174,11 @@ export const routes: Routes = [
         path: 'products',
         loadComponent: () =>
           import('./user/pages/products/products').then((m) => m.UserProductsComponent),
+      },
+      {
+        path: 'shop',
+        redirectTo: 'products',
+        pathMatch: 'full',
       },
       {
         path: 'login',

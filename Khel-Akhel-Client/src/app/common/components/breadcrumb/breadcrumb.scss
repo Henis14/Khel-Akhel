@@ -1,6 +1,6 @@
 .page-breadcrumb {
   display: block;
-  margin-bottom: 0.5rem; /* 8px */
+  margin-bottom: 0.5rem;
   min-height: 20px;
 }
 
@@ -8,14 +8,14 @@
   display: flex;
   align-items: center;
   flex-wrap: nowrap;
-  gap: 0.35rem; /* 6px */
+  gap: 0.35rem;
   list-style: none;
   margin: 0;
   padding: 0;
-  font-size: 0.8125rem; /* 13px */
-  line-height: 1.25rem; /* 20px */
+  font-size: 0.8125rem;
+  line-height: 1.25rem;
   overflow-x: auto;
-  scrollbar-width: none; /* Hide scrollbar for clean look */
+  scrollbar-width: none;
 
   &::-webkit-scrollbar {
     display: none;
@@ -29,24 +29,24 @@
   white-space: nowrap;
 
   .breadcrumb-link {
-    color: var(--ka-text-secondary, #6b6a63);
+    color: var(--admin-text-secondary, #65727d);
     text-decoration: none;
     font-weight: 500;
     transition: color 0.15s ease;
 
     &:hover {
-      color: var(--ka-terracotta, #b45132);
+      color: var(--admin-primary, #263541);
     }
   }
 
   .breadcrumb-current {
-    color: var(--ka-text, #1e2430);
+    color: var(--admin-text-primary, #25313b);
     font-weight: 600;
     cursor: default;
   }
 
   .breadcrumb-separator {
-    color: var(--ka-text-muted, #8a887f);
+    color: var(--admin-text-muted, #84909a);
     display: inline-flex;
     align-items: center;
     justify-content: center;

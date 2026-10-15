@@ -20,7 +20,7 @@
       left: 0.85rem;
       top: 50%;
       transform: translateY(-50%);
-      color: var(--admin-text-muted);
+      color: var(--admin-text-muted, #84909a);
     }
 
     .form-control {
@@ -30,16 +30,17 @@
 }
 
 .code-badge {
-  background-color: var(--admin-surface-alt, #f1e7d5);
+  background-color: var(--admin-surface-alt, #eef1f4);
   padding: 0.2rem 0.45rem;
   border-radius: 4px;
+  border: 1px solid var(--admin-border, #dce2e7);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.8125rem;
-  color: var(--admin-text-secondary, #6b6a63);
+  color: var(--admin-text-primary, #25313b);
 
   &.secondary {
-    background-color: #f1f5f9;
-    color: #475569;
+    background-color: var(--admin-table-hover-bg, #f1f4f6);
+    color: var(--admin-text-secondary, #65727d);
   }
 }
 

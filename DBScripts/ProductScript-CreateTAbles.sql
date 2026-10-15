@@ -1,6 +1,6 @@
 USE KhelAkhe_CRM;
 
--- 1. Customer Master Table
+-- Customer Master Table
 CREATE TABLE [dbo].[drs_customer_mst] (
     [ID]                  BIGINT         IDENTITY (1, 1) NOT NULL PRIMARY KEY,
     [Account_no]          VARCHAR (9)    NOT NULL,
@@ -24,7 +24,7 @@ CREATE TABLE [dbo].[drs_customer_mst] (
 
 
 GO
--- Sequences for Auto-generation
+-- Customer and Product Code Sequences
 CREATE SEQUENCE [dbo].[Seq_CustomerAccount]
     AS BIGINT
     START WITH 1
@@ -39,7 +39,7 @@ CREATE SEQUENCE [dbo].[Seq_ProductCode]
 
 
 GO
--- 2. Customer Address Master Table
+-- Customer Address Master Table
 CREATE TABLE [dbo].[drs_customer_address_mst] (
     [ID]           BIGINT         IDENTITY (1, 1) NOT NULL PRIMARY KEY,
     [customer_id]  BIGINT         NOT NULL,
@@ -63,7 +63,7 @@ CREATE TABLE [dbo].[drs_customer_address_mst] (
 
 
 GO
--- 3. Product Category Master Table
+-- Product Category Master Table
 CREATE TABLE [dbo].[drs_product_category_mst] (
     [ID]           BIGINT         IDENTITY (1, 1) NOT NULL PRIMARY KEY,
     [CategoryName] NVARCHAR (100) NOT NULL,
@@ -77,7 +77,7 @@ CREATE TABLE [dbo].[drs_product_category_mst] (
 
 
 GO
--- 4. Product Master Table
+-- Product Master Table
 CREATE TABLE [dbo].[drs_product_mst] (
     [ID]                  BIGINT          IDENTITY (1, 1) NOT NULL PRIMARY KEY,
     [product_category_id] BIGINT          NOT NULL,
@@ -103,7 +103,7 @@ CREATE TABLE [dbo].[drs_product_mst] (
 
 
 GO
--- 5. Product Stock Master Table
+-- Product Stock Master Table
 CREATE TABLE [dbo].[drs_product_stock_mst] (
     [ID]           BIGINT   IDENTITY (1, 1) NOT NULL PRIMARY KEY,
     [product_id]   BIGINT   NOT NULL,
@@ -119,7 +119,7 @@ CREATE TABLE [dbo].[drs_product_stock_mst] (
 
 
 GO
--- 6. Product Image Master Table
+-- Product Image Master Table
 CREATE TABLE [dbo].[drs_product_image_mst] (
     [ID]           BIGINT         IDENTITY (1, 1) NOT NULL PRIMARY KEY,
     [product_id]   BIGINT         NOT NULL,
@@ -134,7 +134,7 @@ CREATE TABLE [dbo].[drs_product_image_mst] (
 
 
 GO
--- 7. Refresh Token Master Table
+-- Refresh Token Master Table
 CREATE TABLE [dbo].[drs_refresh_token_mst] (
     [ID]                  BIGINT         IDENTITY (1, 1) NOT NULL PRIMARY KEY,
     [customer_id]         BIGINT         NOT NULL,
@@ -156,7 +156,7 @@ CREATE TABLE [dbo].[drs_refresh_token_mst] (
 
 
 GO
--- 8. Login History Master Table
+-- Login History Master Table
 CREATE TABLE [dbo].[drs_login_history_mst] (
     [ID]            BIGINT         IDENTITY (1, 1) NOT NULL PRIMARY KEY,
     [customer_id]   BIGINT         NULL,
@@ -170,7 +170,7 @@ CREATE TABLE [dbo].[drs_login_history_mst] (
 
 
 GO
--- 9. Audit Master Table
+-- Audit Master Table
 CREATE TABLE [dbo].[drs_audit_mst] (
     [ID]          BIGINT         IDENTITY (1, 1) NOT NULL PRIMARY KEY,
     [customer_id] BIGINT         NULL,
@@ -187,7 +187,7 @@ CREATE TABLE [dbo].[drs_audit_mst] (
 
 
 GO
--- 10. Error Message Master Table
+-- Error Message Master Table
 CREATE TABLE [dbo].[drs_error_message_mst] (
     [ID]             BIGINT         IDENTITY (1, 1) NOT NULL PRIMARY KEY,
     [MessageCode]    VARCHAR (100)  NOT NULL,
@@ -202,7 +202,7 @@ CREATE TABLE [dbo].[drs_error_message_mst] (
 
 
 GO
--- 11. Country Master Table
+-- Country Master Table
 CREATE TABLE [dbo].[drs_country_mst] (
     [ID]           BIGINT         IDENTITY (1, 1) NOT NULL PRIMARY KEY,
     [CountryName]  NVARCHAR (100) NOT NULL,
@@ -216,7 +216,7 @@ CREATE TABLE [dbo].[drs_country_mst] (
 
 
 GO
--- 12. State Master Table
+-- State Master Table
 CREATE TABLE [dbo].[drs_state_mst] (
     [ID]           BIGINT         IDENTITY (1, 1) NOT NULL PRIMARY KEY,
     [country_id]   BIGINT         NOT NULL,
@@ -230,7 +230,7 @@ CREATE TABLE [dbo].[drs_state_mst] (
 
 
 GO
--- Alter Customer Address Table for country_id and state_id columns
+-- Customer Address Location Columns
 IF EXISTS (SELECT *
            FROM   sys.objects
            WHERE  object_id = OBJECT_ID(N'[dbo].[drs_customer_address_mst]')
@@ -256,6 +256,7 @@ IF EXISTS (SELECT *
             END
     END
 
+-- FAQ Master Table
 CREATE TABLE drs_faq_mst (
     ID                    INT            IDENTITY (1, 1) PRIMARY KEY,
     Category              NVARCHAR (100),
@@ -277,11 +278,7 @@ CREATE TABLE drs_faq_mst (
 
 GO
 
--- =========================================================================
--- Commissioned Projects Tables & Sequence
--- =========================================================================
-
--- Sequence for Auto-generating Commission Request Numbers
+-- Commission Request Sequence
 IF NOT EXISTS (SELECT * FROM sys.sequences WHERE name = 'Seq_CommissionRequestNo')
 BEGIN
     CREATE SEQUENCE [dbo].[Seq_CommissionRequestNo]
@@ -291,7 +288,7 @@ BEGIN
 END;
 GO
 
--- 1. Commission Project Category Master Table
+-- Commission Category Master Table
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[drs_commission_category_mst]') AND type IN (N'U'))
 BEGIN
     CREATE TABLE [dbo].[drs_commission_category_mst] (
@@ -307,7 +304,7 @@ BEGIN
 END;
 GO
 
--- 2. Main Commissioned Project Request Table
+-- Commission Request Master Table
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[drs_commission_request_mst]') AND type IN (N'U'))
 BEGIN
     CREATE TABLE [dbo].[drs_commission_request_mst] (
@@ -335,7 +332,7 @@ BEGIN
 END;
 GO
 
--- 3. Commission Project Image Table
+-- Commission Request Image Master Table
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[drs_commission_request_image_mst]') AND type IN (N'U'))
 BEGIN
     CREATE TABLE [dbo].[drs_commission_request_image_mst] (
@@ -355,14 +352,10 @@ BEGIN
 END;
 GO
 
--- =========================================================================
--- Dynamic About Page Tables
--- =========================================================================
-
--- 1. About Content Master Table
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[drs_about_mst]') AND type IN (N'U'))
+-- Project Master Table
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[drs_project_mst]') AND type IN (N'U'))
 BEGIN
-    CREATE TABLE [dbo].[drs_about_mst] (
+    CREATE TABLE [dbo].[drs_project_mst] (
         [ID]                  BIGINT          IDENTITY (1, 1) NOT NULL PRIMARY KEY,
         [Heading]             NVARCHAR (200)  NOT NULL,
         [Subheading]          NVARCHAR (250)  NULL,
@@ -386,27 +379,27 @@ BEGIN
 END;
 GO
 
--- Ensure LayoutType exists in existing drs_about_mst tables (idempotent)
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[drs_about_mst]') AND type IN (N'U'))
+-- Project Layout Column Migration
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[drs_project_mst]') AND type IN (N'U'))
 BEGIN
     IF NOT EXISTS (
         SELECT 1 FROM sys.columns 
-        WHERE object_id = OBJECT_ID(N'[dbo].[drs_about_mst]') 
+        WHERE object_id = OBJECT_ID(N'[dbo].[drs_project_mst]') 
         AND name = 'LayoutType'
     )
     BEGIN
-        ALTER TABLE [dbo].[drs_about_mst] 
-        ADD [LayoutType] NVARCHAR (50) NOT NULL CONSTRAINT DF_drs_about_mst_LayoutType DEFAULT 'grid-3';
+        ALTER TABLE [dbo].[drs_project_mst] 
+        ADD [LayoutType] NVARCHAR (50) NOT NULL CONSTRAINT DF_drs_project_mst_LayoutType DEFAULT 'grid-3';
     END;
 END;
 GO
 
--- 2. About Image Master Table
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[drs_about_image_mst]') AND type IN (N'U'))
+-- Project Image Master Table
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[drs_project_image_mst]') AND type IN (N'U'))
 BEGIN
-    CREATE TABLE [dbo].[drs_about_image_mst] (
+    CREATE TABLE [dbo].[drs_project_image_mst] (
         [ID]               BIGINT         IDENTITY (1, 1) NOT NULL PRIMARY KEY,
-        [about_id]         BIGINT         NOT NULL,
+        [project_id]       BIGINT         NOT NULL,
         [OriginalFileName] NVARCHAR (255) NOT NULL,
         [StoredFileName]   NVARCHAR (255) NOT NULL,
         [ImagePath]        NVARCHAR (500) NOT NULL,

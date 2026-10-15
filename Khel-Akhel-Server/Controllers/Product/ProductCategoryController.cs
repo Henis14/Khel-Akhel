@@ -52,7 +52,7 @@ namespace Khel_Akhel_Server.Controllers.Product
         }
         #endregion
 
-        #region 4.1 ProductCategoryCreate
+        #region Create Product Category API
         [Authorize(Roles = "Admin")]
         [HttpPost("create")]
         public async Task<IActionResult> ProductCategoryCreate(
@@ -220,7 +220,7 @@ namespace Khel_Akhel_Server.Controllers.Product
         }
         #endregion
 
-        #region 4.2 ProductCategoryUpdate [PATCH]
+        #region Update Product Category API
         [Authorize(Roles = "Admin")]
         [HttpPatch("update")]
         public async Task<IActionResult> ProductCategoryUpdate(
@@ -425,7 +425,7 @@ namespace Khel_Akhel_Server.Controllers.Product
         }
         #endregion
 
-        #region 4.3 GetProductCategoryById [GET]
+        #region Get Product Category By Id API
         [AllowAnonymous]
         [HttpGet("{encryptedId}")]
         public IActionResult GetProductCategoryById([FromRoute] string encryptedId)
@@ -518,7 +518,7 @@ namespace Khel_Akhel_Server.Controllers.Product
         }
         #endregion
 
-        #region 4.4 GetAllProductCategory [GET]
+        #region Get Product Category List API
         [AllowAnonymous]
         [HttpGet("list")]
         public IActionResult GetAllProductCategory()
@@ -586,7 +586,7 @@ namespace Khel_Akhel_Server.Controllers.Product
         }
         #endregion
 
-        #region 4.5 ProductCategorySoftDelete [DELETE / PATCH]
+        #region Delete Product Category API
         [Authorize(Roles = "Admin")]
         [HttpDelete("delete/{encryptedCategoryId?}")]
         [HttpPatch("delete/{encryptedCategoryId?}")]

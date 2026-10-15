@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 using System.Security.Claims;
 using System.Text.Json;
 using Khel_Akhel_Server.BL.Common;
@@ -24,6 +24,7 @@ public class FAQController : ControllerBase
         _audit = audit;
     }
 
+    #region Helper Methods
     private long GetAuthenticatedUserId()
     {
         var claim = User.FindFirst("UserId") ?? User.FindFirst(ClaimTypes.NameIdentifier);
@@ -80,15 +81,19 @@ public class FAQController : ControllerBase
             new("@DisplayOnFooter", request.DisplayOnFooter),
         };
     }
+    #endregion
 
-    // POST: api/faq/create
+    #region Create FAQ API
     [Authorize(Roles = "Admin")]
     [HttpPost("create")]
     public async Task<IActionResult> Create([FromBody] FaqCreateRequest? request)
     {
+        Logs.Info("FAQ Create API started");
         try
         {
             if (request == null)
+            {
+                Logs.Warning("FAQ Create rejected | Request body is null");
                 return BadRequest(
                     new ApiResponse
                     {
@@ -97,6 +102,7 @@ public class FAQController : ControllerBase
                         Message = "REQUEST_BODY_REQUIRED",
                     }
                 );
+            }
 
             request.Question = request.Question?.Trim() ?? "";
             request.Answer = request.Answer?.Trim() ?? "";
@@ -108,6 +114,7 @@ public class FAQController : ControllerBase
                 || request.DisplayOrder < 0
             )
             {
+                Logs.Warning("FAQ Create validation failed | Invalid question, answer, or display order");
                 return BadRequest(
                     new ApiResponse
                     {
@@ -156,6 +163,7 @@ public class FAQController : ControllerBase
                 Request.Headers["User-Agent"].ToString()
             );
 
+            Logs.Info($"FAQ created successfully | FaqId:{id}");
             return Ok(
                 new ApiResponse
                 {
@@ -182,8 +190,9 @@ public class FAQController : ControllerBase
             );
         }
     }
+    #endregion
 
-    // GET: api/faq/admin/list
+    #region Get Admin FAQ List API
     [Authorize(Roles = "Admin")]
     [HttpGet("admin/list")]
     public IActionResult AdminList(
@@ -192,6 +201,7 @@ public class FAQController : ControllerBase
         [FromQuery] bool? isPublished = null
     )
     {
+        Logs.Info($"FAQ AdminList API started | Search:{search} IsActive:{isActive} IsPublished:{isPublished}");
         try
         {
             var conditions = new List<string> { "IsDeleted = 0" };
@@ -230,6 +240,7 @@ public class FAQController : ControllerBase
 
             var items = table.AsEnumerable().Select(row => MapFaq(row)).ToList();
 
+            Logs.Info($"FAQ AdminList completed successfully | Count:{items.Count}");
             return Ok(
                 new ApiResponse
                 {
@@ -255,61 +266,84 @@ public class FAQController : ControllerBase
             );
         }
     }
+    #endregion
 
-    // GET: api/faq/admin/{encryptedFaqId}
+    #region Get FAQ By Id API
     [Authorize(Roles = "Admin")]
     [HttpGet("admin/{encryptedFaqId}")]
     public IActionResult GetById(string encryptedFaqId)
     {
-        if (!_encryption.TryDecrypt(encryptedFaqId, out long id) || id <= 0)
+        Logs.Info($"FAQ GetById API started | EncryptedFaqId:{encryptedFaqId}");
+        try
         {
-            return BadRequest(
-                new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 400,
-                    Message = "INVALID_FAQ_ID",
-                }
-            );
-        }
-
-        const string sql =
-            @"
-            SELECT *
-            FROM dbo.drs_faq_mst
-            WHERE ID = @ID AND IsDeleted = 0;";
-
-        DataTable table = _db.ExecuteQuery(sql, new[] { new SqlParameter("@ID", id) });
-
-        if (table.Rows.Count == 0)
-        {
-            return NotFound(
-                new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 404,
-                    Message = "FAQ_NOT_FOUND",
-                }
-            );
-        }
-
-        return Ok(
-            new ApiResponse
+            if (!_encryption.TryDecrypt(encryptedFaqId, out long id) || id <= 0)
             {
-                Success = true,
-                StatusCode = 200,
-                Message = "SUCCESS",
-                Data = MapFaq(table.Rows[0]),
+                Logs.Warning($"FAQ GetById rejected | Invalid EncryptedFaqId:{encryptedFaqId}");
+                return BadRequest(
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 400,
+                        Message = "INVALID_FAQ_ID",
+                    }
+                );
             }
-        );
-    }
 
-    // PATCH: api/faq/update
-    // This endpoint expects all editable FAQ fields in the request.
+            const string sql =
+                @"
+                SELECT *
+                FROM dbo.drs_faq_mst
+                WHERE ID = @ID AND IsDeleted = 0;";
+
+            DataTable table = _db.ExecuteQuery(sql, new[] { new SqlParameter("@ID", id) });
+
+            if (table.Rows.Count == 0)
+            {
+                Logs.Warning($"FAQ GetById failed | FAQ not found | FaqId:{id}");
+                return NotFound(
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 404,
+                        Message = "FAQ_NOT_FOUND",
+                    }
+                );
+            }
+
+            Logs.Info($"FAQ GetById completed successfully | FaqId:{id}");
+            return Ok(
+                new ApiResponse
+                {
+                    Success = true,
+                    StatusCode = 200,
+                    Message = "SUCCESS",
+                    Data = MapFaq(table.Rows[0]),
+                }
+            );
+        }
+        catch (Exception ex)
+        {
+            Logs.Error("FAQ GetById API failed", ex);
+
+            return StatusCode(
+                500,
+                new ApiResponse
+                {
+                    Success = false,
+                    StatusCode = 500,
+                    Message = "SERVER_ERROR",
+                }
+            );
+        }
+    }
+    #endregion
+
+    #region Update FAQ API
     [Authorize(Roles = "Admin")]
     [HttpPatch("update")]
     public async Task<IActionResult> Update([FromBody] FaqUpdateRequest? request)
     {
+        Logs.Info("FAQ Update API started");
         try
         {
             if (
@@ -318,6 +352,7 @@ public class FAQController : ControllerBase
                 || id <= 0
             )
             {
+                Logs.Warning($"FAQ Update rejected | Invalid request or EncryptedFaqId:{request?.EncryptedFaqId}");
                 return BadRequest(
                     new ApiResponse
                     {
@@ -338,6 +373,7 @@ public class FAQController : ControllerBase
                 || request.DisplayOrder < 0
             )
             {
+                Logs.Warning($"FAQ Update validation failed | FaqId:{id}");
                 return BadRequest(
                     new ApiResponse
                     {
@@ -374,6 +410,7 @@ public class FAQController : ControllerBase
 
             if (affected == 0)
             {
+                Logs.Warning($"FAQ Update failed | FAQ not found | FaqId:{id}");
                 return NotFound(
                     new ApiResponse
                     {
@@ -396,6 +433,7 @@ public class FAQController : ControllerBase
                 Request.Headers["User-Agent"].ToString()
             );
 
+            Logs.Info($"FAQ updated successfully | FaqId:{id}");
             return Ok(
                 new ApiResponse
                 {
@@ -420,16 +458,19 @@ public class FAQController : ControllerBase
             );
         }
     }
+    #endregion
 
-    // DELETE: api/faq/delete/{encryptedFaqId}
+    #region Delete FAQ API
     [Authorize(Roles = "Admin")]
     [HttpDelete("delete/{encryptedFaqId}")]
     public async Task<IActionResult> Delete(string encryptedFaqId)
     {
+        Logs.Info($"FAQ Delete API started | EncryptedFaqId:{encryptedFaqId}");
         try
         {
             if (!_encryption.TryDecrypt(encryptedFaqId, out long id) || id <= 0)
             {
+                Logs.Warning($"FAQ Delete rejected | Invalid EncryptedFaqId:{encryptedFaqId}");
                 return BadRequest(
                     new ApiResponse
                     {
@@ -456,6 +497,7 @@ public class FAQController : ControllerBase
 
             if (affected == 0)
             {
+                Logs.Warning($"FAQ Delete failed | FAQ not found | FaqId:{id}");
                 return NotFound(
                     new ApiResponse
                     {
@@ -478,6 +520,7 @@ public class FAQController : ControllerBase
                 Request.Headers["User-Agent"].ToString()
             );
 
+            Logs.Info($"FAQ deleted successfully | FaqId:{id}");
             return Ok(
                 new ApiResponse
                 {
@@ -502,12 +545,14 @@ public class FAQController : ControllerBase
             );
         }
     }
+    #endregion
 
-    // GET: api/faq/public?location=home
+    #region Get Public FAQs API
     [AllowAnonymous]
     [HttpGet("public")]
     public IActionResult GetPublicFaqs([FromQuery] string location = "faq")
     {
+        Logs.Info($"FAQ GetPublicFaqs API started | Location:{location}");
         // Column names are selected from this fixed allowlist.
         string? displayColumn = location.Trim().ToLowerInvariant() switch
         {
@@ -521,6 +566,7 @@ public class FAQController : ControllerBase
 
         if (displayColumn == null)
         {
+            Logs.Warning($"FAQ GetPublicFaqs rejected | Invalid location:{location}");
             return BadRequest(
                 new ApiResponse
                 {
@@ -548,6 +594,7 @@ public class FAQController : ControllerBase
 
             var items = table.AsEnumerable().Select(row => MapFaq(row)).ToList();
 
+            Logs.Info($"FAQ GetPublicFaqs completed successfully | Location:{location} Count:{items.Count}");
             return Ok(
                 new ApiResponse
                 {
@@ -573,4 +620,5 @@ public class FAQController : ControllerBase
             );
         }
     }
+    #endregion
 }

@@ -57,7 +57,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
         }
         #endregion
 
-        #region 1. CustomerCreate
+        #region Create Customer API
         [AllowAnonymous]
         [HttpPost("create")]
         public async Task<IActionResult> CustomerCreate([FromBody] CustomerCreateRequest? request)
@@ -324,7 +324,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
         }
         #endregion
 
-        #region 2. CustomerUpdate [PATCH]
+        #region Update Customer API
         [Authorize]
         [HttpPatch("update/{encryptedId?}")]
         public async Task<IActionResult> CustomerUpdate(
@@ -653,7 +653,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
         }
         #endregion
 
-        #region 3. CustomerSoftDelete [PATCH / DELETE]
+        #region Delete Customer API
         [Authorize]
         [HttpPatch("delete/{encryptedId?}")]
         [HttpDelete("delete/{encryptedId?}")]
@@ -805,7 +805,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
         }
         #endregion
 
-        #region 4. GetCustomerById [GET]
+        #region Get Customer By Id API
         [Authorize]
         [HttpGet("{encryptedId}")]
         public IActionResult GetCustomerById([FromRoute] string encryptedId)
@@ -937,7 +937,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
         }
         #endregion
 
-        #region 5. GetAllCustomer [GET / POST]
+        #region Get Customer List API
         [Authorize(Roles = "Admin")]
         [HttpGet("list")]
         [HttpPost("list")]

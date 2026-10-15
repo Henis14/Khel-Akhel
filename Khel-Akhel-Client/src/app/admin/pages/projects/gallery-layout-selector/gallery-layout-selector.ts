@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { GALLERY_LAYOUT_OPTIONS, GalleryLayoutOption } from '../../../models/about.model';
+import { GALLERY_LAYOUT_OPTIONS, GalleryLayoutOption } from '../../../models/project.model';
 
 @Component({
   selector: 'app-gallery-layout-selector',

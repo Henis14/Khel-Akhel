@@ -1,17 +1,30 @@
-<div class="about-list-page">
+<div class="project-list-page">
   <!-- Page Header -->
   <div class="page-header">
     <app-breadcrumb [items]="breadcrumbs"></app-breadcrumb>
     <div class="page-header-main">
       <div class="header-titles">
-        <h1 class="page-title">About & Portfolio Sections</h1>
+        <h1 class="page-title">Projects & Portfolio Showcase</h1>
         <p class="page-subtitle">
-          Manage dynamic narratives, festival projects, set designs, visual artwork galleries, and studio disciplines.
+          Manage dynamic narratives, festival projects, set designs, visual artwork galleries, and
+          studio disciplines.
         </p>
       </div>
       <div class="page-header-actions">
-        <button type="button" class="btn btn-outline-admin" (click)="loadSections()" [disabled]="loading">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <button
+          type="button"
+          class="btn btn-outline-admin"
+          (click)="loadSections()"
+          [disabled]="loading"
+        >
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <polyline points="23 4 23 10 17 10"></polyline>
             <polyline points="1 20 1 14 7 14"></polyline>
             <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
@@ -19,11 +32,18 @@
           <span>Refresh</span>
         </button>
         <button type="button" class="btn btn-primary-admin" (click)="navigateToAdd()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <line x1="12" y1="5" x2="12" y2="19"></line>
             <line x1="5" y1="12" x2="19" y2="12"></line>
           </svg>
-          <span>New Section</span>
+          <span>New Project</span>
         </button>
       </div>
     </div>
@@ -32,7 +52,14 @@
   <!-- Notification Alerts -->
   @if (successMessage) {
     <div class="alert alert-success" role="alert">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
         <polyline points="22 4 12 14.01 9 11.01"></polyline>
       </svg>
@@ -43,7 +70,14 @@
 
   @if (errorMessage) {
     <div class="alert alert-error" role="alert">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
         <circle cx="12" cy="12" r="10"></circle>
         <line x1="12" y1="8" x2="12" y2="12"></line>
         <line x1="12" y1="16" x2="12.01" y2="16"></line>
@@ -58,7 +92,15 @@
     <div class="filter-row">
       <!-- Search -->
       <div class="search-box">
-        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg
+          class="search-icon"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
           <circle cx="11" cy="11" r="8"></circle>
           <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
         </svg>
@@ -70,7 +112,9 @@
           (ngModelChange)="onSearchChange($event)"
         />
         @if (searchQuery) {
-          <button type="button" class="clear-search" (click)="searchQuery = ''; onSearchChange('')">&times;</button>
+          <button type="button" class="clear-search" (click)="searchQuery = ''; onSearchChange('')">
+            &times;
+          </button>
         }
       </div>
 
@@ -89,7 +133,11 @@
       <!-- Publication Filter -->
       <div class="filter-group">
         <label class="filter-label">Status:</label>
-        <select class="form-select" [(ngModel)]="selectedPublished" (ngModelChange)="onFilterChange()">
+        <select
+          class="form-select"
+          [(ngModel)]="selectedPublished"
+          (ngModelChange)="onFilterChange()"
+        >
           <option value="">All Statuses</option>
           <option value="published">Published</option>
           <option value="draft">Draft</option>
@@ -132,14 +180,17 @@
             </tr>
           </thead>
           <tbody>
-            @for (sec of sections; track sec.encryptedAboutId) {
+            @for (sec of sections; track sec.encryptedProjectId) {
               <tr class="table-row">
                 <td class="order-cell">
                   <span class="order-number">#{{ sec.displayOrder }}</span>
                 </td>
                 <td class="heading-cell">
                   <div class="heading-content">
-                    <a [routerLink]="['/admin/about/edit', sec.encryptedAboutId]" class="section-title">
+                    <a
+                      [routerLink]="['/admin/projects/edit', sec.encryptedProjectId]"
+                      class="section-title"
+                    >
                       {{ sec.heading }}
                     </a>
                     @if (sec.subheading) {
@@ -198,7 +249,14 @@
                       (click)="openPreview(sec)"
                       title="Live public layout preview"
                     >
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <svg
+                        width="15"
+                        height="15"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                         <circle cx="12" cy="12" r="3"></circle>
                       </svg>
@@ -209,7 +267,14 @@
                       (click)="navigateToEdit(sec)"
                       title="Edit section & gallery"
                     >
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <svg
+                        width="15"
+                        height="15"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                       </svg>
@@ -218,11 +283,20 @@
                       type="button"
                       class="icon-btn delete"
                       (click)="promptDelete(sec)"
-                      title="Delete section"
+                      title="Delete Project"
                     >
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <svg
+                        width="15"
+                        height="15"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
                         <polyline points="3 6 5 6 21 6"></polyline>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        <path
+                          d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                        ></path>
                       </svg>
                     </button>
                   </div>
@@ -246,22 +320,37 @@
       <!-- Empty State -->
       <div class="empty-state-card">
         <div class="empty-state-icon">
-          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <svg
+            width="44"
+            height="44"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
             <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
             <circle cx="8.5" cy="8.5" r="1.5"></circle>
             <polyline points="21 15 16 10 5 21"></polyline>
           </svg>
         </div>
-        <h3 class="empty-state-title">No About Content Found</h3>
+        <h3 class="empty-state-title">No Projects Found</h3>
         <p class="empty-state-description">
           @if (searchQuery || selectedContentType || selectedPublished) {
             No sections match the current filters. Try resetting search or filter criteria.
           } @else {
-            Begin building the DARAS studio experience by creating your first editorial narrative or portfolio gallery.
+            Begin building the DARAS studio experience by creating your first editorial narrative or
+            portfolio gallery.
           }
         </p>
         <button type="button" class="btn btn-primary-admin" (click)="navigateToAdd()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <line x1="12" y1="5" x2="12" y2="19"></line>
             <line x1="5" y1="12" x2="19" y2="12"></line>
           </svg>
@@ -335,12 +424,26 @@
               @if (previewSection.credits || previewSection.externalUrl) {
                 <footer class="section-editorial-footer">
                   @if (previewSection.credits) {
-                    <p class="editorial-credits"><strong>Credits:</strong> {{ previewSection.credits }}</p>
+                    <p class="editorial-credits">
+                      <strong>Credits:</strong> {{ previewSection.credits }}
+                    </p>
                   }
                   @if (previewSection.externalUrl) {
-                    <a [href]="previewSection.externalUrl" target="_blank" rel="noopener noreferrer" class="editorial-link">
+                    <a
+                      [href]="previewSection.externalUrl"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="editorial-link"
+                    >
                       <span>Explore Project Repository</span>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
                         <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
                         <polyline points="15 3 21 3 21 9"></polyline>
                         <line x1="10" y1="14" x2="21" y2="3"></line>
@@ -355,13 +458,23 @@
 
         <div class="modal-footer">
           <div class="modal-footer-info">
-            <span>Layout: <strong>{{ getLayoutBadge(previewSection.layoutType) }}</strong></span>
+            <span
+              >Layout: <strong>{{ getLayoutBadge(previewSection.layoutType) }}</strong></span
+            >
             <span>&bull;</span>
-            <span>Images: <strong>{{ previewSection.imageCount }}</strong></span>
+            <span
+              >Images: <strong>{{ previewSection.imageCount }}</strong></span
+            >
           </div>
-          <button type="button" class="btn btn-outline-admin" (click)="closePreview()">Close Preview</button>
-          <button type="button" class="btn btn-primary-admin" (click)="closePreview(); navigateToEdit(previewSection)">
-            Edit This Section
+          <button type="button" class="btn btn-outline-admin" (click)="closePreview()">
+            Close Preview
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary-admin"
+            (click)="closePreview(); navigateToEdit(previewSection)"
+          >
+            Edit This Project
           </button>
         </div>
       </div>
@@ -373,7 +486,7 @@
     [isOpen]="isConfirmOpen"
     [title]="confirmTitle"
     [message]="confirmMessage"
-    confirmText="Delete Section"
+    confirmText="Delete Project"
     cancelText="Cancel"
     type="danger"
     (confirm)="onConfirmDelete()"

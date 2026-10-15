@@ -1,6 +1,6 @@
-export interface AboutImage {
+export interface ProjectImage {
   encryptedImageId: string;
-  encryptedAboutId: string;
+  encryptedProjectId: string;
   originalFileName: string;
   storedFileName: string;
   imageUrl: string;
@@ -12,13 +12,13 @@ export interface AboutImage {
   createdDate?: string | null;
 }
 
-export interface AboutImageOrderDto {
+export interface ProjectImageOrderDto {
   encryptedImageId: string;
   displayOrder: number;
 }
 
-export interface AboutDetail {
-  encryptedAboutId: string;
+export interface ProjectDetail {
+  encryptedProjectId: string;
   heading: string;
   subheading?: string | null;
   contentType?: string | null;
@@ -34,13 +34,13 @@ export interface AboutDetail {
   isPublished: boolean;
   isActive: boolean;
   imageCount: number;
-  images: AboutImage[];
+  images: ProjectImage[];
   createdDate?: string | null;
   modifiedDate?: string | null;
 }
 
-export interface AboutPublic {
-  encryptedAboutId: string;
+export interface ProjectPublic {
+  encryptedProjectId: string;
   heading: string;
   subheading?: string | null;
   contentType?: string | null;
@@ -53,10 +53,10 @@ export interface AboutPublic {
   externalUrl?: string | null;
   displayOrder: number;
   layoutType: string;
-  images: AboutImage[];
+  images: ProjectImage[];
 }
 
-export interface AboutListFilter {
+export interface ProjectListFilter {
   pageIndex?: number;
   pageSize?: number;
   search?: string;
@@ -66,15 +66,15 @@ export interface AboutListFilter {
   sortBy?: string;
 }
 
-export interface AboutListResponse {
-  items: AboutDetail[];
+export interface ProjectListResponse {
+  items: ProjectDetail[];
   totalRecords: number;
   pageIndex: number;
   pageSize: number;
   totalPages: number;
 }
 
-export interface AboutCreatePayload {
+export interface ProjectCreatePayload {
   heading: string;
   subheading?: string | null;
   contentType?: string | null;
@@ -92,8 +92,8 @@ export interface AboutCreatePayload {
   images?: File[];
 }
 
-export interface AboutUpdatePayload {
-  encryptedAboutId: string;
+export interface ProjectUpdatePayload {
+  encryptedProjectId: string;
   heading: string;
   subheading?: string | null;
   contentType?: string | null;
@@ -110,7 +110,7 @@ export interface AboutUpdatePayload {
   isActive?: boolean;
   newImages?: File[];
   removeImageIds?: string[];
-  imageOrders?: AboutImageOrderDto[];
+  imageOrders?: ProjectImageOrderDto[];
 }
 
 export interface GalleryLayoutOption {
@@ -201,3 +201,13 @@ export const CONTENT_TYPES: string[] = [
   'Collaborative Commission',
   'Publication & Editorial',
 ];
+
+// Compatibility aliases during transition
+export type AboutImage = ProjectImage;
+export type AboutImageOrderDto = ProjectImageOrderDto;
+export type AboutDetail = ProjectDetail;
+export type AboutPublic = ProjectPublic;
+export type AboutListFilter = ProjectListFilter;
+export type AboutListResponse = ProjectListResponse;
+export type AboutCreatePayload = ProjectCreatePayload;
+export type AboutUpdatePayload = ProjectUpdatePayload;

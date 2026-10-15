@@ -36,6 +36,7 @@
           Home
         </a>
         <a routerLink="/shop" routerLinkActive="active" class="nav-link">Shop</a>
+        <a routerLink="/projects" routerLinkActive="active" class="nav-link">Projects</a>
         <a routerLink="/about" routerLinkActive="active" class="nav-link">About</a>
         <a routerLink="/contact" routerLinkActive="active" class="nav-link">Contact</a>
       </nav>
@@ -177,6 +178,14 @@
         Shop
       </a>
       <a
+        routerLink="/projects"
+        routerLinkActive="active"
+        class="drawer-nav-item"
+        (click)="closeMobileMenu()"
+      >
+        Projects &amp; Portfolio
+      </a>
+      <a
         routerLink="/about"
         routerLinkActive="active"
         class="drawer-nav-item"
@@ -287,8 +296,8 @@
         <h4 class="footer-heading">Studio &amp; Shop</h4>
         <ul class="footer-links">
           <li><a routerLink="/shop">All Collections</a></li>
+          <li><a routerLink="/projects">Projects &amp; Exhibitions</a></li>
           <li><a routerLink="/about">About Khel-Akhel</a></li>
-          <li><a routerLink="/press">Press &amp; Publications</a></li>
           <li><a routerLink="/contact">Murals &amp; Commissions</a></li>
         </ul>
       </div>

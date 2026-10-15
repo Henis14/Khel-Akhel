@@ -53,8 +53,8 @@
   color: var(--admin-text-secondary);
 
   &.secondary {
-    background-color: #f1f5f9;
-    color: #475569;
+    background-color: var(--admin-table-hover-bg, #f1f4f6);
+    color: var(--admin-text-secondary, #65727d);
   }
 }
 

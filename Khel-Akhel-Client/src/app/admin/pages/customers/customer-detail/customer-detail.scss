@@ -25,10 +25,15 @@
         flex-wrap: wrap;
 
         h2 {
-          font-family: Georgia, 'Times New Roman', serif;
+          font-family:
+            'Inter',
+            system-ui,
+            -apple-system,
+            sans-serif;
           font-size: 1.625rem;
           font-weight: 700;
-          color: var(--ka-text, #1e2430);
+          color: var(--admin-text-primary, #25313b);
+          letter-spacing: -0.015em;
           margin: 0;
         }
       }
@@ -38,7 +43,7 @@
   .detail-tabs {
     display: flex;
     gap: 0.5rem;
-    border-bottom: 1px solid var(--ka-border, #d9d3c6);
+    border-bottom: 1px solid var(--admin-border, #dce2e7);
     margin-bottom: 1.5rem;
 
     .tab-btn {
@@ -47,7 +52,7 @@
       background: none;
       font-weight: 600;
       font-size: 0.875rem;
-      color: var(--ka-text-secondary, #6b6a63);
+      color: var(--admin-text-secondary, #65727d);
       border-bottom: 2px solid transparent;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -55,12 +60,12 @@
       align-items: center;
 
       &:hover {
-        color: var(--ka-navy, #1f3557);
+        color: var(--admin-text-primary, #25313b);
       }
 
       &.active {
-        color: var(--ka-navy, #1f3557);
-        border-bottom-color: var(--ka-terracotta, #b45132);
+        color: var(--admin-primary, #263541);
+        border-bottom-color: var(--admin-primary, #263541);
       }
     }
   }
@@ -76,19 +81,19 @@
   }
 
   .card {
-    background: var(--ka-surface, #fbf9f4);
+    background: var(--admin-surface, #ffffff);
     border-radius: var(--admin-radius-lg, 12px);
-    border: 1px solid var(--ka-border, #d9d3c6);
-    box-shadow: 0 2px 6px rgba(31, 53, 87, 0.04);
+    border: 1px solid var(--admin-border, #dce2e7);
+    box-shadow: var(--admin-shadow-sm, 0 2px 6px rgba(38, 53, 65, 0.04));
 
     .card-header {
       padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid var(--ka-border-light, #e7e1d6);
+      border-bottom: 1px solid var(--admin-border-light, #e9edf1);
 
       h3 {
         font-size: 1.125rem;
         font-weight: 700;
-        color: var(--ka-navy, #1f3557);
+        color: var(--admin-text-primary, #25313b);
         margin: 0;
       }
     }
@@ -103,20 +108,20 @@
     justify-content: space-between;
     align-items: center;
     padding: 0.75rem 0;
-    border-bottom: 1px dashed var(--ka-border-light, #e7e1d6);
+    border-bottom: 1px dashed var(--admin-border-light, #e9edf1);
 
     &:last-child {
       border-bottom: none;
     }
 
     .info-label {
-      color: var(--ka-text-secondary, #6b6a63);
+      color: var(--admin-text-secondary, #65727d);
       font-size: 0.875rem;
       font-weight: 500;
     }
 
     .info-value {
-      color: var(--ka-text, #1e2430);
+      color: var(--admin-text-primary, #25313b);
       font-size: 0.938rem;
       font-weight: 600;
     }
@@ -132,9 +137,9 @@
       align-items: center;
       gap: 1rem;
       padding: 1rem;
-      background: var(--ka-surface-alt, #f1e7d5);
+      background: var(--admin-surface-alt, #eef1f4);
       border-radius: var(--admin-radius-md, 8px);
-      border: 1px solid var(--ka-border, #d9d3c6);
+      border: 1px solid var(--admin-border, #dce2e7);
 
       .metric-icon {
         width: 42px;
@@ -144,19 +149,8 @@
         align-items: center;
         justify-content: center;
         font-size: 1.25rem;
-
-        &.icon-blue {
-          background: rgba(31, 53, 87, 0.1);
-          color: var(--ka-navy, #1f3557);
-        }
-        &.icon-green {
-          background: rgba(45, 115, 112, 0.12);
-          color: var(--ka-teal, #2d7370);
-        }
-        &.icon-purple {
-          background: rgba(217, 164, 65, 0.14);
-          color: var(--ka-ochre, #d9a441);
-        }
+        background: var(--admin-sidebar-active, #dce3e8);
+        color: var(--admin-primary, #263541);
       }
 
       .metric-info {
@@ -166,12 +160,12 @@
         .metric-val {
           font-size: 1.125rem;
           font-weight: 700;
-          color: var(--ka-text, #1e2430);
+          color: var(--admin-text-primary, #25313b);
         }
 
         .metric-lbl {
           font-size: 0.75rem;
-          color: var(--ka-text-secondary, #6b6a63);
+          color: var(--admin-text-secondary, #65727d);
           font-weight: 600;
         }
       }
@@ -184,14 +178,14 @@
     gap: 1rem;
 
     .address-card {
-      border: 1px solid var(--ka-border, #d9d3c6);
+      border: 1px solid var(--admin-border, #dce2e7);
       border-radius: var(--admin-radius-md, 8px);
       padding: 1rem;
-      background: var(--ka-surface, #fbf9f4);
+      background: var(--admin-surface, #ffffff);
 
       &.is-default {
-        border-color: var(--ka-navy, #1f3557);
-        background: var(--ka-surface-alt, #f1e7d5);
+        border-color: var(--admin-primary, #263541);
+        background: var(--admin-surface-alt, #eef1f4);
       }
 
       .address-card-header {
@@ -203,14 +197,14 @@
           font-size: 0.75rem;
           font-weight: 700;
           text-transform: uppercase;
-          color: var(--ka-navy, #1f3557);
+          color: var(--admin-primary, #263541);
         }
       }
 
       .address-card-body p {
         margin: 0 0 0.25rem 0;
         font-size: 0.875rem;
-        color: var(--ka-text, #1e2430);
+        color: var(--admin-text-primary, #25313b);
       }
     }
   }
@@ -233,7 +227,7 @@
         top: 36px;
         bottom: 0;
         width: 2px;
-        background: var(--ka-border, #d9d3c6);
+        background: var(--admin-border, #dce2e7);
       }
 
       .timeline-icon {
@@ -243,8 +237,8 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: rgba(31, 53, 87, 0.08);
-        color: var(--ka-navy, #1f3557);
+        background: var(--admin-surface-alt, #eef1f4);
+        color: var(--admin-primary, #263541);
         flex-shrink: 0;
       }
 
@@ -255,13 +249,13 @@
         .timeline-title {
           font-size: 0.875rem;
           font-weight: 600;
-          color: var(--ka-text, #1e2430);
+          color: var(--admin-text-primary, #25313b);
           margin: 0;
         }
 
         .timeline-time {
           font-size: 0.75rem;
-          color: var(--ka-text-muted, #8a887f);
+          color: var(--admin-text-muted, #84909a);
           margin-top: 0.2rem;
         }
       }

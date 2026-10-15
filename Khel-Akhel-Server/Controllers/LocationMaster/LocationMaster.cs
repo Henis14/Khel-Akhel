@@ -21,7 +21,7 @@ namespace Khel_Akhel_Server.Controllers.LocationMaster
             _db = db;
         }
 
-        #region 1. Get Active Countries [GET /api/location/countries]
+        #region Get Countries API
         [HttpGet("countries")]
         public IActionResult GetCountries()
         {
@@ -84,7 +84,7 @@ namespace Khel_Akhel_Server.Controllers.LocationMaster
         }
         #endregion
 
-        #region 2. Get States By Country [GET /api/location/states?countryId=1]
+        #region Get States API
         [HttpGet("states")]
         public IActionResult GetStates([FromQuery] long countryId)
         {
@@ -96,6 +96,7 @@ namespace Khel_Akhel_Server.Controllers.LocationMaster
                 if (countryId <= 0)
                 {
                     sw.Stop();
+                    Logs.Warning($"GetStates rejected | Invalid countryId:{countryId}");
                     return BadRequest(
                         new ApiResponse
                         {
@@ -166,13 +167,16 @@ namespace Khel_Akhel_Server.Controllers.LocationMaster
         }
         #endregion
 
-        #region 3. Get Country By ID [GET /api/location/countries/{id}]
+        #region Get Country By Id API
         [HttpGet("countries/{id:long}")]
         public IActionResult GetCountryById([FromRoute] long id)
         {
+            Logs.Info($"GetCountryById API started | Id:{id}");
             try
             {
                 if (id <= 0)
+                {
+                    Logs.Warning($"GetCountryById rejected | Invalid Id:{id}");
                     return BadRequest(
                         new ApiResponse
                         {
@@ -181,6 +185,7 @@ namespace Khel_Akhel_Server.Controllers.LocationMaster
                             Message = "INVALID_ID",
                         }
                     );
+                }
 
                 string query =
                     @"
@@ -192,6 +197,7 @@ namespace Khel_Akhel_Server.Controllers.LocationMaster
 
                 if (dt.Rows.Count == 0)
                 {
+                    Logs.Warning($"GetCountryById failed | Country not found | Id:{id}");
                     return NotFound(
                         new ApiResponse
                         {
@@ -211,6 +217,7 @@ namespace Khel_Akhel_Server.Controllers.LocationMaster
                     PhoneCode = Convert.ToString(row["PhoneCode"]) ?? string.Empty,
                 };
 
+                Logs.Info($"GetCountryById completed successfully | Id:{id}");
                 return Ok(
                     new ApiResponse
                     {
@@ -237,13 +244,16 @@ namespace Khel_Akhel_Server.Controllers.LocationMaster
         }
         #endregion
 
-        #region 4. Get State By ID [GET /api/location/states/{id}]
+        #region Get State By Id API
         [HttpGet("states/{id:long}")]
         public IActionResult GetStateById([FromRoute] long id)
         {
+            Logs.Info($"GetStateById API started | Id:{id}");
             try
             {
                 if (id <= 0)
+                {
+                    Logs.Warning($"GetStateById rejected | Invalid Id:{id}");
                     return BadRequest(
                         new ApiResponse
                         {
@@ -252,6 +262,7 @@ namespace Khel_Akhel_Server.Controllers.LocationMaster
                             Message = "INVALID_ID",
                         }
                     );
+                }
 
                 string query =
                     @"
@@ -263,6 +274,7 @@ namespace Khel_Akhel_Server.Controllers.LocationMaster
 
                 if (dt.Rows.Count == 0)
                 {
+                    Logs.Warning($"GetStateById failed | State not found | Id:{id}");
                     return NotFound(
                         new ApiResponse
                         {
@@ -282,6 +294,7 @@ namespace Khel_Akhel_Server.Controllers.LocationMaster
                     StateCode = Convert.ToString(row["StateCode"]) ?? string.Empty,
                 };
 
+                Logs.Info($"GetStateById completed successfully | Id:{id}");
                 return Ok(
                     new ApiResponse
                     {

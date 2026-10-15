@@ -1,0 +1,181 @@
+<div class="projects-page-container">
+  <!-- 1. Hero / Portfolio Introduction Section -->
+  <section class="projects-hero-section">
+    <div class="hero-inner">
+      <span class="studio-label">DARAS &bull; Khel-Akhel Studio</span>
+      <h1 class="hero-portfolio-title">Projects &amp; Creative Practice</h1>
+      <p class="hero-portfolio-subtitle">
+        Spatial interventions, collaborative installations, festival scenography, visual arts, and bespoke design commissions.
+      </p>
+
+      <div class="hero-narrative">
+        <p>
+          Each project represents an encounter between material, intuition, and atmosphere. Explore our recent exhibitions, spatial experiments, and public cultural installations below.
+        </p>
+      </div>
+
+      <div class="hero-action-links">
+        <a routerLink="/about" class="hero-link-btn secondary">
+          <span>Read Studio Philosophy</span>
+        </a>
+        <a routerLink="/shop" class="hero-link-btn primary">
+          <span>Explore Shop</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Loading State -->
+  @if (loading) {
+    <div class="public-loading-box">
+      <app-loader></app-loader>
+      <p>Gathering project archives and exhibition portfolios...</p>
+    </div>
+  }
+
+  <!-- 3. Error State -->
+  @if (!loading && errorMessage) {
+    <div class="public-error-box">
+      <div class="error-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </div>
+      <h3>Project Archives Currently Unavailable</h3>
+      <p>{{ errorMessage }}</p>
+      <button type="button" class="retry-btn" (click)="loadPublicProjects()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <polyline points="1 20 1 14 7 14"></polyline>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+        <span>Reload Projects</span>
+      </button>
+    </div>
+  }
+
+  <!-- 4. Dynamic Project & Exhibition Sections -->
+  @if (!loading && !errorMessage && sections.length > 0) {
+    <section class="dynamic-sections-container">
+      @for (sec of sections; track sec.encryptedProjectId; let idx = $index) {
+        <article class="portfolio-section" [id]="'project-' + (idx + 1)">
+          <!-- Section Header -->
+          <header class="section-header">
+            <div class="meta-eyebrow">
+              @if (sec.contentType) {
+                <span class="discipline-name">{{ sec.contentType }}</span>
+              }
+              @if (sec.displayYear) {
+                <span class="bullet">&bull;</span>
+                <span class="meta-year">{{ sec.displayYear }}</span>
+              }
+              @if (sec.location) {
+                <span class="bullet">&bull;</span>
+                <span class="meta-location">{{ sec.location }}</span>
+              }
+            </div>
+
+            <h2 class="section-heading">{{ sec.heading }}</h2>
+
+            @if (sec.subheading) {
+              <p class="section-subheading">{{ sec.subheading }}</p>
+            }
+
+            @if (sec.projectOrEventTitle) {
+              <div class="project-title-badge">
+                <span class="label">Project:</span>
+                <span class="value">{{ sec.projectOrEventTitle }}</span>
+              </div>
+            }
+          </header>
+
+          <!-- Section Visual Image Gallery -->
+          @if (sec.images && sec.images.length > 0) {
+            <div class="section-gallery-container">
+              <app-gallery-renderer
+                [images]="getSectionImages(sec)"
+                [layoutType]="sec.layoutType"
+                [interactive]="true"
+                [sectionTitle]="sec.heading"
+              ></app-gallery-renderer>
+            </div>
+          }
+
+          <!-- Narrative Body -->
+          @if (sec.shortDescription || sec.detailedDescription) {
+            <div class="section-narrative-container">
+              @if (sec.shortDescription) {
+                <p class="lead-summary">{{ sec.shortDescription }}</p>
+              }
+              @if (sec.detailedDescription) {
+                <div class="detailed-body">{{ sec.detailedDescription }}</div>
+              }
+            </div>
+          }
+
+          <!-- Section Footer: Credits & External Links -->
+          @if (hasVisibleCredits(sec.credits) || isValidExternalUrl(sec.externalUrl)) {
+            <footer class="section-footer">
+              @if (hasVisibleCredits(sec.credits)) {
+                <div class="credits-box">
+                  <span class="credits-label">Credits:</span>
+                  <span class="credits-text">{{ sec.credits }}</span>
+                </div>
+              }
+
+              @if (isValidExternalUrl(sec.externalUrl)) {
+                <div class="external-link-box">
+                  <a [href]="sec.externalUrl" target="_blank" rel="noopener noreferrer" class="project-external-link">
+                    <span>Explore Project Documentation</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                      <polyline points="15 3 21 3 21 9"></polyline>
+                      <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
+                  </a>
+                </div>
+              }
+            </footer>
+          }
+
+          <div class="section-divider"></div>
+        </article>
+      }
+    </section>
+  }
+
+  <!-- 5. Empty State -->
+  @if (!loading && !errorMessage && sections.length === 0) {
+    <div class="public-empty-box">
+      <h3>Studio Archives Updating</h3>
+      <p>Our project archives and exhibition portfolio entries are currently being curated. Check back soon for new installations.</p>
+      <a routerLink="/shop" class="hero-link-btn primary">Explore Studio Shop</a>
+    </div>
+  }
+
+  <!-- 6. Commission & Engagement Callout -->
+  <section class="projects-cta-section">
+    <div class="cta-card">
+      <div class="cta-content">
+        <h2 class="cta-heading">Commission a Custom Work or Installation</h2>
+        <p class="cta-text">
+          Whether designing an immersive festival scenography, a site-specific mural, or bespoke collectible objects, we welcome creative partnerships.
+        </p>
+        <div class="cta-actions">
+          <a routerLink="/contact" class="btn btn-primary">
+            <span>Initiate a Commission</span>
+          </a>
+          <a routerLink="/about" class="btn btn-outline">
+            <span>About Khel-Akhel</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

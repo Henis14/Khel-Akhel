@@ -59,7 +59,7 @@ namespace Khel_Akhel_Server.Controllers.Product
         }
         #endregion
 
-        #region 1. Upload Product Images
+        #region Upload Product Image API
         [Authorize(Roles = "Admin")]
         [HttpPost("upload")]
         public async Task<IActionResult> UploadProductImages(
@@ -355,7 +355,7 @@ namespace Khel_Akhel_Server.Controllers.Product
         }
         #endregion
 
-        #region 2. Get Product Images
+        #region Get Product Images API
         [HttpGet("{encryptedProductId}")]
         public async Task<IActionResult> GetProductImages(string encryptedProductId)
         {
@@ -363,6 +363,9 @@ namespace Khel_Akhel_Server.Controllers.Product
 
             if (!_encryption.TryDecrypt(encryptedProductId, out long productId) || productId <= 0)
             {
+                Logs.Warning(
+                    $"GetProductImages rejected | Reason: Invalid EncryptedProductId: {encryptedProductId}"
+                );
                 return BadRequest(
                     new ApiResponse
                     {
@@ -374,47 +377,71 @@ namespace Khel_Akhel_Server.Controllers.Product
                 );
             }
 
-            string sql =
-                @"
-                SELECT ID, product_id, ImagePath, DisplayOrder, IsDefault, IsActive, CreatedDate
-                FROM drs_product_image_mst
-                WHERE product_id = @ProductId AND IsDeleted = 0
-                ORDER BY IsDefault DESC, DisplayOrder ASC, ID ASC;";
-
-            var p = new SqlParameter[] { new SqlParameter("@ProductId", productId) };
-            DataTable dt = await _db.ExecuteQueryAsync(sql, p);
-
-            var images = new List<ProductImageResponse>();
-            foreach (DataRow row in dt.Rows)
+            try
             {
-                long imageId = Convert.ToInt64(row["ID"]);
-                images.Add(
-                    new ProductImageResponse
+                string sql =
+                    @"
+                    SELECT ID, product_id, ImagePath, DisplayOrder, IsDefault, IsActive, CreatedDate
+                    FROM drs_product_image_mst
+                    WHERE product_id = @ProductId AND IsDeleted = 0
+                    ORDER BY IsDefault DESC, DisplayOrder ASC, ID ASC;";
+
+                var p = new SqlParameter[] { new SqlParameter("@ProductId", productId) };
+                DataTable dt = await _db.ExecuteQueryAsync(sql, p);
+
+                var images = new List<ProductImageResponse>();
+                foreach (DataRow row in dt.Rows)
+                {
+                    long imageId = Convert.ToInt64(row["ID"]);
+                    images.Add(
+                        new ProductImageResponse
+                        {
+                            EncryptedImageId = _encryption.Encrypt(imageId),
+                            EncryptedProductId = encryptedProductId,
+                            ImagePath = Convert.ToString(row["ImagePath"]) ?? string.Empty,
+                            DisplayOrder = Convert.ToInt32(row["DisplayOrder"]),
+                            IsDefault = Convert.ToBoolean(row["IsDefault"]),
+                            IsActive = Convert.ToBoolean(row["IsActive"]),
+                            CreatedDate = DateTimeFormat.Format(row["CreatedDate"] as DateTime?),
+                        }
+                    );
+                }
+
+                Logs.Info(
+                    $"GetProductImages completed successfully | ProductId: {productId} | ImagesCount: {images.Count}"
+                );
+
+                return Ok(
+                    new ApiResponse
                     {
-                        EncryptedImageId = _encryption.Encrypt(imageId),
-                        EncryptedProductId = encryptedProductId,
-                        ImagePath = Convert.ToString(row["ImagePath"]) ?? string.Empty,
-                        DisplayOrder = Convert.ToInt32(row["DisplayOrder"]),
-                        IsDefault = Convert.ToBoolean(row["IsDefault"]),
-                        IsActive = Convert.ToBoolean(row["IsActive"]),
-                        CreatedDate = DateTimeFormat.Format(row["CreatedDate"] as DateTime?),
+                        Success = true,
+                        StatusCode = 200,
+                        Message = "PRODUCT_IMAGES_RETRIEVED",
+                        Data = images,
                     }
                 );
             }
-
-            return Ok(
-                new ApiResponse
-                {
-                    Success = true,
-                    StatusCode = 200,
-                    Message = "PRODUCT_IMAGES_RETRIEVED",
-                    Data = images,
-                }
-            );
+            catch (Exception ex)
+            {
+                Logs.Error($"GetProductImages failed | Exception: {ex.Message}", ex);
+                return StatusCode(
+                    500,
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 500,
+                        Message = "SERVER_ERROR",
+                        Errors = new List<string>
+                        {
+                            "An internal server error occurred while retrieving product images.",
+                        },
+                    }
+                );
+            }
         }
         #endregion
 
-        #region 3. Set Default Image
+        #region Set Default Product Image API
         [Authorize(Roles = "Admin")]
         [HttpPatch("set-default")]
         public async Task<IActionResult> SetDefaultImage([FromBody] SetDefaultImageRequest? request)
@@ -423,6 +450,9 @@ namespace Khel_Akhel_Server.Controllers.Product
 
             if (request == null || string.IsNullOrWhiteSpace(request.EncryptedImageId))
             {
+                Logs.Warning(
+                    "SetDefaultImage rejected | Reason: Missing request or EncryptedImageId"
+                );
                 return BadRequest(
                     new ApiResponse
                     {
@@ -436,6 +466,9 @@ namespace Khel_Akhel_Server.Controllers.Product
 
             if (!_encryption.TryDecrypt(request.EncryptedImageId, out long imageId) || imageId <= 0)
             {
+                Logs.Warning(
+                    $"SetDefaultImage rejected | Reason: Invalid EncryptedImageId: {request.EncryptedImageId}"
+                );
                 return BadRequest(
                     new ApiResponse
                     {
@@ -447,83 +480,91 @@ namespace Khel_Akhel_Server.Controllers.Product
                 );
             }
 
-            using SqlConnection conn = await _db.GetOpenConnectionAsync();
-
-            string findImgSql =
-                "SELECT product_id FROM drs_product_image_mst WHERE ID = @ImageId AND IsDeleted = 0;";
-            using SqlCommand findCmd = new SqlCommand(findImgSql, conn);
-            findCmd.Parameters.AddWithValue("@ImageId", imageId);
-            object? productIdObj = await findCmd.ExecuteScalarAsync();
-
-            if (productIdObj == null || productIdObj == DBNull.Value)
-            {
-                return NotFound(
-                    new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 404,
-                        Message = "PRODUCT_IMAGE_NOT_FOUND",
-                        Errors = new List<string>
-                        {
-                            "Product image record not found or has been deleted.",
-                        },
-                    }
-                );
-            }
-
-            long productId = Convert.ToInt64(productIdObj);
-
-            using SqlTransaction tran = conn.BeginTransaction();
             try
             {
-                string resetDefaultSql =
-                    "UPDATE drs_product_image_mst SET IsDefault = 0, ModifiedDate = GETDATE() WHERE product_id = @ProductId AND IsDeleted = 0;";
-                using SqlCommand resetCmd = new SqlCommand(resetDefaultSql, conn, tran);
-                resetCmd.Parameters.AddWithValue("@ProductId", productId);
-                await resetCmd.ExecuteNonQueryAsync();
+                using SqlConnection conn = await _db.GetOpenConnectionAsync();
 
-                string setDefaultSql =
-                    "UPDATE drs_product_image_mst SET IsDefault = 1, ModifiedDate = GETDATE() WHERE ID = @ImageId AND IsDeleted = 0;";
-                using SqlCommand setCmd = new SqlCommand(setDefaultSql, conn, tran);
-                setCmd.Parameters.AddWithValue("@ImageId", imageId);
-                await setCmd.ExecuteNonQueryAsync();
+                string findImgSql =
+                    "SELECT product_id FROM drs_product_image_mst WHERE ID = @ImageId AND IsDeleted = 0;";
+                using SqlCommand findCmd = new SqlCommand(findImgSql, conn);
+                findCmd.Parameters.AddWithValue("@ImageId", imageId);
+                object? productIdObj = await findCmd.ExecuteScalarAsync();
 
-                await tran.CommitAsync();
-
-                long adminUserId = GetAuthenticatedUserId();
-                await _audit.InsertAuditAsync(
-                    adminUserId,
-                    "ProductImage",
-                    "SetDefault",
-                    "drs_product_image_mst",
-                    imageId,
-                    null,
-                    $"Set ImageId: {imageId} as default for ProductId: {productId}",
-                    GetClientIpAddress(),
-                    GetUserAgent()
-                );
-
-                Logs.Info(
-                    $"SetDefaultImage completed successfully | ImageId: {imageId} | ProductId: {productId}"
-                );
-
-                return Ok(
-                    new ApiResponse
-                    {
-                        Success = true,
-                        StatusCode = 200,
-                        Message = "PRODUCT_IMAGE_SET_DEFAULT",
-                        Data = new
+                if (productIdObj == null || productIdObj == DBNull.Value)
+                {
+                    Logs.Warning($"SetDefaultImage failed | Reason: Image not found: {imageId}");
+                    return NotFound(
+                        new ApiResponse
                         {
-                            EncryptedImageId = request.EncryptedImageId,
-                            EncryptedProductId = _encryption.Encrypt(productId),
-                        },
-                    }
-                );
+                            Success = false,
+                            StatusCode = 404,
+                            Message = "PRODUCT_IMAGE_NOT_FOUND",
+                            Errors = new List<string>
+                            {
+                                "Product image record not found or has been deleted.",
+                            },
+                        }
+                    );
+                }
+
+                long productId = Convert.ToInt64(productIdObj);
+
+                using SqlTransaction tran = conn.BeginTransaction();
+                try
+                {
+                    string resetDefaultSql =
+                        "UPDATE drs_product_image_mst SET IsDefault = 0, ModifiedDate = GETDATE() WHERE product_id = @ProductId AND IsDeleted = 0;";
+                    using SqlCommand resetCmd = new SqlCommand(resetDefaultSql, conn, tran);
+                    resetCmd.Parameters.AddWithValue("@ProductId", productId);
+                    await resetCmd.ExecuteNonQueryAsync();
+
+                    string setDefaultSql =
+                        "UPDATE drs_product_image_mst SET IsDefault = 1, ModifiedDate = GETDATE() WHERE ID = @ImageId AND IsDeleted = 0;";
+                    using SqlCommand setCmd = new SqlCommand(setDefaultSql, conn, tran);
+                    setCmd.Parameters.AddWithValue("@ImageId", imageId);
+                    await setCmd.ExecuteNonQueryAsync();
+
+                    await tran.CommitAsync();
+
+                    long adminUserId = GetAuthenticatedUserId();
+                    await _audit.InsertAuditAsync(
+                        adminUserId,
+                        "ProductImage",
+                        "SetDefault",
+                        "drs_product_image_mst",
+                        imageId,
+                        null,
+                        $"Set ImageId: {imageId} as default for ProductId: {productId}",
+                        GetClientIpAddress(),
+                        GetUserAgent()
+                    );
+
+                    Logs.Info(
+                        $"SetDefaultImage completed successfully | ImageId: {imageId} | ProductId: {productId}"
+                    );
+
+                    return Ok(
+                        new ApiResponse
+                        {
+                            Success = true,
+                            StatusCode = 200,
+                            Message = "PRODUCT_IMAGE_SET_DEFAULT",
+                            Data = new
+                            {
+                                EncryptedImageId = request.EncryptedImageId,
+                                EncryptedProductId = _encryption.Encrypt(productId),
+                            },
+                        }
+                    );
+                }
+                catch
+                {
+                    await tran.RollbackAsync();
+                    throw;
+                }
             }
             catch (Exception ex)
             {
-                await tran.RollbackAsync();
                 Logs.Error($"SetDefaultImage failed | Exception: {ex.Message}", ex);
                 return StatusCode(
                     500,
@@ -539,7 +580,7 @@ namespace Khel_Akhel_Server.Controllers.Product
         }
         #endregion
 
-        #region 4. Delete Product Image
+        #region Delete Product Image API
         [Authorize(Roles = "Admin")]
         [HttpDelete("{encryptedImageId}")]
         public async Task<IActionResult> DeleteProductImage(string encryptedImageId)
@@ -548,6 +589,9 @@ namespace Khel_Akhel_Server.Controllers.Product
 
             if (!_encryption.TryDecrypt(encryptedImageId, out long imageId) || imageId <= 0)
             {
+                Logs.Warning(
+                    $"DeleteProductImage rejected | Reason: Invalid EncryptedImageId: {encryptedImageId}"
+                );
                 return BadRequest(
                     new ApiResponse
                     {
@@ -559,153 +603,166 @@ namespace Khel_Akhel_Server.Controllers.Product
                 );
             }
 
-            using SqlConnection conn = await _db.GetOpenConnectionAsync();
-
-            string findImgSql =
-                "SELECT product_id, ImagePath, IsDefault FROM drs_product_image_mst WHERE ID = @ImageId AND IsDeleted = 0;";
-            using SqlCommand findCmd = new SqlCommand(findImgSql, conn);
-            findCmd.Parameters.AddWithValue("@ImageId", imageId);
-
-            long productId = 0;
-            string imagePath = string.Empty;
-            bool wasDefault = false;
-
-            using (SqlDataReader reader = await findCmd.ExecuteReaderAsync())
-            {
-                if (await reader.ReadAsync())
-                {
-                    productId = reader.GetInt64(0);
-                    imagePath = reader.GetString(1);
-                    wasDefault = reader.GetBoolean(2);
-                }
-                else
-                {
-                    return NotFound(
-                        new ApiResponse
-                        {
-                            Success = false,
-                            StatusCode = 404,
-                            Message = "PRODUCT_IMAGE_NOT_FOUND",
-                            Errors = new List<string>
-                            {
-                                "Image record not found or already deleted.",
-                            },
-                        }
-                    );
-                }
-            }
-
-            string countSql =
-                "SELECT COUNT(1) FROM drs_product_image_mst WHERE product_id = @ProductId AND IsDeleted = 0;";
-            using SqlCommand countCmd = new SqlCommand(countSql, conn);
-            countCmd.Parameters.AddWithValue("@ProductId", productId);
-            int currentCount = Convert.ToInt32(await countCmd.ExecuteScalarAsync());
-
-            if (currentCount <= MinImagesPerProduct)
-            {
-                return BadRequest(
-                    new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 400,
-                        Message = "MINIMUM_PRODUCT_IMAGES_REQUIRED",
-                        Errors = new List<string>
-                        {
-                            $"Minimum {MinImagesPerProduct} images are required for a product. Deleting an image is not allowed unless another image is added.",
-                        },
-                    }
-                );
-            }
-
-            using SqlTransaction tran = conn.BeginTransaction();
             try
             {
-                // Soft delete current image
-                string deleteSql =
-                    "UPDATE drs_product_image_mst SET IsDeleted = 1, ModifiedDate = GETDATE() WHERE ID = @ImageId;";
-                using SqlCommand deleteCmd = new SqlCommand(deleteSql, conn, tran);
-                deleteCmd.Parameters.AddWithValue("@ImageId", imageId);
-                await deleteCmd.ExecuteNonQueryAsync();
+                using SqlConnection conn = await _db.GetOpenConnectionAsync();
 
-                // If deleted image was default, promote next active image
-                if (wasDefault)
+                string findImgSql =
+                    "SELECT product_id, ImagePath, IsDefault FROM drs_product_image_mst WHERE ID = @ImageId AND IsDeleted = 0;";
+                using SqlCommand findCmd = new SqlCommand(findImgSql, conn);
+                findCmd.Parameters.AddWithValue("@ImageId", imageId);
+
+                long productId = 0;
+                string imagePath = string.Empty;
+                bool wasDefault = false;
+
+                using (SqlDataReader reader = await findCmd.ExecuteReaderAsync())
                 {
-                    string promoteSql =
-                        @"
-                        UPDATE drs_product_image_mst 
-                        SET IsDefault = 1, ModifiedDate = GETDATE() 
-                        WHERE ID = (
-                            SELECT TOP 1 ID 
-                            FROM drs_product_image_mst 
-                            WHERE product_id = @ProductId AND IsDeleted = 0 
-                            ORDER BY DisplayOrder ASC, ID ASC
-                        );";
-                    using SqlCommand promoteCmd = new SqlCommand(promoteSql, conn, tran);
-                    promoteCmd.Parameters.AddWithValue("@ProductId", productId);
-                    await promoteCmd.ExecuteNonQueryAsync();
-                }
-
-                await tran.CommitAsync();
-
-                // Remove physical file from disk
-                if (!string.IsNullOrWhiteSpace(imagePath))
-                {
-                    string relativePath = imagePath.TrimStart('/', '\\');
-                    string physicalPath = Path.Combine(
-                        _env.WebRootPath
-                            ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"),
-                        relativePath
-                    );
-                    try
+                    if (await reader.ReadAsync())
                     {
-                        if (System.IO.File.Exists(physicalPath))
-                        {
-                            System.IO.File.Delete(physicalPath);
-                        }
+                        productId = reader.GetInt64(0);
+                        imagePath = reader.GetString(1);
+                        wasDefault = reader.GetBoolean(2);
                     }
-                    catch (Exception fileEx)
+                    else
                     {
-                        Logs.Error(
-                            $"Failed to delete physical file '{physicalPath}' during image deletion",
-                            fileEx
+                        Logs.Warning(
+                            $"DeleteProductImage failed | Reason: Image not found: {imageId}"
+                        );
+                        return NotFound(
+                            new ApiResponse
+                            {
+                                Success = false,
+                                StatusCode = 404,
+                                Message = "PRODUCT_IMAGE_NOT_FOUND",
+                                Errors = new List<string>
+                                {
+                                    "Image record not found or already deleted.",
+                                },
+                            }
                         );
                     }
                 }
 
-                long adminUserId = GetAuthenticatedUserId();
-                await _audit.InsertAuditAsync(
-                    adminUserId,
-                    "ProductImage",
-                    "Delete",
-                    "drs_product_image_mst",
-                    imageId,
-                    null,
-                    $"Deleted image ID: {imageId} for ProductId: {productId}",
-                    GetClientIpAddress(),
-                    GetUserAgent()
-                );
+                string countSql =
+                    "SELECT COUNT(1) FROM drs_product_image_mst WHERE product_id = @ProductId AND IsDeleted = 0;";
+                using SqlCommand countCmd = new SqlCommand(countSql, conn);
+                countCmd.Parameters.AddWithValue("@ProductId", productId);
+                int currentCount = Convert.ToInt32(await countCmd.ExecuteScalarAsync());
 
-                Logs.Info(
-                    $"DeleteProductImage completed successfully | ImageId: {imageId} | ProductId: {productId}"
-                );
-
-                return Ok(
-                    new ApiResponse
-                    {
-                        Success = true,
-                        StatusCode = 200,
-                        Message = "PRODUCT_IMAGE_DELETED",
-                        Data = new
+                if (currentCount <= MinImagesPerProduct)
+                {
+                    Logs.Warning(
+                        $"DeleteProductImage rejected | Reason: Minimum {MinImagesPerProduct} images required | ProductId: {productId} | CurrentCount: {currentCount}"
+                    );
+                    return BadRequest(
+                        new ApiResponse
                         {
-                            EncryptedImageId = encryptedImageId,
-                            EncryptedProductId = _encryption.Encrypt(productId),
-                        },
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "MINIMUM_PRODUCT_IMAGES_REQUIRED",
+                            Errors = new List<string>
+                            {
+                                $"Minimum {MinImagesPerProduct} images are required for a product. Deleting an image is not allowed unless another image is added.",
+                            },
+                        }
+                    );
+                }
+
+                using SqlTransaction tran = conn.BeginTransaction();
+                try
+                {
+                    // Soft delete current image
+                    string deleteSql =
+                        "UPDATE drs_product_image_mst SET IsDeleted = 1, ModifiedDate = GETDATE() WHERE ID = @ImageId;";
+                    using SqlCommand deleteCmd = new SqlCommand(deleteSql, conn, tran);
+                    deleteCmd.Parameters.AddWithValue("@ImageId", imageId);
+                    await deleteCmd.ExecuteNonQueryAsync();
+
+                    // If deleted image was default, promote next active image
+                    if (wasDefault)
+                    {
+                        string promoteSql =
+                            @"
+                            UPDATE drs_product_image_mst 
+                            SET IsDefault = 1, ModifiedDate = GETDATE() 
+                            WHERE ID = (
+                                SELECT TOP 1 ID 
+                                FROM drs_product_image_mst 
+                                WHERE product_id = @ProductId AND IsDeleted = 0 
+                                ORDER BY DisplayOrder ASC, ID ASC
+                            );";
+                        using SqlCommand promoteCmd = new SqlCommand(promoteSql, conn, tran);
+                        promoteCmd.Parameters.AddWithValue("@ProductId", productId);
+                        await promoteCmd.ExecuteNonQueryAsync();
                     }
-                );
+
+                    await tran.CommitAsync();
+
+                    // Remove physical file from disk
+                    if (!string.IsNullOrWhiteSpace(imagePath))
+                    {
+                        string relativePath = imagePath.TrimStart('/', '\\');
+                        string physicalPath = Path.Combine(
+                            _env.WebRootPath
+                                ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"),
+                            relativePath
+                        );
+                        try
+                        {
+                            if (System.IO.File.Exists(physicalPath))
+                            {
+                                System.IO.File.Delete(physicalPath);
+                            }
+                        }
+                        catch (Exception fileEx)
+                        {
+                            Logs.Error(
+                                $"Failed to delete physical file '{physicalPath}' during image deletion",
+                                fileEx
+                            );
+                        }
+                    }
+
+                    long adminUserId = GetAuthenticatedUserId();
+                    await _audit.InsertAuditAsync(
+                        adminUserId,
+                        "ProductImage",
+                        "Delete",
+                        "drs_product_image_mst",
+                        imageId,
+                        null,
+                        $"Deleted image ID: {imageId} for ProductId: {productId}",
+                        GetClientIpAddress(),
+                        GetUserAgent()
+                    );
+
+                    Logs.Info(
+                        $"DeleteProductImage completed successfully | ImageId: {imageId} | ProductId: {productId}"
+                    );
+
+                    return Ok(
+                        new ApiResponse
+                        {
+                            Success = true,
+                            StatusCode = 200,
+                            Message = "PRODUCT_IMAGE_DELETED",
+                            Data = new
+                            {
+                                EncryptedImageId = encryptedImageId,
+                                EncryptedProductId = _encryption.Encrypt(productId),
+                            },
+                        }
+                    );
+                }
+                catch
+                {
+                    await tran.RollbackAsync();
+                    throw;
+                }
             }
             catch (Exception ex)
             {
-                await tran.RollbackAsync();
                 Logs.Error($"DeleteProductImage failed | Exception: {ex.Message}", ex);
                 return StatusCode(
                     500,

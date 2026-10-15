@@ -5,12 +5,13 @@ import {
   EventEmitter,
   OnInit,
   OnChanges,
+  OnDestroy,
   SimpleChanges,
   inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AboutImage, AboutImageOrderDto } from '../../../models/about.model';
-import { AdminAboutService } from '../../../services/admin-about.service';
+import { ProjectImage, ProjectImageOrderDto } from '../../../models/project.model';
+import { AdminProjectService } from '../../../services/admin-project.service';
 
 export interface EditorImageItem {
   id: string;
@@ -30,15 +31,15 @@ export interface EditorImageItem {
   templateUrl: './image-gallery-editor.html',
   styleUrl: './image-gallery-editor.scss',
 })
-export class ImageGalleryEditorComponent implements OnInit, OnChanges {
-  private aboutService = inject(AdminAboutService);
+export class ImageGalleryEditorComponent implements OnInit, OnChanges, OnDestroy {
+  private projectService = inject(AdminProjectService);
 
-  @Input() existingImages: AboutImage[] = [];
+  @Input() existingImages: ProjectImage[] = [];
   @Output() imagesChanged = new EventEmitter<{
     allImages: EditorImageItem[];
     newFiles: File[];
     removeImageIds: string[];
-    imageOrders: AboutImageOrderDto[];
+    imageOrders: ProjectImageOrderDto[];
   }>();
 
   readonly maxImages = 15;
@@ -51,6 +52,7 @@ export class ImageGalleryEditorComponent implements OnInit, OnChanges {
   draggedIndex: number | null = null;
   dragOverIndex: number | null = null;
   errorMessage: string | null = null;
+  private isDestroyed = false;
 
   ngOnInit(): void {
     this.syncExistingImages();
@@ -59,6 +61,15 @@ export class ImageGalleryEditorComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['existingImages'] && !changes['existingImages'].firstChange) {
       this.syncExistingImages();
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.isDestroyed = true;
+    for (const item of this.items) {
+      if (item.previewUrl && item.previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(item.previewUrl);
+      }
     }
   }
 
@@ -72,7 +83,7 @@ export class ImageGalleryEditorComponent implements OnInit, OnChanges {
       id: img.encryptedImageId || `existing-${idx}`,
       isExisting: true,
       encryptedImageId: img.encryptedImageId,
-      previewUrl: this.aboutService.getImageUrl(img.imageUrl || img.imagePath),
+      previewUrl: this.projectService.getImageUrl(img.imageUrl || img.imagePath),
       fileName: img.originalFileName || `Image ${idx + 1}`,
       fileSize: img.fileSize || 0,
       displayOrder: img.displayOrder || idx + 1,
@@ -240,18 +251,22 @@ export class ImageGalleryEditorComponent implements OnInit, OnChanges {
 
     const newFiles = this.items.filter((it) => !it.isExisting && it.file).map((it) => it.file!);
 
-    const imageOrders: AboutImageOrderDto[] = this.items
+    const imageOrders: ProjectImageOrderDto[] = this.items
       .filter((it) => it.isExisting && it.encryptedImageId)
       .map((it) => ({
         encryptedImageId: it.encryptedImageId!,
         displayOrder: it.displayOrder,
       }));
 
-    this.imagesChanged.emit({
-      allImages: [...this.items],
-      newFiles,
-      removeImageIds: [...this.removedImageIds],
-      imageOrders,
+    queueMicrotask(() => {
+      if (!this.isDestroyed) {
+        this.imagesChanged.emit({
+          allImages: [...this.items],
+          newFiles,
+          removeImageIds: [...this.removedImageIds],
+          imageOrders,
+        });
+      }
     });
   }
 

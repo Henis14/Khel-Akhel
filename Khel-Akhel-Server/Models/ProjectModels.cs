@@ -2,11 +2,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Khel_Akhel_Server.Models
 {
-    #region About Image Models
-    public class AboutImageDto
+    #region Project Image Models
+    public class ProjectImageDto
     {
         public string EncryptedImageId { get; set; } = string.Empty;
-        public string EncryptedAboutId { get; set; } = string.Empty;
+        public string EncryptedProjectId { get; set; } = string.Empty;
         public string OriginalFileName { get; set; } = string.Empty;
         public string StoredFileName { get; set; } = string.Empty;
         public string ImageUrl { get; set; } = string.Empty;
@@ -18,7 +18,7 @@ namespace Khel_Akhel_Server.Models
         public string? CreatedDate { get; set; }
     }
 
-    public class AboutImageOrderDto
+    public class ProjectImageOrderDto
     {
         [Required]
         public string EncryptedImageId { get; set; } = string.Empty;
@@ -27,27 +27,27 @@ namespace Khel_Akhel_Server.Models
         public int DisplayOrder { get; set; }
     }
 
-    public class AboutImageUploadRequest
+    public class ProjectImageUploadRequest
     {
         [Required]
-        public string EncryptedAboutId { get; set; } = string.Empty;
+        public string EncryptedProjectId { get; set; } = string.Empty;
 
         [Required]
         public List<IFormFile> Images { get; set; } = new();
     }
 
-    public class AboutImageReorderRequest
+    public class ProjectImageReorderRequest
     {
         [Required]
-        public string EncryptedAboutId { get; set; } = string.Empty;
+        public string EncryptedProjectId { get; set; } = string.Empty;
 
         [Required]
-        public List<AboutImageOrderDto> ImageOrders { get; set; } = new();
+        public List<ProjectImageOrderDto> ImageOrders { get; set; } = new();
     }
     #endregion
 
-    #region About Request Models
-    public class AboutCreateRequest
+    #region Project Request Models
+    public class ProjectCreateRequest
     {
         [Required, StringLength(200, MinimumLength = 2)]
         public string Heading { get; set; } = string.Empty;
@@ -91,10 +91,10 @@ namespace Khel_Akhel_Server.Models
         public List<IFormFile>? Images { get; set; }
     }
 
-    public class AboutUpdateRequest
+    public class ProjectUpdateRequest
     {
         [Required]
-        public string EncryptedAboutId { get; set; } = string.Empty;
+        public string EncryptedProjectId { get; set; } = string.Empty;
 
         [Required, StringLength(200, MinimumLength = 2)]
         public string Heading { get; set; } = string.Empty;
@@ -139,18 +139,18 @@ namespace Khel_Akhel_Server.Models
 
         public List<string>? RemoveImageIds { get; set; }
 
-        public List<AboutImageOrderDto>? ImageOrders { get; set; }
+        public List<ProjectImageOrderDto>? ImageOrders { get; set; }
     }
 
-    public class AboutPublishToggleRequest
+    public class ProjectPublishToggleRequest
     {
         [Required]
-        public string EncryptedAboutId { get; set; } = string.Empty;
+        public string EncryptedProjectId { get; set; } = string.Empty;
 
         public bool IsPublished { get; set; }
     }
 
-    public class AboutListRequest
+    public class ProjectListRequest
     {
         public int PageIndex { get; set; } = 1;
         public int PageSize { get; set; } = 10;
@@ -162,10 +162,10 @@ namespace Khel_Akhel_Server.Models
     }
     #endregion
 
-    #region About Response Models
-    public class AboutDetailResponse
+    #region Project Response Models
+    public class ProjectDetailResponse
     {
-        public string EncryptedAboutId { get; set; } = string.Empty;
+        public string EncryptedProjectId { get; set; } = string.Empty;
         public string Heading { get; set; } = string.Empty;
         public string? Subheading { get; set; }
         public string? ContentType { get; set; }
@@ -181,14 +181,14 @@ namespace Khel_Akhel_Server.Models
         public bool IsPublished { get; set; }
         public bool IsActive { get; set; }
         public int ImageCount { get; set; }
-        public List<AboutImageDto> Images { get; set; } = new();
+        public List<ProjectImageDto> Images { get; set; } = new();
         public string? CreatedDate { get; set; }
         public string? ModifiedDate { get; set; }
     }
 
-    public class AboutPublicResponse
+    public class ProjectPublicResponse
     {
-        public string EncryptedAboutId { get; set; } = string.Empty;
+        public string EncryptedProjectId { get; set; } = string.Empty;
         public string Heading { get; set; } = string.Empty;
         public string? Subheading { get; set; }
         public string? ContentType { get; set; }
@@ -201,12 +201,12 @@ namespace Khel_Akhel_Server.Models
         public string? ExternalUrl { get; set; }
         public int DisplayOrder { get; set; }
         public string LayoutType { get; set; } = "grid-3";
-        public List<AboutImageDto> Images { get; set; } = new();
+        public List<ProjectImageDto> Images { get; set; } = new();
     }
 
-    public class AboutListResponse
+    public class ProjectListResponse
     {
-        public List<AboutDetailResponse> Items { get; set; } = new();
+        public List<ProjectDetailResponse> Items { get; set; } = new();
         public int TotalRecords { get; set; }
         public int PageIndex { get; set; }
         public int PageSize { get; set; }
