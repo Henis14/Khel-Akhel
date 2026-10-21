@@ -54,7 +54,7 @@
         #fileInput
         type="file"
         multiple
-        accept="image/jpeg,image/png,image/webp,image/gif"
+        accept=".jpg,.jpeg,.png,image/jpeg,image/png"
         (change)="onFileSelected($event)"
         style="display: none"
       />
@@ -78,7 +78,7 @@
             <span class="highlight">Click to upload</span> or drag and drop artwork images
           </p>
           <p class="secondary-instruction">
-            JPEG, PNG, WEBP, or GIF &bull; Max 5 MB per file &bull; Up to
+            JPG, JPEG, or PNG &bull; Max 5 MB per file &bull; Up to
             {{ maxImages - items.length }} remaining
           </p>
         </div>

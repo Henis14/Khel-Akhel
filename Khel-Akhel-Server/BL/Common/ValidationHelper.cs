@@ -25,6 +25,12 @@ namespace Khel_Akhel_Server.BL.Common
             RegexTimeout
         );
 
+        private static readonly Regex InternationalMobileRegex = new(
+            @"^\+?[0-9\s\-().]{7,20}$",
+            RegexOptions.Compiled,
+            RegexTimeout
+        );
+
         private static readonly Regex PasswordRegex = new(
             @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$",
             RegexOptions.Compiled,
@@ -102,6 +108,29 @@ namespace Khel_Akhel_Server.BL.Common
             try
             {
                 return MobileRegex.IsMatch(mobile.Trim());
+            }
+            catch (RegexMatchTimeoutException)
+            {
+                return false;
+            }
+        }
+
+        public static bool IsValidInternationalMobile(string? mobile)
+        {
+            if (string.IsNullOrWhiteSpace(mobile))
+                return false;
+
+            string trimmed = mobile.Trim();
+            if (trimmed.Length < 7 || trimmed.Length > 20)
+                return false;
+
+            try
+            {
+                if (!InternationalMobileRegex.IsMatch(trimmed))
+                    return false;
+
+                int digitCount = trimmed.Count(char.IsDigit);
+                return digitCount >= 7 && digitCount <= 15;
             }
             catch (RegexMatchTimeoutException)
             {

@@ -79,6 +79,16 @@ builder.Services.AddRateLimiter(options =>
             opt.QueueLimit = 10;
         }
     );
+    options.AddFixedWindowLimiter(
+        "ContactUsPolicy",
+        opt =>
+        {
+            opt.PermitLimit = 10;
+            opt.Window = TimeSpan.FromMinutes(1);
+            opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+            opt.QueueLimit = 2;
+        }
+    );
 });
 
 // Register Application Infrastructure Services
@@ -89,6 +99,8 @@ builder.Services.AddScoped<IUrlSignatureService, UrlSignatureService>();
 builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
 builder.Services.AddSingleton<ICaptchaService, CaptchaService>();
+builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<IWishlistService, WishlistService>();
 
 // Configure JWT Authentication & Options
 string jwtKey =

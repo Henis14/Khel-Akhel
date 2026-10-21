@@ -2,14 +2,25 @@ namespace Khel_Akhel_Server.BL.Common
 {
     public class FileValidationHelper
     {
-        private static readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png", ".webp" };
+        private static readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png" };
 
-        private static readonly string[] AllowedContentTypes =
+        private static readonly string[] AllowedContentTypes = { "image/jpeg", "image/png" };
+
+        // Standard 8-byte PNG file signature: 89 50 4E 47 0D 0A 1A 0A
+        private static readonly byte[] PngHeader =
         {
-            "image/jpeg",
-            "image/png",
-            "image/webp",
+            0x89,
+            0x50,
+            0x4E,
+            0x47,
+            0x0D,
+            0x0A,
+            0x1A,
+            0x0A,
         };
+
+        // WEBP "RIFF" signature header for proactive detection and rejection
+        private static readonly byte[] RiffHeader = { 0x52, 0x49, 0x46, 0x46 }; // "RIFF"
 
         public static async Task<(bool isValid, string errorMessage)> IsValidImageAsync(
             IFormFile file,
@@ -23,9 +34,9 @@ namespace Khel_Akhel_Server.BL.Common
 
             string ext = Path.GetExtension(file.FileName ?? string.Empty).ToLowerInvariant();
 
-            if (!AllowedExtensions.Contains(ext))
+            if (string.IsNullOrEmpty(ext) || !AllowedExtensions.Contains(ext))
             {
-                return (false, "Only JPG, JPEG, PNG, and WEBP files are allowed.");
+                return (false, "Only JPG, JPEG, and PNG files are allowed.");
             }
 
             string contentType = (file.ContentType ?? string.Empty).ToLowerInvariant();
@@ -35,31 +46,82 @@ namespace Khel_Akhel_Server.BL.Common
                 return (false, "Invalid image format.");
             }
 
+            // Cross-validate extension and MIME type
+            if ((ext == ".jpg" || ext == ".jpeg") && contentType != "image/jpeg")
+            {
+                return (false, "Content type does not match file extension.");
+            }
+
+            if (ext == ".png" && contentType != "image/png")
+            {
+                return (false, "Content type does not match file extension.");
+            }
+
             if (file.Length > maxFileSizeBytes)
             {
                 long maxMb = maxFileSizeBytes / (1024 * 1024);
                 return (false, $"Maximum allowed file size is {maxMb} MB per image.");
             }
 
-            byte[] jpg = { 255, 216 };
-            byte[] png = { 137, 80, 78, 71 };
-            byte[] riff = { 82, 73, 70, 70 }; // "RIFF" for WEBP
+            // Read the file header to verify magic bytes
+            byte[] buffer = new byte[16];
+            int bytesRead;
 
-            using var stream = file.OpenReadStream();
-            byte[] buffer = new byte[12];
-            int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
+            using (var stream = file.OpenReadStream())
+            {
+                int totalRead = 0;
+                while (totalRead < buffer.Length)
+                {
+                    int read = await stream.ReadAsync(buffer, totalRead, buffer.Length - totalRead);
+                    if (read == 0)
+                        break;
+                    totalRead += read;
+                }
+                bytesRead = totalRead;
 
-            bool isJpg = bytesRead >= 2 && jpg.SequenceEqual(buffer.Take(2));
-            bool isPng = bytesRead >= 4 && png.SequenceEqual(buffer.Take(4));
+                if (stream.CanSeek)
+                {
+                    stream.Position = 0;
+                }
+            }
+
+            // Proactively detect and reject WEBP files (even if renamed to .jpg or .png)
             bool isWebp =
                 bytesRead >= 12
-                && riff.SequenceEqual(buffer.Take(4))
-                && buffer[8] == 87
-                && buffer[9] == 69
-                && buffer[10] == 66
-                && buffer[11] == 80; // "WEBP"
+                && RiffHeader.SequenceEqual(buffer.Take(4))
+                && buffer[8] == 0x57 // 'W'
+                && buffer[9] == 0x45 // 'E'
+                && buffer[10] == 0x42 // 'B'
+                && buffer[11] == 0x50; // 'P'
 
-            bool validSignature = isJpg || isPng || isWebp;
+            if (isWebp)
+            {
+                return (
+                    false,
+                    "WEBP image format is not allowed. Only JPG, JPEG, and PNG files are allowed."
+                );
+            }
+
+            // Reliable JPEG signature: SOI marker (0xFF, 0xD8) followed by marker prefix (0xFF)
+            // Covers JFIF (0xFF 0xD8 0xFF 0xE0), Exif (0xFF 0xD8 0xFF 0xE1), Adobe (0xFF 0xD8 0xFF 0xEE), etc.
+            bool isJpg =
+                bytesRead >= 3 && buffer[0] == 0xFF && buffer[1] == 0xD8 && buffer[2] == 0xFF;
+
+            // Reliable PNG signature: standard 8-byte signature
+            bool isPng = bytesRead >= 8 && buffer.Take(8).SequenceEqual(PngHeader);
+
+            if ((ext == ".jpg" || ext == ".jpeg") && !isJpg)
+            {
+                return (false, "Invalid file signature or corrupted image file.");
+            }
+
+            if (ext == ".png" && !isPng)
+            {
+                return (false, "Invalid file signature or corrupted image file.");
+            }
+
+            bool validSignature =
+                (isJpg && (ext == ".jpg" || ext == ".jpeg")) || (isPng && ext == ".png");
 
             if (!validSignature)
             {

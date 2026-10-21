@@ -14,6 +14,7 @@ import { BreadcrumbComponent } from '../../../../common/components/breadcrumb/br
 import { BreadcrumbItem } from '../../../../common/models/breadcrumb.model';
 import { AppLoaderComponent } from '../../../../common/components/app-loader/app-loader';
 import { environment } from '../../../../../environments/environment';
+import { validateImageFile } from '../../../../common/utils/file-validation.util';
 
 @Component({
   selector: 'app-product-detail',
@@ -215,6 +216,15 @@ export class ProductDetailComponent implements OnInit {
       return;
     }
 
+    for (const file of filesArray) {
+      const validation = validateImageFile(file, 5 * 1024 * 1024);
+      if (!validation.isValid) {
+        this.errorMessage = validation.errorMessage || 'Invalid image file.';
+        input.value = '';
+        return;
+      }
+    }
+
     this.uploadingNewImages = true;
     this.productImageService.uploadImages(this.encryptedProductId, filesArray).subscribe({
       next: (res) => {
@@ -230,7 +240,12 @@ export class ProductDetailComponent implements OnInit {
       error: (err) => {
         this.uploadingNewImages = false;
         input.value = '';
-        this.errorMessage = err.error?.message || 'Failed to upload images.';
+        const backendErrors = err.error?.errors;
+        if (backendErrors && backendErrors.length > 0) {
+          this.errorMessage = backendErrors.join('; ');
+        } else {
+          this.errorMessage = err.error?.message || 'Failed to upload images.';
+        }
       },
     });
   }

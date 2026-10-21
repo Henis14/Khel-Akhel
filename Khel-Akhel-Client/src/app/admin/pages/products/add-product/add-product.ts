@@ -11,6 +11,7 @@ import { CustomValidators } from '../../../../common/validators/custom.validator
 import { REGEX_PATTERNS } from '../../../../common/constants/regex.constants';
 import { BreadcrumbComponent } from '../../../../common/components/breadcrumb/breadcrumb';
 import { BreadcrumbItem } from '../../../../common/models/breadcrumb.model';
+import { validateImageFile } from '../../../../common/utils/file-validation.util';
 
 interface ImagePreview {
   file: File;
@@ -50,8 +51,8 @@ export class AddProductComponent implements OnInit, OnDestroy {
   readonly minImages = 3;
   readonly maxImages = 7;
   readonly maxFileSizeMB = 5;
-  readonly allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-  readonly allowedExtensions = ['.jpg', '.jpeg', '.png', '.webp'];
+  readonly allowedTypes = ['image/jpeg', 'image/png'];
+  readonly allowedExtensions = ['.jpg', '.jpeg', '.png'];
 
   ngOnInit(): void {
     this.initForm();
@@ -138,22 +139,9 @@ export class AddProductComponent implements OnInit, OnDestroy {
     }
 
     for (const file of filesArray) {
-      if (file.size === 0) {
-        this.errorMessage = `File '${file.name}' is empty.`;
-        continue;
-      }
-
-      if (file.size > this.maxFileSizeMB * 1024 * 1024) {
-        this.errorMessage = `File '${file.name}' exceeds maximum allowed size of ${this.maxFileSizeMB}MB.`;
-        continue;
-      }
-
-      const ext = '.' + (file.name.split('.').pop() || '').toLowerCase();
-      if (
-        !this.allowedTypes.includes(file.type.toLowerCase()) &&
-        !this.allowedExtensions.includes(ext)
-      ) {
-        this.errorMessage = `File '${file.name}' is not a valid image. Only JPG, PNG, and WEBP formats are allowed.`;
+      const validation = validateImageFile(file, this.maxFileSizeMB * 1024 * 1024);
+      if (!validation.isValid) {
+        this.errorMessage = validation.errorMessage || 'Invalid image file.';
         continue;
       }
 
@@ -263,7 +251,11 @@ export class AddProductComponent implements OnInit, OnDestroy {
                 error: (imgErr) => {
                   this.submitting = false;
                   this.isUploadingImages = false;
-                  this.errorMessage = `Product created, but image upload failed: ${imgErr.error?.message || 'Upload error'}. You can upload images in Product Detail.`;
+                  const errDetail =
+                    imgErr.error?.errors && imgErr.error.errors.length > 0
+                      ? imgErr.error.errors.join('; ')
+                      : (imgErr.error?.message || 'Upload error');
+                  this.errorMessage = `Product created, but image upload failed: ${errDetail}. You can upload images in Product Detail.`;
                   setTimeout(() => {
                     this.router.navigate(['/admin/products', encryptedProductId]);
                   }, 2500);

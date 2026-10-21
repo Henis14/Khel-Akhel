@@ -12,6 +12,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { ProjectImage, ProjectImageOrderDto } from '../../../models/project.model';
 import { AdminProjectService } from '../../../services/admin-project.service';
+import { validateImageFile } from '../../../../common/utils/file-validation.util';
 
 export interface EditorImageItem {
   id: string;
@@ -136,7 +137,6 @@ export class ImageGalleryEditorComponent implements OnInit, OnChanges, OnDestroy
 
   private processFiles(files: File[]): void {
     this.errorMessage = null;
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'];
 
     const currentTotal = this.items.length;
     const remainingSlots = this.maxImages - currentTotal;
@@ -153,15 +153,11 @@ export class ImageGalleryEditorComponent implements OnInit, OnChanges, OnDestroy
     const filesToAdd = files.slice(0, remainingSlots);
 
     for (const file of filesToAdd) {
-      // Validate type
-      if (!allowedTypes.includes(file.type.toLowerCase())) {
-        this.errorMessage = `File "${file.name}" is not a supported image format. Allowed formats: JPEG, PNG, WEBP, GIF.`;
-        continue;
-      }
-
-      // Validate size
-      if (file.size > this.maxFileSize) {
-        this.errorMessage = `File "${file.name}" exceeds the maximum allowed size of 5 MB (${(file.size / (1024 * 1024)).toFixed(2)} MB).`;
+      const validation = validateImageFile(file, this.maxFileSize);
+      if (!validation.isValid) {
+        this.errorMessage =
+          validation.errorMessage ||
+          `File "${file.name}" is not a supported image format. Only JPG, JPEG, and PNG image files are allowed.`;
         continue;
       }
 

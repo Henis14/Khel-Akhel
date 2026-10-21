@@ -98,6 +98,11 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'product-stock/add',
+        redirectTo: 'product-stock/update',
+        pathMatch: 'full',
+      },
+      {
         path: 'commissioned-projects',
         loadComponent: () =>
           import('./admin/pages/commissioned-projects/commissioned-projects').then(

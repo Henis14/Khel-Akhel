@@ -94,7 +94,7 @@
                 type="file"
                 #detailFileInput
                 multiple
-                accept="image/jpeg,image/png,image/webp"
+                accept=".jpg,.jpeg,.png,image/jpeg,image/png"
                 (change)="onUploadNewImages($event)"
                 class="d-none"
               />
@@ -234,8 +234,9 @@
               <a
                 class="btn btn-outline-primary btn-sm w-100"
                 [routerLink]="['/admin/product-stock/update']"
+                [queryParams]="{ productId: product.encryptedProductId }"
               >
-                <i class="bi bi-pencil me-1"></i> Update Stock Level
+                <i class="bi bi-plus-circle me-1"></i> Add Stock
               </a>
             </div>
           </div>

@@ -279,7 +279,7 @@
           <div>
             <h3>Product Images</h3>
             <p>
-              Minimum 3 images are required, and maximum 7 images are allowed (JPG, PNG, WEBP, max
+              Minimum 3 images are required, and maximum 7 images are allowed (JPG, JPEG, PNG, max
               5MB each). First image will automatically be set as Default.
             </p>
           </div>
@@ -290,7 +290,7 @@
               type="file"
               #fileInput
               multiple
-              accept="image/jpeg,image/png,image/webp"
+              accept=".jpg,.jpeg,.png,image/jpeg,image/png"
               (change)="onFileSelected($event)"
               class="d-none"
             />
@@ -305,7 +305,7 @@
               <span>Select Product Images ({{ selectedFiles.length }}/{{ maxImages }})</span>
             </button>
             <span class="upload-hint"
-              >Minimum 3, Maximum 7 images. Supported formats: .jpg, .jpeg, .png, .webp (Max 5MB per
+              >Minimum 3, Maximum 7 images. Supported formats: .jpg, .jpeg, .png (Max 5MB per
               file)</span
             >
             <div class="text-danger small mt-2" *ngIf="selectedFiles.length < minImages">
