@@ -19,7 +19,6 @@ export class AdminLoginComponent implements OnInit {
   private route = inject(ActivatedRoute);
 
   loginForm!: FormGroup;
-  forgotForm!: FormGroup;
 
   readonly loading = signal<boolean>(false);
   readonly errorMessage = signal<string | null>(null);
@@ -27,13 +26,8 @@ export class AdminLoginComponent implements OnInit {
   readonly showPassword = signal<boolean>(false);
 
   readonly captchaId = signal<string | null>(null);
-  readonly captchaCode = signal<string | null>(null);
+  readonly captchaImage = signal<string | null>(null);
   readonly captchaLoading = signal<boolean>(false);
-
-  readonly isForgotPasswordMode = signal<boolean>(false);
-  readonly forgotLoading = signal<boolean>(false);
-  readonly forgotSuccessMessage = signal<string | null>(null);
-  readonly forgotErrorMessage = signal<string | null>(null);
 
   returnUrl = '/admin/dashboard';
 
@@ -66,19 +60,11 @@ export class AdminLoginComponent implements OnInit {
       ],
     });
 
-    this.forgotForm = this.fb.group({
-      userName: ['', [CustomValidators.requiredNonEmpty]],
-    });
-
     this.loadCaptcha();
   }
 
   get f() {
     return this.loginForm.controls;
-  }
-
-  get ff() {
-    return this.forgotForm.controls;
   }
 
   togglePasswordVisibility(): void {
@@ -92,7 +78,7 @@ export class AdminLoginComponent implements OnInit {
         this.captchaLoading.set(false);
         if (res.success && res.data) {
           this.captchaId.set(res.data.captchaId);
-          this.captchaCode.set(res.data.captcha);
+          this.captchaImage.set(res.data.captchaImage);
           this.loginForm.patchValue({ captcha: '' });
           this.loginForm.controls['captcha'].markAsUntouched();
         }
@@ -166,49 +152,6 @@ export class AdminLoginComponent implements OnInit {
         } else {
           this.errorMessage.set('An unexpected error occurred during login. Please try again.');
         }
-      },
-    });
-  }
-
-  toggleForgotPasswordMode(show: boolean): void {
-    this.isForgotPasswordMode.set(show);
-    this.forgotSuccessMessage.set(null);
-    this.forgotErrorMessage.set(null);
-
-    if (show && this.loginForm.value.userName) {
-      this.forgotForm.patchValue({ userName: this.loginForm.value.userName.trim() });
-    }
-  }
-
-  onForgotPasswordSubmit(): void {
-    if (this.forgotForm.invalid) {
-      this.forgotForm.markAllAsTouched();
-      return;
-    }
-
-    this.forgotLoading.set(true);
-    this.forgotSuccessMessage.set(null);
-    this.forgotErrorMessage.set(null);
-
-    const userName = this.forgotForm.value.userName.trim();
-
-    this.authService.forgotPassword(userName).subscribe({
-      next: (res) => {
-        this.forgotLoading.set(false);
-        if (res.success) {
-          this.forgotSuccessMessage.set(
-            'If an account with this Email/Mobile exists, password reset instructions have been initiated.',
-          );
-        } else {
-          this.forgotErrorMessage.set(res.message || 'Failed to process password reset request.');
-        }
-      },
-      error: (err) => {
-        this.forgotLoading.set(false);
-        this.forgotErrorMessage.set(
-          err.error?.message ||
-            'An error occurred while requesting password reset. Please try again.',
-        );
       },
     });
   }

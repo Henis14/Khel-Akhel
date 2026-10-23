@@ -130,6 +130,24 @@ export const routes: Routes = [
             (m) => m.ProjectFormComponent,
           ),
       },
+      {
+        path: 'faqs',
+        loadComponent: () => import('./admin/pages/faqs/faqs').then((m) => m.FaqsComponent),
+      },
+      {
+        path: 'password-reset-requests',
+        loadComponent: () =>
+          import('./admin/pages/password-reset-requests/password-reset-requests').then(
+            (m) => m.PasswordResetRequestsComponent,
+          ),
+      },
+      {
+        path: 'hero-banner',
+        loadComponent: () =>
+          import('./admin/pages/hero-banner/hero-banner').then(
+            (m) => m.HeroBannerComponent,
+          ),
+      },
       // Backward compatibility redirects for legacy /admin/about URLs
       {
         path: 'about',
@@ -193,6 +211,24 @@ export const routes: Routes = [
         path: 'register',
         loadComponent: () =>
           import('./user/pages/register/register').then((m) => m.UserRegisterComponent),
+      },
+      {
+        path: 'faq',
+        loadComponent: () => import('./user/pages/faq/faq').then((m) => m.Faq),
+      },
+      {
+        path: 'forgot-password',
+        loadComponent: () =>
+          import('./user/pages/forgot-password/forgot-password').then(
+            (m) => m.ForgotPasswordComponent,
+          ),
+      },
+      {
+        path: 'reset-password',
+        loadComponent: () =>
+          import('./user/pages/reset-password/reset-password').then(
+            (m) => m.ResetPasswordComponent,
+          ),
       },
     ],
   },

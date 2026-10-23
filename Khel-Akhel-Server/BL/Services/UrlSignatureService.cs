@@ -15,9 +15,16 @@ namespace Khel_Akhel_Server.BL.Services
 
         public UrlSignatureService(IConfiguration configuration)
         {
-            string rawKey = configuration["Security:UrlSignatureKey"]
-                         ?? configuration["Jwt:Key"]
-                         ?? "DefaultUrlSignatureSecretKey2026!";
+            string? rawKey = configuration["Security:UrlSignatureKey"];
+            if (string.IsNullOrWhiteSpace(rawKey))
+            {
+                throw new InvalidOperationException("Configuration 'Security:UrlSignatureKey' is required and cannot be empty.");
+            }
+            if (Encoding.UTF8.GetByteCount(rawKey) < 32)
+            {
+                throw new InvalidOperationException("Configuration 'Security:UrlSignatureKey' must be at least 32 bytes long.");
+            }
+
             _secretKey = Encoding.UTF8.GetBytes(rawKey);
         }
 

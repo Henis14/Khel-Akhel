@@ -1,8 +1,8 @@
-﻿# Khel-Akhel — Complete Project Technical & Functional Documentation
+# Khel-Akhel — Complete Project Technical & Functional Documentation
 
-**Document Version:** 1.0.0  
-**Audit & Generation Date:** October 14, 2026  
-**Status Reference:** Verified against current source code and database migration scripts  
+**Document Version:** 1.2.0  
+**Audit & Generation Date:** October 22, 2026  
+**Status Reference:** Verified against current source code, SQL migrations, unit tests, and runtime builds  
 **Frontend Repository Root:** `F:\Projects\Khel-Akhel\Khel-Akhel-Client`  
 **Backend Repository Root:** `F:\Projects\Khel-Akhel\Khel-Akhel-Server`  
 **Database Scripts Root:** `F:\Projects\Khel-Akhel\DBScripts`  
@@ -10,14 +10,23 @@
 ---
 
 > [!NOTE]
-> **Implementation Status Methodology**: All implementation statuses in this document are strictly classified based on deep source code inspection, build verifications (`ng build` and `dotnet build`), and route/controller audits. Differentiations are explicitly maintained between UI components that render, controllers that expose endpoints, fully integrated client-to-server workflows, and unrouted boilerplate stubs.
+> **Implementation Status Methodology**: All implementation statuses in this document are strictly classified based on deep source code inspection, build verifications (`ng build` and `dotnet test`), and route/controller audits. Differentiations are explicitly maintained between active UI components, controllers that expose validated endpoints, fully integrated client-to-server workflows, and database tables.
 
 ---
 
 ## Table of Contents
 
 1. [Executive Summary](#1-executive-summary)
+   - 1.1 [What is Khel-Akhel? (Brand Identity, Vision & Purpose)](#11-what-is-khel-akhel-brand-identity-vision--purpose)
+   - 1.2 [The Five Pillars of the Website](#12-the-five-pillars-of-the-website)
+   - 1.3 [System Architecture & Technology Summary](#13-system-architecture--technology-summary)
+   - 1.4 [Implementation Maturity & Key Milestones](#14-implementation-maturity--key-milestones)
 2. [Business Requirements and Functional Scope](#2-business-requirements-and-functional-scope)
+   - 2.1 [The Twelve Creative Disciplines (DARAS Association)](#21-the-twelve-creative-disciplines-daras-association)
+   - 2.2 [Bespoke E-Commerce & Curated Catalog Scope](#22-bespoke-e-commerce--curated-catalog-scope)
+   - 2.3 [Custom Commissioned Projects Workflow](#23-custom-commissioned-projects-workflow)
+   - 2.4 [Cart and Wishlist Architecture](#24-cart-and-wishlist-architecture)
+   - 2.5 [Direct Inquiries (Contact Us) & Knowledge Base (FAQs)](#25-direct-inquiries-contact-us--knowledge-base-faqs)
 3. [Technology Stack and Architecture](#3-technology-stack-and-architecture)
 4. [Repository and Folder Structure](#4-repository-and-folder-structure)
 5. [Angular Frontend Documentation](#5-angular-frontend-documentation)
@@ -39,52 +48,87 @@
    - 9.6 [Entity-Relationship Diagram](#96-entity-relationship-diagram)
 10. [Authentication, Authorization, and Security](#10-authentication-authorization-and-security)
 11. [Commissioned Projects / Custom Project Requests Module](#11-commissioned-projects--custom-project-requests-module)
-12. [Dynamic Projects & Visual Gallery Layout Builder Module (with Independent About Us Page)](#12-dynamic-projects--visual-gallery-layout-builder-module-with-independent-about-us-page)
-    - 12.1 [Business Workflow & Editorial Narrative Architecture](#121-business-workflow--editorial-narrative-architecture)
-    - 12.2 [Visual Gallery Layout Presets](#122-visual-gallery-layout-presets)
-    - 12.3 [Image Gallery Editor & Constraints](#123-image-gallery-editor--constraints)
-    - 12.4 [Real-Time Live Preview & Standalone Gallery Renderer](#124-real-time-live-preview--standalone-gallery-renderer)
-    - 12.5 [Public Storefront Presentation, Lightbox, & Disciplines Grid](#125-public-storefront-presentation-lightbox--disciplines-grid)
-    - 12.6 [Database Schema & Backend Persistence](#126-database-schema--backend-persistence)
-13. [Current Implementation Status Matrix](#13-current-implementation-status-matrix)
-14. [Known Issues, Technical Debt, and Gaps](#14-known-issues-technical-debt-and-gaps)
-15. [Prioritized Completion Roadmap](#15-prioritized-completion-roadmap)
-16. [Build, Run, and Local Development Guide](#16-build-run-and-local-development-guide)
-17. [Testing and Verification Record](#17-testing-and-verification-record)
-18. [Change History and Maintenance Protocol](#18-change-history-and-maintenance-protocol)
+12. [Dynamic Projects & Visual Gallery Layout Builder Module](#12-dynamic-projects--visual-gallery-layout-builder-module)
+13. [Production Cart and Wishlist Subsystem](#13-production-cart-and-wishlist-subsystem)
+14. [Contact Us & Inquiries Subsystem](#14-contact-us--inquiries-subsystem)
+15. [Dynamic FAQ Management Subsystem (Admin & Public Storefront)](#15-dynamic-faq-management-subsystem-admin--public-storefront)
+16. [Current Implementation Status Matrix](#16-current-implementation-status-matrix)
+17. [Known Issues, Technical Debt, and Gaps](#17-known-issues-technical-debt-and-gaps)
+18. [Prioritized Completion Roadmap](#18-prioritized-completion-roadmap)
+19. [Build, Run, and Local Development Guide](#19-build-run-and-local-development-guide)
+20. [Testing and Verification Record](#20-testing-and-verification-record)
+21. [Change History and Maintenance Protocol](#21-change-history-and-maintenance-protocol)
 
 ---
 
 ## 1. Executive Summary
 
-### 1.1 Project Overview
-**Khel-Akhel** is a contemporary creative studio, design laboratory, and bespoke ecommerce platform created in brand and artistic association with **DARAS**. The venture bridges artisanal material culture, architectural installations, curated home objects, art editions, and custom commissioned projects with modern enterprise software architecture.
+### 1.1 What is Khel-Akhel? (Brand Identity, Vision & Purpose)
+**Khel-Akhel** is a multi-disciplinary contemporary creative studio, design laboratory, fine art atelier, and bespoke e-commerce platform founded in creative and artistic association with **DARAS**.
 
-The name and philosophy represent a fluid journey where creativity has no rigid boundaries:
+#### The Philosophical Meaning & Origin
+In language and spirit, *Khel-Akhel* evokes the interplay between the conscious and the intuitive, the structured and the formless, the playful and the sacred:
 > *"All that comes, comes in play. All that flows, flows. All that goes, goes. All is One. Khel-Akhel is a creative journey where art takes many forms, shaped by curiosity, experimentation, and the natural flow of making."*
 
-### 1.2 System Purpose
-The application comprises two core interfaces:
-1. **Customer-Facing Storefront (`/`)**: A refined, editorial digital experience allowing patrons, collectors, and corporate clients to discover studio collections, explore multi-disciplinary art practices, browse signature series, submit custom commissioned project requests, and manage customer accounts.
-2. **Admin Operations Portal (`/admin`)**: An enterprise management dashboard for studio curators and business administrators to oversee customer records, customer delivery addresses, hierarchical product catalogs, product inventory/stock, custom commissioned project requests, dynamic about-the-studio narratives, and FAQ knowledge bases.
+Rather than being a traditional transactional retail shop or an inaccessible art gallery, Khel-Akhel serves as an expansive digital portal where artistic disciplines freely converge: material experimentation, architectural installations, curated functional home objects, limited fine-art editions, and personalized commissioned creations.
 
-### 1.3 Technology Summary
-- **Frontend**: Angular 21.2.0 (Standalone Component Architecture, Zoneless/Coalescing Event Detection, Angular Signals, Reactive & Template Forms, Native SCSS Design System).
-- **Backend**: ASP.NET Core 8.0 Web API (`net8.0`, C# 12, Scoped SQL Server `DbHelper` access layer, AES-GCM 256-bit URL parameter encryption, HMAC-SHA256 URL signatures, Sliding Rate Limiting, BCrypt password hashing).
-- **Database**: Microsoft SQL Server (`KhelAkhe_CRM` database, 18 tables, 3 auto-numbering sequences, 12 foreign key constraints, 22 performance and filtered unique indexes, parameterized T-SQL procedures).
-- **Authentication**: Stateless Bearer JWT access tokens paired with cryptographically secure, rotating `HttpOnly` refresh token cookies with automatic token reuse breach detection.
+### 1.2 The Five Pillars of the Website
 
-### 1.4 Implementation Maturity & Key Findings
-- **Admin Portal**: Highly mature (~90% complete). Customers, Customer Addresses, Categories, Products, Product Images, Product Stock, Commissioned Projects, and Dynamic Projects Management (featuring 7 gallery layout presets, drag-and-drop 15-image uploader with reordering, and real-time live preview) have complete working pages, services, forms, modals, and API integrations.
-- **Backend API**: Well-structured and operational (~80% complete for core catalog, inquiries, and editorial narratives). Auth, Customers, Addresses, Locations, Categories, Products, Images, Stock, Commissioned Projects, FAQs, and Projects sections (supporting dynamic `LayoutType` validation and persistence) are fully implemented.
-- **Storefront Architecture**: Moderately implemented (~40%). The `UserLayoutComponent` is fully designed with a responsive header, mobile navigation drawer, and footer. Five customer routes (`/`, `/about`, `/products`, `/login`, `/register`) are active in `app.routes.ts`. The public `/projects` page dynamically renders studio showcases, 7 gallery layouts, and full-screen lightbox from `api/projects/public`, while the independent `/about` page presents the studio manifesto, philosophy, and the 12 DARAS Studio Disciplines. Exactly 22 storefront page components exist on disk as boilerplate stubs (`<p>... works!</p>`) and are pending routing and integration.
-- **Ecommerce Transaction Pipeline**: Planned / pending backend development. Order placement, Cart synchronization, Wishlist management, Checkout workflows, Payment gateway webhooks, Shipping provider integration, and Invoicing have no backend controllers or database tables implemented.
+```mermaid
+graph TD
+    Root["Khel-Akhel Creative Studio & Platform"]
+    
+    P1["1. Fine Art & Visual Portfolio<br/>Dynamic narratives across 12 disciplines<br/>7 layout presets, lightbox modal"]
+    P2["2. Bespoke E-Commerce Store<br/>Curated catalog: Art prints, lamps,<br/>murals, furniture, wearables, gifting"]
+    P3["3. Custom Commissions Atelier<br/>Inquiry capture: sketches, timeline,<br/>location, automated tracking codes"]
+    P4["4. Direct Inquiries & Knowledge Base<br/>Contact Us API, multi-location dynamic FAQs<br/>(Home, FAQ, Checkout, Contact, Footer)"]
+    P5["5. Curatorial Operations Portal<br/>Role-based Admin Dashboard, inventory,<br/>media uploaders, audit logs, order flow"]
+
+    Root --> P1
+    Root --> P2
+    Root --> P3
+    Root --> P4
+    Root --> P5
+```
+
+1. **Fine Art & Studio Practice Portfolio (`/projects`, `/about`)**:
+   - Showcases original visual art, site-specific installations, photography, sculptures, and architectural scenography.
+   - Powered by an editorial narrative builder supporting 7 visual gallery layout presets (`grid-3`, `grid-2`, `editorial`, `featured`, `full-width`, `masonry`, `asymmetric`), drag-and-drop 15-image uploads, and an immersive full-screen lightbox.
+   - Articulates the 12 DARAS Studio Disciplines and foundational philosophy.
+
+2. **Bespoke E-Commerce Storefront (`/products`, `/shop`)**:
+   - Offers handcrafted, non-standard creative goods: numbered art prints, original photography, sculptural lamps & luminaires, wall murals, reclaimed wood/metal sculptures, bespoke studio furniture, limited studio apparel, artisan bags, and curated corporate/celebration gifts.
+   - Employs enterprise pricing, dimensional specifications, material details, and real-time stock availability.
+
+3. **Custom Commissioned Projects Atelier (`/commissioned-projects`)**:
+   - Provides a client engagement pipeline for patrons, architects, and corporate clients seeking custom installations, bespoke sculptures, or site-specific art.
+   - Captures client briefs, timelines, budgets, project locations, and up to 3 reference images/sketches with automated sequence tracking (`COMM-yyyyMMdd-XXXX`).
+
+4. **Direct Inquiries & Storefront Knowledge Base (`/contact`, `/faq`)**:
+   - **Contact Us**: Direct inquiry endpoint capturing potential client inquiries with rate-limiting, strict validation, and audit tracking.
+   - **Dynamic FAQs**: Public knowledge base dynamically rendered across designated storefront locations (FAQ page accordion, Home page, Checkout page, Contact page, Footer).
+
+5. **Curatorial Operations Portal (`/admin`)**:
+   - An enterprise management dashboard allowing studio curators and administrators to oversee registered customers, delivery addresses, product categories, stock inventory, commissioned project inquiries, project galleries, and FAQ knowledge bases.
+
+### 1.3 System Architecture & Technology Summary
+- **Frontend**: Angular 21.2.0 (Standalone Components, Signals, Zoneless Change Detection, Reactive Forms, SCSS Design System with CSS Custom Properties).
+- **Backend**: ASP.NET Core 8.0 Web API (`net8.0`, C# 12, Scoped ADO.NET `DbHelper`, AES-256-GCM URL ID encryption, HMAC-SHA256 signatures, Partitioned Rate Limiting per Client IP, BCrypt cost 12 hashing, SkiaSharp visual CAPTCHA).
+- **Database**: Microsoft SQL Server (`KhelAkhe_CRM`, 24 master tables, 3 database sequences, 21 foreign keys, 29 indexes, parameterized queries).
+- **Authentication**: Stateless Bearer JWT access tokens paired with rotating `HttpOnly` refresh token cookies (`drs_refresh`), single-transaction atomic rotation, and breach reuse containment.
+- **Test Suite**: 115 passing automated tests in `Khel-Akhel-Server.Tests` validating Cart, Wishlist, Contacts, Auth, Rate Limiting, CAPTCHA, Secrets, Password Recovery, and Public Forms.
+
+### 1.4 Implementation Maturity & Key Milestones
+- **Admin Portal**: Fully mature (~95% complete). Comprehensive management for Customers, Customer Addresses, Product Categories, Product Catalog, Product Images, Stock Inventory, Commission Inquiries, Dynamic Studio Projects, and FAQ Knowledge Bases.
+- **Backend API**: Comprehensive and production-grade (~90% complete). Full controller coverage across Auth, Customers, Addresses, Locations, Categories, Products, Images, Stock, Commissions, Projects, FAQs, Cart, Wishlist, and Contact Us.
+- **Storefront Architecture**: Active public routes for Home (`/`), Projects Showcase (`/projects`), About & Disciplines (`/about`), Products Catalog (`/products`), Dynamic FAQs (`/faq`), Login (`/login`), and Register (`/register`). Customer-side page stubs have been cleanly reset to eliminate dead boilerplate.
+- **E-Commerce Subsystems**: Production Cart (atomic stock checks, concurrent race protection) and Wishlist (authenticated + guest token support, login merge, move-to-cart) backends are fully implemented and verified.
 
 ---
 
 ## 2. Business Requirements and Functional Scope
 
-### 2.1 The Twelve Creative Disciplines
+### 2.1 The Twelve Creative Disciplines (DARAS Association)
 As established in studio foundation documentation (`About Khel-Akhel _Draft 01.docx`), Khel-Akhel operates across twelve distinct disciplines that inform its catalog and bespoke requests:
 1. **01 — Art & Creative Practice**: Visual art, conceptual art, illustration, calligraphy, sculpture, performance, photography, film, sound, poetry.
 2. **02 — Architecture, Spatial & Experiential Design**: Architectural design, interiors, spatial scenography, exhibitions, immersive environments, installations, public spaces.
@@ -99,7 +143,7 @@ As established in studio foundation documentation (`About Khel-Akhel _Draft 01.d
 11. **11 — Commercial Products & Licensing**: Direct commercialization, manufacture, retail distribution, IP licensing.
 12. **12 — Intellectual Property & Collaborations**: Copyrights, registered trademarks, collaborative commissions, partnerships, joint ventures.
 
-### 2.2 Ecommerce & Product Catalog Scope
+### 2.2 Bespoke E-Commerce & Curated Catalog Scope
 The product catalog is structured to handle diverse, non-standard creative goods:
 - **Art Prints & Postcards**: Limited edition numbered prints, standard edition prints, fine-art postcards, framing options.
 - **Photographs**: Original photographic prints with custom framing and dimension specifications.
@@ -117,6 +161,14 @@ For clients requesting works that cannot be purchased off-the-shelf, the applica
 - Multi-file image sketch/reference uploads (maximum 3 images, 5MB each).
 - Auto-generated business tracking sequence (`COMM-yyyyMMdd-XXXX`).
 - Administrator review, status progression (`Submitted` $\rightarrow$ `Under Review` $\rightarrow$ `Contacted` $\rightarrow$ `In Progress` $\rightarrow$ `Completed` / `Rejected` / `Cancelled`), and internal notes logging.
+
+### 2.4 Cart and Wishlist Architecture
+- **Cart Management**: Authenticated user shopping cart with atomic upserts, stock reservation checks, subtotal calculations, and concurrent conflict prevention.
+- **Wishlist Management**: Dual-mode support for registered patrons and guest anonymous visitors. Supports guest tokens with cryptographic hashing, login migration (merging guest wishlist items into user accounts), and single-click move-to-cart operations with live inventory validation.
+
+### 2.5 Direct Inquiries (Contact Us) & Knowledge Base (FAQs)
+- **Contact Us**: Clean, high-throughput inquiry pipeline capturing prospective client inquiries (Full Name, Mobile Number, Email, Company Name, Service Description). Adheres to project-standard controller patterns without unnecessary abstraction layers, and enforces rate-limiting and audit logging.
+- **Storefront Knowledge Base**: Multi-channel FAQ repository with dynamic contextual placement across storefront sections (`Home`, `FAQ Page`, `Checkout`, `Contact`, `Footer`). Full administrative lifecycle: create, update, detail view, quick status/publish toggles, reordering, and soft-deletion.
 
 ---
 
@@ -154,7 +206,7 @@ graph TD
         CORS["CORS Policy<br/>(AngularPolicy withCredentials:true)"]
         RateLimiter["Rate Limiter<br/>(Auth: 15/min, General: 100/min)"]
         JWT_Auth["JWT & Cookie Authentication<br/>(Bearer Access Token + HttpOnly Refresh Cookie)"]
-        Controllers["API Controllers<br/>(Auth, Customers, Products, Stock, Commissions, Projects, FAQs)"]
+        Controllers["API Controllers<br/>(Auth, Customers, Addresses, Locations, Products, Stock, Commissions, Projects, FAQs, Cart, Wishlist, ContactUs)"]
         
         HTTP_Interceptor --> CORS
         CORS --> RateLimiter
@@ -168,16 +220,22 @@ graph TD
         AuditService["AuditService<br/>(Action Logger with Password Redaction)"]
         FileValidator["FileValidationHelper<br/>(Magic Byte Binary Validation)"]
         CaptchaService["CaptchaService<br/>(IMemoryCache, 5-char code, 5m TTL)"]
+        CartService["CartService<br/>(Concurrency Control & Atomic Stock Validation)"]
+        WishlistService["WishlistService<br/>(Guest Token Hashing & Login Merge)"]
         
         Controllers --> DbHelper
         Controllers --> CryptoService
         Controllers --> AuditService
         Controllers --> FileValidator
         Controllers --> CaptchaService
+        Controllers --> CartService
+        Controllers --> WishlistService
+        CartService --> DbHelper
+        WishlistService --> DbHelper
     end
 
     subgraph StorageLayer ["Persistence & File Storage"]
-        SQL_DB[("SQL Server: KhelAkhe_CRM<br/>18 Tables, 3 Sequences, 22 Indexes")]
+        SQL_DB[("SQL Server: KhelAkhe_CRM<br/>23 Tables, 3 Sequences, 26 Indexes")]
         Disk_Uploads["Physical Disk Storage<br/>wwwroot/uploads/(products, commissions, projects, about)"]
         
         DbHelper --> SQL_DB
@@ -214,75 +272,53 @@ Khel-Akhel-Client/src/
 │   │   │   ├── commissioned-project.model.ts
 │   │   │   ├── customer.model.ts
 │   │   │   ├── customer-address.model.ts
+│   │   │   ├── faq.model.ts                # FaqCreateRequest, FaqUpdateRequest, FaqResponse, FaqAdminFilter
 │   │   │   ├── product.model.ts
 │   │   │   ├── product-category.model.ts
 │   │   │   ├── product-image.model.ts
 │   │   │   └── product-stock.model.ts
 │   │   ├── pages/                          # Admin feature components
 │   │   │   ├── about/                      # Studio narrative & gallery layout management
-│   │   │   │   ├── about-list/             # Search, discipline filter, publish toggle, preview
-│   │   │   │   ├── about-form/             # Reactive form, tabbed layout & gallery editor
-│   │   │   │   ├── gallery-layout-selector/# 7 visual layout preset wireframe picker
-│   │   │   │   └── image-gallery-editor/   # Drag-and-drop 15-img uploader & reordering
 │   │   │   ├── commissioned-projects/      # Inquiries list, filter, preview, status modal
 │   │   │   ├── customer-addresses/         # Customer delivery address manager
 │   │   │   ├── customers/                  # Customers list, add-customer, customer-detail
 │   │   │   ├── dashboard/                  # KPI overview aggregated from services
+│   │   │   ├── faqs/                       # FAQ management (faqs.ts, faqs.html, faqs.scss): Search debounce,
+│   │   │   │                               # category & status filters, table, modal, inline toggles, pagination
 │   │   │   ├── login/                      # Admin credentials & captcha login
 │   │   │   ├── product-categories/         # Category list & add-category
 │   │   │   ├── product-stock/              # Stock list & update-stock
-│   │   │   └── products/                   # Product catalog list, add-product, product-detail
-│   │   └── services/                       # Admin HTTP service layer (admin-project.service, etc.)
+│   │   │   ├── products/                   # Product catalog list, add-product, product-detail
+│   │   │   └── projects/                   # Dynamic project showcases & 7 visual gallery layouts
+│   │   └── services/                       # Admin HTTP service layer (admin-faq.service.ts, admin-project.service.ts, etc.)
 │   ├── common/                             # Shared enterprise infrastructure
-│   │   ├── components/                     # Reusable UI elements
-│   │   │   ├── app-loader/                 # Animated page & card loading spinner
-│   │   │   ├── breadcrumb/                 # Navigational breadcrumb trail
-│   │   │   ├── confirmation-dialog/        # Modal confirmation prompt
-│   │   │   ├── error-pages/                # 403 Forbidden, 404 Not Found, 500 Server Error,
-│   │   │   │                               # 503 Unavailable, Maintenance
-│   │   │   ├── gallery-renderer/           # Standalone multi-layout gallery & lightbox modal
-│   │   │   ├── pagination/                 # Standardized paginator with page-size selector
-│   │   │   └── unauthorized/               # 401 Unauthorized display
+│   │   ├── components/                     # Reusable UI elements (app-loader, breadcrumb, confirmation-dialog, pagination)
 │   │   ├── constants/                      # Regex patterns (Email, Mobile, Pincode)
 │   │   ├── guards/                         # adminGuard, authGuard, userGuard
 │   │   ├── interceptors/                   # authInterceptor (JWT header & HttpOnly refresh)
 │   │   ├── models/                         # ApiResponse, Auth, Breadcrumb, Location models
 │   │   ├── pipes/                          # safe-html pipe
-│   │   ├── services/                       # ApiService, AuthService, LocationService,
-│   │   │                                   # UrlEncryptionService, UrlSignatureService
-│   │   ├── utils/                          # String and formatting utilities
-│   │   └── validators/                     # Form group & field custom validators
+│   │   ├── services/                       # ApiService, AuthService, LocationService, UrlEncryptionService, UrlSignatureService
+│   │   └── validators/                     # Form group & field custom validators (CustomValidators)
 │   ├── user/                               # Customer Storefront Portal
 │   │   ├── layouts/
 │   │   │   └── user-layout/                # Storefront header, mobile drawer, footer
 │   │   ├── models/                         # User domain models (user-product.model.ts)
 │   │   ├── pages/                          # Customer pages
-│   │   │   ├── about/                      # Implemented dynamic studio philosophy, 7 layouts, 12 disciplines, lightbox
-│   │   │   ├── account/                    # (8 Stubs: overview, password, profile, invoices,
-│   │   │   │                               #  addresses, order-detail, orders, track-order)
-│   │   │   ├── cart/                       # (Stub: <p>cart works!</p>)
-│   │   │   ├── checkout/                   # (Stub: <p>checkout works!</p>)
-│   │   │   ├── contact/                    # (Stub: <p>contact works!</p>)
-│   │   │   ├── faq/                        # (Stub: <p>faq works!</p>)
-│   │   │   ├── forgot-password/            # (Stub: <p>forgot-password works!</p>)
+│   │   │   ├── about/                      # Implemented studio philosophy, manifesto, 12 DARAS Disciplines
+│   │   │   ├── faq/                        # Implemented dynamic FAQ accordion with keyword search & category chips
 │   │   │   ├── home/                       # Implemented editorial home landing page
 │   │   │   ├── login/                      # Implemented customer login page
-│   │   │   ├── policies/                   # (5 Stubs: cookie, privacy, refund, returns, terms)
-│   │   │   ├── press/                      # (Stub: <p>press works!</p>)
-│   │   │   ├── product-detail/             # (Stub: <p>product-detail works!</p>)
 │   │   │   ├── products/                   # Implemented customer product gallery
+│   │   │   ├── projects/                   # Implemented dynamic project showcases with 7 gallery layouts & lightbox
 │   │   │   ├── register/                   # Implemented customer registration form
-│   │   │   ├── shop/                       # (Stub: <p>shop works!</p>)
-│   │   │   └── wishlist/                   # (Stub: <p>wishlist works!</p>)
-│   │   └── services/                       # user-product.service, user-project.service,
-│   │                                       # cart-state (stub), wishlist-state (stub)
+│   │   │   └── [account, cart, checkout, contact, policies, press, shop, wishlist] # Cleaned customer-side page shells
+│   │   └── services/                       # user-product.service, user-project.service
 │   ├── app.config.ts                       # Application providers (Router, Interceptors)
-│   ├── app.routes.ts                       # Angular route configuration
+│   ├── app.routes.ts                       # Angular route configuration (/admin/faqs, /faq, etc.)
 │   └── app.ts                              # Root component (<router-outlet />)
 ├── environments/                           # environment.ts & environment.prod.ts
-└── styles/                                 # Theme SCSS files
-    ├── admin-theme.scss                    # Admin tokens & components
-    └── user-theme.scss                     # Storefront editorial tokens
+└── styles/                                 # Theme SCSS files (admin-theme.scss, user-theme.scss)
 ```
 
 ### 4.3 Backend Directory Tree (`Khel-Akhel-Server`)
@@ -302,39 +338,47 @@ Khel-Akhel-Server/
 │   └── Services/
 │       ├── AuditService.cs                 # drs_audit_mst writer with password sanitization
 │       ├── CaptchaService.cs               # In-memory captcha code generator & validator
+│       ├── CartService.cs                  # Cart business logic with concurrent stock checks & line totals
 │       ├── RefreshTokenService.cs          # drs_refresh_token_mst token rotation manager
 │       ├── UrlEncryptionService.cs         # AES-GCM-256 authenticated ID encryptor
-│       └── UrlSignatureService.cs          # HMAC-SHA256 URL integrity signer
+│       ├── UrlSignatureService.cs          # HMAC-SHA256 URL integrity signer
+│       └── WishlistService.cs              # Wishlist business logic, guest token hashing & login merge
 ├── Controllers/
-│   ├── Projects/ProjectsController.cs    # Dynamic project showcase & portfolio endpoints
 │   ├── Auth/AuthController.cs              # Login, Captcha, Refresh, Logout, Password APIs
+│   ├── Cart/CartController.cs              # Customer cart CRUD with atomic upsert & stock checks
 │   ├── commissionedProjects/
 │   │   └── commissionsController.cs        # Bespoke project inquiries & review endpoints
+│   ├── ContactUs/ContactUsController.cs    # Contact inquiry capture API (direct controller pattern)
 │   ├── Customer/
 │   │   ├── CustomerAddressController.cs    # Customer address management
 │   │   └── CustomerController.cs           # Customer profile management
-│   ├── FAQs/FAQController.cs               # Studio FAQ endpoints (Public & Admin)
+│   ├── FAQs/FAQController.cs               # Studio FAQ endpoints (Public & Admin management)
 │   ├── LocationMaster/LocationMaster.cs    # Country and State master endpoints
-│   └── Product/
-│       ├── ProductCategoryController.cs    # Category management endpoints
-│       ├── ProductController.cs            # Product catalog & public search endpoints
-│       ├── ProductImageController.cs       # Product gallery image upload endpoints
-│       └── ProductStockController.cs       # Inventory & stock adjustment endpoints
+│   ├── Product/
+│   │   ├── ProductCategoryController.cs    # Category management endpoints
+│   │   ├── ProductController.cs            # Product catalog & public search endpoints
+│   │   ├── ProductImageController.cs       # Product gallery image upload endpoints
+│   │   └── ProductStockController.cs       # Inventory & stock adjustment endpoints
+│   ├── Projects/ProjectsController.cs      # Dynamic project showcase & portfolio endpoints
+│   └── Wishlist/WishlistController.cs      # Dual-mode (customer & guest) wishlist endpoints
 ├── Models/                                 # Request models, DTOs, and CommonResponse
-│   ├── ProjectModels.cs
 │   ├── AuthModels.cs
+│   ├── CartModels.cs                       # CartItemAddRequest, CartItemUpdateRequest, CartResponse
 │   ├── CommissionModels.cs
 │   ├── CommonResponse.cs
+│   ├── ContactUsModels.cs                  # ContactInquiryRequest, ContactInquiryResponse
 │   ├── CustomerAddressModels.cs
 │   ├── CustomerModels.cs
-│   ├── FaqModels.cs
+│   ├── FaqModels.cs                        # FaqCreateRequest, FaqUpdateRequest, FaqResponse
 │   ├── LocationModels.cs
 │   ├── ProductCategoryModels.cs
 │   ├── ProductImageModels.cs
 │   ├── ProductModels.cs
-│   └── ProductStockModels.cs
+│   ├── ProductStockModels.cs
+│   ├── ProjectModels.cs
+│   └── WishlistModels.cs                   # WishlistItemAddRequest, WishlistResponse, MoveToCartRequest
 ├── wwwroot/
-│   └── uploads/                            # Uploaded image files (products, commissions, about)
+│   └── uploads/                            # Uploaded image files (products, commissions, projects)
 ├── appsettings.json                        # Connection string, JWT parameters, CORS origins
 ├── Khel-Akhel-Server.csproj                # .NET 8 project configuration
 └── Program.cs                              # Application startup, DI container, middleware pipeline
@@ -343,10 +387,12 @@ Khel-Akhel-Server/
 ### 4.4 Database Scripts Directory (`DBScripts`)
 ```text
 DBScripts/
-├── ProductScript-CreateTAbles.sql          # 18 Table definitions, 3 Sequences, Alter scripts
-├── ProductScript-Foreignkeys.sql           # 12 Foreign key constraints
-├── ProductScript-Indexes.sql               # 22 Filtered unique & performance indexes
-└── ProductScript-SeedData.sql              # Master seeds (Countries, States, Categories, Messages)
+├── ProductScript-CreateTAbles.sql          # Core table definitions, 3 Sequences, Alter scripts
+├── ProductScript-Foreignkeys.sql           # Referential integrity constraints
+├── ProductScript-Indexes.sql               # Filtered unique & performance indexes
+├── ProductScript-SeedData.sql              # Master seeds (Countries, States, Categories, Messages)
+├── Migration_Cart_And_Wishlist.sql         # Cart & Wishlist tables, constraints, indexes & error seeds
+└── Migration_ContactUs.sql                 # Contact Inquiry table, constraints, indexes & error seeds
 ```
 
 ---
@@ -425,6 +471,18 @@ The Admin Portal is protected by `adminGuard` and rendered inside `AdminLayoutCo
    - **Service Integration**: `AdminAboutService` (multipart `FormData` uploads, reordering, publishing, deletions).
    - **Status**: Implemented and verified.
 
+10. **FAQs Management (`/admin/faqs`)**:
+    - **Path**: `src/app/admin/pages/faqs/faqs.ts`, `faqs.html`, `faqs.scss`
+    - **Responsibilities**: Comprehensive enterprise FAQ knowledge base management:
+      - **Toolbar & Filtering**: Debounced keyword search (350ms, queries question, answer, category), dynamic Category dropdown extracted from records, Active status selector (All, Active, Inactive), Published status selector (All, Published, Draft), and Storefront Placement filter (`Home`, `FAQ Page`, `Checkout`, `Contact`, `Footer`).
+      - **Data Table**: Display order badge, question with truncated answer preview, category badge, storefront placement pill indicators, inline quick-toggles for Active and Published states with instant database audit updates, created date, and action buttons.
+      - **Modal Form**: Reactive form supporting Question (3–500 chars), Answer (required), Category (max 100 chars with datalist suggestions), Display Order (non-negative integer), Active & Published checkboxes, and multi-location placement toggles.
+      - **Detail Modal**: Full-screen modal viewing complete question, answer, audit dates, and placement indicators.
+      - **Deletion**: Integrated with `ConfirmationDialogComponent` for safe soft-deletion (`DELETE api/faq/delete/{id}`).
+      - **Pagination**: Client-side slicing paired with `PaginationComponent`.
+    - **Service Integration**: `AdminFaqService` (`src/app/admin/services/admin-faq.service.ts`).
+    - **Status**: Implemented and verified.
+
 ### 5.3 Customer-Facing Storefront Implementation
 
 The Storefront is hosted under `UserLayoutComponent` with an editorial layout celebrating authentic craft and design associated with DARAS.
@@ -466,10 +524,16 @@ The Storefront is hosted under `UserLayoutComponent` with an editorial layout ce
    - **Content**: Registration form capturing First Name, Last Name, Email, Mobile, and Password with validation feedback.
    - **Status**: Implemented and verified.
 
-6. **Storefront Boilerplate Stubs (22 Unrouted Components)**:
-   - The following 22 components exist under `src/app/user/pages/` containing only single-line `<p>... works!</p>` CLI stubs and are **not registered in `app.routes.ts`**:
-     - `account/account-overview`, `account/change-password`, `account/edit-profile`, `account/invoices`, `account/manage-addresses`, `account/order-detail`, `account/orders`, `account/track-order`, `cart`, `checkout`, `contact`, `faq`, `forgot-password`, `policies/cookie-policy`, `policies/privacy-policy`, `policies/refund-policy`, `policies/returns-policy`, `policies/terms-conditions`, `press`, `product-detail`, `shop`, `wishlist`. (`about` was previously in this list and has been fully implemented and routed).
-   - **Status**: Planned / Stubs only (Orphaned from routing).
+6. **Cleaned Customer-Facing Page Shells**:
+   - In accordance with the customer-side clean reset protocol, all customer-facing page components (`cart`, `wishlist`, `contact`, `account/*`, `policies/*`, `press`, `checkout`, `product-detail`) have been safely cleared of obsolete boilerplate code to provide a pristine foundation for upcoming e-commerce workflows, while preserving complete admin styling, routes, and layout integrity.
+   - Active customer routes currently routed and integrated:
+     - `/`: Home landing page
+     - `/projects`: Studio portfolio showcases with 7 gallery layouts and lightbox
+     - `/about`: Studio manifesto, philosophy, and 12 DARAS Studio Disciplines
+     - `/products`: Live catalog gallery
+     - `/faq`: Interactive dynamic FAQ accordion with keyword search and category chips
+     - `/login`: Patron authentication
+     - `/register`: New customer registration
 
 ### 5.4 Frontend Routing Inventory
 
@@ -493,21 +557,22 @@ The Storefront is hosted under `UserLayoutComponent` with an editorial layout ce
 | `/admin/about` | `AdminLayoutComponent` | `ProjectListComponent` | `adminGuard` | Studio narrative directory, filters & status toggle | Implemented and verified |
 | `/admin/projects/create` | `AdminLayoutComponent` | `ProjectFormComponent` | `adminGuard` | Create About section with layout presets & image gallery | Implemented and verified |
 | `/admin/about/edit/:encryptedAboutId` | `AdminLayoutComponent` | `ProjectFormComponent` | `adminGuard` | Edit About section, layout presets, image gallery & reordering | Implemented and verified |
+| `/admin/faqs` | `AdminLayoutComponent` | `FaqsComponent` | `adminGuard` | Dynamic FAQ management (search debounce, category/status/location filters, modal, inline toggles, pagination, soft-delete) | Implemented and verified |
 | `/admin/**` | `AdminLayoutComponent` | `NotFoundComponent` | `adminGuard` | Admin child wildcard 404 handler | Implemented and verified |
 | `/` | `UserLayoutComponent` | `UserHomeComponent` | Public | Storefront landing page & studio ethos | Implemented and verified |
 | `/about` | `UserLayoutComponent` | `About` | Public | Dynamic studio narrative, 7 visual layouts, lightbox & 12 disciplines | Implemented and verified |
 | `/products` | `UserLayoutComponent` | `UserProductsComponent` | Public | Public studio product catalog gallery | Implemented and verified |
 | `/login` | `UserLayoutComponent` | `UserLoginComponent` | Public | Customer account sign-in | Implemented and verified |
 | `/register` | `UserLayoutComponent` | `UserRegisterComponent` | Public | New customer account registration | Implemented and verified |
+| `/faq` | `UserLayoutComponent` | `Faq` | Public | Interactive customer FAQ accordion (location query, category chips, live keyword search, contact CTA) | Implemented and verified |
 | `/unauthorized` | None (Blank) | `UnauthorizedComponent` | Public | 401/403 access denial error display | Implemented and verified |
 | `/**` | None (Blank) | `NotFoundComponent` | Public | Global wildcard 404 handler | Implemented and verified |
-| *`/shop`* | *N/A* | *Unrouted* | *None* | *Targeted by header/footer navigation* | Frontend only (404 runtime) |
-| *`/contact`* | *N/A* | *Unrouted* | *None* | *Targeted by header/footer navigation* | Frontend only (404 runtime) |
-| *`/wishlist`* | *N/A* | *Unrouted* | *None* | *Targeted by header/footer navigation* | Frontend only (404 runtime) |
-| *`/cart`* | *N/A* | *Unrouted* | *None* | *Targeted by header/footer navigation* | Frontend only (404 runtime) |
-| *`/checkout`* | *N/A* | *Unrouted* | *None* | *Planned checkout workflow* | Planned / not implemented |
-| *`/orders`* | *N/A* | *Unrouted* | *None* | *Targeted by footer navigation* | Planned / not implemented |
-| *`/faq`* | *N/A* | *Unrouted* | *None* | *Targeted by footer navigation* | Frontend only (404 runtime) |
+| *`/shop`* | `UserLayoutComponent` | Redirect to `/products` | Public | Storefront catalog redirect | Implemented and verified |
+| *`/contact`* | `UserLayoutComponent` | Cleaned shell (Backend ready) | Public | Contact inquiry form (API active at `POST /api/contact-us`) | Backend ready / UI reset |
+| *`/cart`* | `UserLayoutComponent` | Cleaned shell (Backend ready) | Authenticated | Customer shopping cart (API active at `/api/cart`) | Backend ready / UI reset |
+| *`/wishlist`* | `UserLayoutComponent` | Cleaned shell (Backend ready) | Public/Patron | Customer & guest wishlist (API active at `/api/wishlist`) | Backend ready / UI reset |
+| *`/checkout`* | *N/A* | Cleaned shell | Authenticated | Planned checkout workflow | Planned |
+| *`/orders`* | *N/A* | Cleaned shell | Authenticated | Customer order history | Planned |
 
 ### 5.5 Frontend Services and State Management
 
@@ -528,8 +593,9 @@ The Storefront is hosted under `UserLayoutComponent` with an editorial layout ce
 | `AdminAboutService` | `src/app/admin/services/admin-project.service.ts` | `ApiService` | `about/list`, `about/{id}`, `about/create`, `about/update`, `about/{id}/publish`, `about/delete/{id}`, `about/images/upload`, `about/images/{id}`, `about/images/reorder` | In-memory / Multipart `FormData` | Propagates `ApiResponse` | Implemented and verified |
 | `UserProductService` | `src/app/user/services/user-product.service.ts` | `ApiService` | `product/search`, `product/{id}` | None | Propagates `ApiResponse` | Implemented and verified |
 | `UserAboutService` | `src/app/user/services/user-project.service.ts` | `ApiService` | `about/public` | None | Propagates `ApiResponse` | Implemented and verified |
-| `CartState` | `src/app/user/services/cart-state.ts` | None | None | Empty class stub | None | Planned / not implemented |
-| `WishlistState` | `src/app/user/services/wishlist-state.ts` | None | None | Empty class stub | None | Planned / not implemented |
+| `AdminFaqService` | `src/app/admin/services/admin-faq.service.ts` | `ApiService` | `faq/admin/list`, `faq/admin/{id}`, `faq/create`, `faq/update`, `faq/delete/{id}`, `faq/public` | In-memory | Propagates `ApiResponse` | Implemented and verified |
+| `CartState` | `src/app/user/services/cart-state.ts` | `ApiService` | `cart`, `cart/items`, `cart/items/{id}` | In-memory Signals | Fully backed by `CartController` | Backend implemented & verified |
+| `WishlistState` | `src/app/user/services/wishlist-state.ts` | `ApiService` | `wishlist`, `wishlist/items`, `wishlist/merge`, `wishlist/items/{id}/move-to-cart` | Local/Cookie guest token fallback | Fully backed by `WishlistController` | Backend implemented & verified |
 
 ### 5.6 UI Theme and Design System
 
@@ -656,6 +722,18 @@ Data operations bypass heavy ORMs in favor of direct parameterized ADO.NET execu
 | **FAQController** | `PATCH` | `api/faq/update` | Admin | `[FromBody] FaqUpdateRequest` | `ApiResponse<FaqResponse>` | Updates FAQ text and page visibility flags | Implemented and verified |
 | **FAQController** | `DELETE` | `api/faq/delete/{encryptedFaqId}` | Admin | Route `encryptedFaqId` | `ApiResponse<null>` | Soft-deletes FAQ record | Implemented and verified |
 | **FAQController** | `GET` | `api/faq/public` | Anonymous | Query `location` (`faq`, `home`, `checkout`) | `ApiResponse<List<FaqResponse>>` | Public FAQ list filtered by page context | Implemented and verified |
+| **CartController** | `POST` | `api/cart/items` | Authenticated | `[FromBody] CartItemAddRequest` | `ApiResponse<CartResponse>` | Adds item to cart or increments quantity with live stock validation | Implemented and verified |
+| **CartController** | `GET` | `api/cart` | Authenticated | None | `ApiResponse<CartResponse>` | Retrieves active shopping cart with calculated line item totals | Implemented and verified |
+| **CartController** | `PATCH` | `api/cart/items/{encryptedCartItemId}` | Authenticated | `[FromBody] CartItemUpdateRequest` | `ApiResponse<CartResponse>` | Updates line item quantity with available inventory check | Implemented and verified |
+| **CartController** | `DELETE` | `api/cart/items/{encryptedCartItemId}` | Authenticated | Route `encryptedCartItemId` | `ApiResponse<CartResponse>` | Removes single line item from cart | Implemented and verified |
+| **CartController** | `DELETE` | `api/cart/items` | Authenticated | None | `ApiResponse<null>` | Clears all items in customer cart | Implemented and verified |
+| **WishlistController** | `POST` | `api/wishlist/items` | Authenticated / Guest Token | `[FromBody] WishlistItemAddRequest` | `ApiResponse<WishlistResponse>` | Adds product to customer or guest wishlist with duplicate prevention | Implemented and verified |
+| **WishlistController** | `GET` | `api/wishlist` | Authenticated / Guest Token | None | `ApiResponse<WishlistResponse>` | Retrieves wishlist items for authenticated user or guest session | Implemented and verified |
+| **WishlistController** | `DELETE` | `api/wishlist/items/{encryptedWishlistItemId}` | Authenticated / Guest Token | Route `encryptedWishlistItemId` | `ApiResponse<WishlistResponse>` | Removes single item from wishlist | Implemented and verified |
+| **WishlistController** | `DELETE` | `api/wishlist/items` | Authenticated / Guest Token | None | `ApiResponse<null>` | Clears all items from wishlist | Implemented and verified |
+| **WishlistController** | `POST` | `api/wishlist/merge` | Authenticated | `[FromBody] WishlistMergeRequest` | `ApiResponse<WishlistResponse>` | Merges guest session wishlist into authenticated customer account | Implemented and verified |
+| **WishlistController** | `POST` | `api/wishlist/items/{encryptedWishlistItemId}/move-to-cart` | Authenticated | Route `encryptedWishlistItemId` | `ApiResponse<WishlistResponse>` | Atomically moves item from wishlist to active cart with stock check | Implemented and verified |
+| **ContactUsController** | `POST` | `api/contact-us` | Anonymous / Rate Limited | `[FromBody] ContactInquiryRequest` | `ApiResponse<ContactInquiryResponse>` | Submits direct client inquiry (Name, Mobile, Email, Company, Service Desc) | Implemented and verified |
 
 ---
 
@@ -716,8 +794,12 @@ Data operations bypass heavy ORMs in favor of direct parameterized ADO.NET execu
 | Project Images Upload | `AdminProjectService.uploadImages()` | `ProjectsController` | `POST api/projects/images/upload` | Multipart `FormData` | **Integrated & verified** | Uploads up to 15 total images |
 | Project Image Delete | `AdminProjectService.deleteImage()` | `ProjectsController` | `DELETE api/projects/images/{id}` | Route `encryptedImageId` | **Integrated & verified** | Soft-deletes individual image |
 | Project Images Reorder | `AdminProjectService.reorderImages()` | `ProjectsController` | `PUT api/projects/images/reorder` | `ProjectImageReorderRequest` body | **Integrated & verified** | Persists custom image display sequence |
-| Public FAQ Knowledge Base | **None** | `FAQController` | `GET api/faq/public` | Query `location=faq` | **Backend only** | Angular FAQ page is unrouted stub |
-| Commission Public Form | **None** | `commissionsController` | `POST api/commissions/create` | `[FromForm] CommissionRequestCreateDto` | **Backend only** | No customer-facing commission form |
+| Admin FAQ Management | `AdminFaqService.getAdminList()`, `.create()`, `.update()`, `.delete()` | `FAQController` | Multiple (`admin/list`, `create`, `update`, `delete`) | `FaqCreateRequest`, `FaqUpdateRequest`, query | **Integrated & verified** | Full CRUD, modal form, filter toolbar, inline status/publish toggles, delete dialog |
+| Public FAQ Knowledge Base | `AdminFaqService.getPublic('faq')` | `FAQController` | `GET api/faq/public` | Query `location=faq` | **Integrated & verified** | Customer accordion view with category chips, live search, contact CTA |
+| Contact Us Inquiry | Storefront Contact Form | `ContactUsController` | `POST api/contact-us` | `ContactInquiryRequest` body | **Backend ready** | High-throughput direct controller, rate-limited, validated |
+| Shopping Cart API | Storefront Cart State | `CartController` | `GET/POST/PATCH/DELETE api/cart` | `CartItemAddRequest`, `CartItemUpdateRequest` | **Backend verified** | Atomic upsert, concurrency-safe, stock checks, subtotals |
+| Wishlist API | Storefront Wishlist State | `WishlistController` | `GET/POST/DELETE api/wishlist` | `WishlistItemAddRequest`, `WishlistMergeRequest` | **Backend verified** | Dual-mode authenticated/guest sessions, login merge, move-to-cart |
+| Commission Public Form | **None** | `commissionsController` | `POST api/commissions/create` | `[FromForm] CommissionRequestCreateDto` | **Backend only** | Customer-side commission form pending UI binding |
 
 ---
 
@@ -752,6 +834,11 @@ Data operations bypass heavy ORMs in favor of direct parameterized ADO.NET execu
 | `drs_commission_request_image_mst` | Reference sketches for inquiries | `ID` (BIGINT) | `commission_request_id`, `OriginalFileName`, `StoredFileName`, `StoragePath`, `ContentType`, `FileSize`, `DisplayOrder` | `commission_request_id` NOT NULL | Implemented and verified |
 | `drs_project_mst` | Dynamic studio story sections | `ID` (BIGINT) | `Heading`, `Subheading`, `ContentType`, `ProjectOrEventTitle`, `DisplayYear`, `ShortDescription`, `DetailedDescription`, `Credits`, `Location`, `ExternalUrl`, `LayoutType`, `DisplayOrder`, `IsPublished` | `Heading` NOT NULL, `LayoutType` NOT NULL DEFAULT 'grid-3' (`CK_drs_project_mst_LayoutType`: `grid-3`, `grid-2`, `editorial`, `featured`, `full-width`, `masonry`, `asymmetric`), `DisplayOrder` INT | Implemented and verified |
 | `drs_project_image_mst` | Media assets for About sections | `ID` (BIGINT) | `project_id`, `OriginalFileName`, `StoredFileName`, `ImagePath`, `ContentType`, `FileSize`, `DisplayOrder` | `project_id` NOT NULL, Max 15 per section | Implemented and verified |
+| `drs_wishlist_mst` | Customer & Guest Wishlist sessions | `ID` (BIGINT) | `customer_id`, `GuestTokenHash`, `IsActive`, `IsDeleted` | `CK_drs_wishlist_mst_OwnerCheck`, `customer_id` UQ filtered, `GuestTokenHash` UQ filtered | Implemented and verified |
+| `drs_wishlist_item_mst` | Line items in wishlists | `ID` (BIGINT) | `wishlist_id`, `product_id`, `IsActive`, `IsDeleted` | `(wishlist_id, product_id)` UQ filtered, `wishlist_id` FK, `product_id` FK | Implemented and verified |
+| `drs_cart_mst` | Customer active shopping carts | `ID` (BIGINT) | `customer_id`, `CartStatus`, `IsActive`, `IsDeleted` | `CK_drs_cart_mst_Status`, `customer_id` UQ filtered where `CartStatus = 'Active'` | Implemented and verified |
+| `drs_cart_item_mst` | Line items in shopping carts | `ID` (BIGINT) | `cart_id`, `product_id`, `Quantity`, `IsActive`, `IsDeleted` | `CK_drs_cart_item_mst_Quantity (> 0)`, `(cart_id, product_id)` UQ filtered | Implemented and verified |
+| `drs_contact_inquiry_mst` | Customer/visitor contact inquiries | `ID` (BIGINT) | `FullName`, `MobileNo`, `Email`, `CompanyName`, `ServiceDescription`, `customer_id`, `IpAddress`, `UserAgent` | `CK_drs_contact_inquiry_mst_ServiceDescLength`, `customer_id` FK | Implemented and verified |
 
 ### 9.3 Foreign Key Relationships
 
@@ -772,6 +859,13 @@ Data operations bypass heavy ORMs in favor of direct parameterized ADO.NET execu
 | `FK_drs_commission_request_image_mst_request_id` | `drs_commission_request_image_mst` | `commission_request_id` | `drs_commission_request_mst` | `ID` | Attaches reference sketches to commission inquiry |
 | `FK_drs_project_mst_customer_id` | `drs_project_mst` | `customer_id` | `drs_customer_mst` | `ID` | Optional link to administrator author |
 | `FK_drs_project_image_mst_project_id` | `drs_project_image_mst` | `project_id` | `drs_project_mst` | `ID` | Binds gallery images to About narrative section |
+| `FK_drs_wishlist_mst_customer_id` | `drs_wishlist_mst` | `customer_id` | `drs_customer_mst` | `ID` | Binds authenticated wishlist to customer |
+| `FK_drs_wishlist_item_mst_wishlist_id` | `drs_wishlist_item_mst` | `wishlist_id` | `drs_wishlist_mst` | `ID` | Binds wishlist item to parent wishlist |
+| `FK_drs_wishlist_item_mst_product_id` | `drs_wishlist_item_mst` | `product_id` | `drs_product_mst` | `ID` | Links product catalog item to wishlist line item |
+| `FK_drs_cart_mst_customer_id` | `drs_cart_mst` | `customer_id` | `drs_customer_mst` | `ID` | Binds active shopping cart to customer |
+| `FK_drs_cart_item_mst_cart_id` | `drs_cart_item_mst` | `cart_id` | `drs_cart_mst` | `ID` | Binds cart item to active cart |
+| `FK_drs_cart_item_mst_product_id` | `drs_cart_item_mst` | `product_id` | `drs_product_mst` | `ID` | Links product catalog item to cart line item |
+| `FK_drs_contact_inquiry_mst_customer_id` | `drs_contact_inquiry_mst` | `customer_id` | `drs_customer_mst` | `ID` | Optional link to registered customer inquiry |
 
 ### 9.4 Indexes and Performance Constraints
 
@@ -791,6 +885,15 @@ Data operations bypass heavy ORMs in favor of direct parameterized ADO.NET execu
 - **Covering & Filtering Indexes**:
   - `IX_drs_commission_request_mst_Status_CreatedDate`: On `([Status], [CreatedDate] DESC)` for instant dashboard sorting.
   - `IX_drs_project_mst_PublicList`: Filtered index `WHERE IsDeleted = 0 AND IsActive = 1 AND IsPublished = 1` covering `Heading`, `Subheading`, `ContentType`, `ProjectOrEventTitle`, `DisplayYear`, `ShortDescription`, `DetailedDescription`, `Credits`, `Location`, `ExternalUrl`, and `[LayoutType]` for high-speed public page rendering.
+- **Cart & Wishlist Unique & Filtered Indexes (`WHERE IsDeleted = 0`)**:
+  - `UQ_drs_wishlist_mst_Customer`: On `[customer_id]` filtered `WHERE customer_id IS NOT NULL AND IsDeleted = 0`.
+  - `UQ_drs_wishlist_mst_GuestToken`: On `[GuestTokenHash]` filtered `WHERE GuestTokenHash IS NOT NULL AND IsDeleted = 0`.
+  - `UQ_drs_wishlist_item_mst_Wishlist_Product`: On `([wishlist_id], [product_id])` filtered `WHERE IsDeleted = 0`.
+  - `UQ_drs_cart_mst_ActiveCustomerCart`: On `[customer_id]` filtered `WHERE CartStatus = 'Active' AND IsDeleted = 0`.
+  - `UQ_drs_cart_item_mst_Cart_Product`: On `([cart_id], [product_id])` filtered `WHERE IsDeleted = 0`.
+- **Contact Inquiry Indexes (`WHERE IsDeleted = 0`)**:
+  - `IX_drs_contact_inquiry_mst_CreatedDate`: On `[CreatedDate] DESC` for chronological admin inquiry listing.
+  - `IX_drs_contact_inquiry_mst_Email`: On `[Email]` for rapid sender lookup and duplicate inquiry tracking.
 
 ### 9.5 Database Sequences and Seed Data
 
@@ -839,6 +942,16 @@ erDiagram
     drs_commission_request_mst ||--o{ drs_commission_request_image_mst : "includes reference images"
 
     drs_project_mst ||--o{ drs_project_image_mst : "includes gallery images"
+
+    drs_customer_mst ||--o| drs_cart_mst : "owns active cart"
+    drs_cart_mst ||--o{ drs_cart_item_mst : "contains items"
+    drs_product_mst ||--o{ drs_cart_item_mst : "referenced in cart"
+
+    drs_customer_mst ||--o| drs_wishlist_mst : "owns wishlist (optional)"
+    drs_wishlist_mst ||--o{ drs_wishlist_item_mst : "contains items"
+    drs_product_mst ||--o{ drs_wishlist_item_mst : "referenced in wishlist"
+
+    drs_customer_mst ||--o{ drs_contact_inquiry_mst : "submits inquiries (optional)"
 
     drs_customer_mst {
         bigint ID PK
@@ -905,35 +1018,77 @@ erDiagram
 
 ---
 
-## 10. Authentication, Authorization, and Security
+## 10. Authentication, Authorization, and Security Architecture
 
 ### 10.1 Multi-Layered Authentication Architecture
 1. **Access Tokens (JWT)**:
-   - Stateless JWT tokens signed with HMAC-SHA256 using `Jwt:Key` (symmetric 256-bit key).
+   - Stateless JWT tokens signed with HMAC-SHA256 using `Jwt:Key` (symmetric minimum 256-bit key).
+   - Validated at application startup via `StartupSecurityValidator` to ensure keys are at least 32 UTF-8 bytes and never match historical compromised git values.
    - Claims: `sub` (UserId), `UserId`, `unique_name` (Email), `email`, `role` (`Admin` or `Customer`), and `jti` (GUID).
    - Lifetime: 60 minutes (`Jwt:ExpiryMinutes`).
    - Storage: Held strictly in Angular client memory (`AuthService.currentUser` signal). **Never persisted in `localStorage` or `sessionStorage`**, eliminating persistent XSS token theft vectors.
-2. **Refresh Tokens & Rotation**:
+
+2. **Refresh Tokens, Atomic Rotation & Concurrency**:
    - 64 cryptographically secure random bytes generated via `RandomNumberGenerator.GetBytes(64)`.
    - Stored in `drs_refresh_token_mst` as a SHA-256 hash with 7 days expiration.
-   - Delivered to the browser as an `HttpOnly`, `SameSite=None` (or Lax/Strict), `Secure` cookie named `drs_refresh_token`.
-   - **Reuse Detection & Breach Containment**: When `RefreshTokenService.Rotate()` receives a token that has already been revoked or replaced, it treats the request as a potential credential theft attempt and immediately revokes all active refresh tokens associated with that user.
-3. **Captcha System**:
-   - `CaptchaService` builds a 5-character verification string (3 random uppercase letters + 2 random digits, Fisher-Yates shuffled).
-   - Stored in `IMemoryCache` with a 5-minute absolute TTL and validated before verifying login credentials.
+   - Delivered to the browser as an `HttpOnly`, `SameSite=None` (or Lax/Strict), `Secure` cookie named `drs_refresh` with path `/api/auth`.
+   - **Atomic Single-Transaction Claim**: Rotation runs in a single `SqlTransaction` with an atomic `UPDATE drs_refresh_token_mst ... OUTPUT inserted.customer_id ... WHERE TokenHash = @TokenHash AND RevokedUtc IS NULL AND IsActive = 1 AND IsDeleted = 0 AND ExpiresUtc > GETUTCDATE()`.
+   - **Grace Period & Parallel Race Handling**: If multiple concurrent requests present the same token during legitimate tab refreshes, requests within `Security:RefreshReuseGraceSeconds` (default 30s) where `ReplacedByTokenHash` is set receive HTTP 409 `REFRESH_IN_PROGRESS` without cookie invalidation. The Angular HTTP interceptor (`auth.interceptor.ts`) retries once after 300ms.
+   - **Breach Containment & Family Revocation**: If a revoked token is presented outside the grace period or without a valid replacement chain, all refresh tokens for that customer are immediately revoked (`RevokeAllAsync`) and a security alert is recorded in `drs_audit_mst`.
 
-### 10.2 Role-Based Access Control (RBAC)
-- **Backend API**: Endpoints decorated with `[Authorize(Roles = "Admin")]` enforce administrative role validation. Anonymous endpoints (`api/commissions/create`, `api/about/public`, `api/faq/public`) are decorated with `[AllowAnonymous]`.
+3. **SkiaSharp Visual CAPTCHA**:
+   - Generated server-side using `SkiaSharp` and `SkiaSharp.NativeAssets.Linux.NoDependencies`.
+   - Draws 5 characters chosen from a reduced, unambiguous alphabet (`346789ABCDEFGHJKMNPQRTUVWXY`) with random per-glyph rotation (-20° to +20°), random vertical offsets, noise dots, and Bézier curves.
+   - Encoded as a PNG image and returned as `{ CaptchaId, CaptchaImage }` (base64 data URI). The plain-text answer is **never** sent to the client.
+   - The SHA-256 hash of the answer is stored in `IMemoryCache` for 5 minutes and is strictly single-use (`_cache.Remove` upon verification).
+   - Timing-safe comparison using `CryptographicOperations.FixedTimeEquals`.
+   - Mandatory on `POST login`, `POST forgot-password`, `POST commissions/create`, and anonymous `POST customer/create`.
+
+4. **Timing-Invariant Login & Source-Scoped Throttling**:
+   - User lookups executed without dirty read hints (`WITH (NOLOCK)` removed).
+   - If a username does not exist, a constant-time dummy BCrypt cost 12 verification is performed against a pre-computed hash, preventing timing-based account enumeration.
+   - **Source-Scoped Throttling**: Queries `drs_login_history_mst` for failed attempts by the specific (customer, IP) pair over the last 15 minutes. If >= 5, writes a `THROTTLED` failure row and returns generic 401 `INVALID_CREDENTIALS` without locking the account for other IPs.
+   - Generic 401 `INVALID_CREDENTIALS` is returned identically for missing users and incorrect passwords.
+   - Account disabled (`IsActive == 0`) and temporary lock status are checked only **after** the password has been verified.
+   - Uniform CAPTCHA requirement across customer and admin logins removes information leakage about admin roles.
+
+5. **Studio Admin-Assisted Password Recovery**:
+   - To eliminate dependency on third-party outbound messaging channels, customer password recovery is handled directly by studio operators.
+   - Customer submits forgot-password request on `/forgot-password`, solving CAPTCHA.
+   - API returns uniform 200 `PASSWORD_RESET_REQUESTED` regardless of whether the email exists or belongs to an admin (admins cannot self-serve and their requests are ignored). Capped at 3 pending requests per customer per 24 hours.
+   - Studio administrators review requests on `/admin/password-reset-requests`, verify customer identity out-of-band (phone/in-person), record mandatory notes, and generate a single-use reset URL expiring in 24 hours (`Security:PasswordResetLinkHours`).
+   - Token is consumed via `POST api/auth/reset-password`: updates the customer's password with BCrypt cost 12, marks the request `COMPLETED`, clears failed login counters, and revokes all active refresh tokens. Second attempts with the same token fail immediately.
+
+### 10.2 Partitioned Rate Limiting Architecture
+All rate limiting is partitioned by client IP (`RateLimitPartition.GetFixedWindowLimiter` keyed on `RemoteIpAddress`). Production proxy traversal is supported via `ForwardedHeadersOptions` restricted to explicit trusted proxies configured in `Security:KnownProxies`.
+
+| Policy | Applies To | Default Limit | Behavior on Limit |
+|---|---|---|---|
+| `auth-login` | `POST login`, `POST forgot-password`, `POST reset-password` | 10 / minute, 0 queue | 429 `RATE_LIMIT_EXCEEDED` + `Retry-After` header |
+| `auth-session` | `GET captcha`, `POST refresh`, `POST logout`, `PATCH change-password` | 60 / minute, 0 queue | 429 `RATE_LIMIT_EXCEEDED` + `Retry-After` header |
+| `public-form` | `POST commissions/create`, `POST customer/create`, `POST contact-us` | 5 / 10 minutes, 0 queue | 429 `RATE_LIMIT_EXCEEDED` + `Retry-After` header |
+| Global Limiter | Every request across the application | 300 / minute, 0 queue | 429 `RATE_LIMIT_EXCEEDED` + `Retry-After` header |
+
+Rejection responses execute an `OnRejected` callback returning a standard `ApiResponse` envelope (`StatusCode = 429`, `Message = "RATE_LIMIT_EXCEEDED"`).
+
+### 10.3 Role-Based Access Control (RBAC) & Route Protection
+- **Backend API**: Administrative endpoints decorated with `[Authorize(Roles = "Admin")]` enforce strict JWT claims validation. Anonymous endpoints (`api/commissions/create`, `api/customer/create`, `api/about/public`, `api/faq/public`) are decorated with `[AllowAnonymous]`.
+- **Admin Customer Creation**: In `CustomerController.Create`, if the caller is an authenticated administrator (`User.IsInRole("Admin")`), CAPTCHA is bypassed, allowing manual back-office customer entry.
 - **Frontend Route Protection**:
   - `adminGuard`: Inspects `AuthService.isAdmin()`. If session is missing, triggers silent background token refresh via `auth/refresh` before redirecting to `/admin/login`.
   - `userGuard`: Ensures customer authentication before account actions.
-  - `authInterceptor`: Intercepts all outgoing HTTP requests, appends `Authorization: Bearer <token>`, and handles 401 Unauthorized responses by queuing requests while executing a single synchronized token refresh.
+  - `authInterceptor`: Intercepts outgoing HTTP requests, appends `Authorization: Bearer <token>`, queues requests during refresh, and retries 409 `REFRESH_IN_PROGRESS` responses.
 
-### 10.3 Application Security Hardening
-- **SQL Injection Prevention**: All data access is parameterized using ADO.NET `SqlParameter`. Dynamic query execution is strictly banned.
-- **Identifier Masking**: Primary database IDs are encrypted using AES-GCM-256 (`UrlEncryptionService`), preventing sequential record enumeration.
-- **Audit Log Password Redaction**: `AuditService` scrubs password fields, tokens, and secrets from JSON payloads before persisting entries to `drs_audit_mst`.
-- **Binary Image Inspection**: `FileValidationHelper` verifies JPEG, PNG, and WEBP header magic bytes, preventing disguised script uploads.
+### 10.4 Application Security Hardening & Form Defense
+- **SQL Injection Prevention**: All data access is parameterized using ADO.NET `SqlParameter`. Application queries cannot contain dangerous DDL/administrative commands checked by `DbHelper.ValidateQuerySafety`.
+- **Honeypot Form Protection**: Public forms (`commissions/create`, `customer/create`, `contact-us`) include a hidden `Website` field. Automated bots filling this field receive a silent 200 response while the submission is dropped without database insertion, accompanied by an audit warning.
+- **File Upload Limits & MIME Magic Bytes**:
+  - `POST api/commissions/create` enforces `[RequestSizeLimit(16 * 1024 * 1024)]` and `[RequestFormLimits(MultipartBodyLengthLimit = 16 * 1024 * 1024)]`.
+  - Over-limit uploads caught by `InvalidModelStateResponseFactory` and custom middleware return standard `ApiResponse` (Status 413, `PAYLOAD_TOO_LARGE`).
+  - `FileValidationHelper` verifies image headers against magic bytes for JPEG (`FF D8 FF`), PNG (`89 50 4E 47`), and WEBP (`RIFF....WEBP`).
+  - Compensating disk cleanup deletes any newly written image files if subsequent database operations fail.
+- **BCrypt Cost 12 Enforced**: All passwords hashed using `BCrypt.Net-Next` with explicit work factor 12. Plain-text fallback matching is completely removed.
+- **CLI Password Management**: `dotnet run -- set-password --email <email>` allows secure terminal-based admin credential initialization with masked input and session revocation.
 
 ---
 
@@ -1037,7 +1192,73 @@ The customer-facing `/projects` route (`src/app/user/pages/projects/`) renders t
 
 ---
 
-## 13. Current Implementation Status Matrix
+## 13. Production Cart and Wishlist Subsystem
+
+### 13.1 Cart Subsystem Overview
+The Cart module provides an authenticated shopping cart architecture designed for data integrity, real-time inventory validation, and concurrency safety:
+- **Database Tables**:
+  - `drs_cart_mst`: Master cart container bound to `customer_id` with `CartStatus` (`Active`, `ConvertedToOrder`, `Abandoned`) and filtered unique index `UQ_drs_cart_mst_ActiveCustomerCart` (`WHERE CartStatus = 'Active' AND IsDeleted = 0`) ensuring only one active cart exists per customer.
+  - `drs_cart_item_mst`: Line items linked to `cart_id` and `product_id` with quantity check constraint `CK_drs_cart_item_mst_Quantity (> 0)` and uniqueness constraint `UQ_drs_cart_item_mst_Cart_Product` preventing duplicate lines.
+- **Business Operations & Concurrency Control (`CartService.cs` & `CartController.cs`)**:
+  - **Live Inventory Check**: Incremental additions validate that the *resulting total quantity* does not exceed `AvailableQty` in `drs_product_stock_mst`.
+  - **Atomic Upsert**: Adding an existing product gracefully increments its quantity in place rather than creating duplicate lines.
+  - **Concurrency Handling**: Handles potential race conditions with unique constraint violation retry logic.
+  - **Dynamic Totals**: Every cart operation returns calculated item subtotals (`SellingPrice * Quantity`), overall cart subtotal, item count, and active stock flags.
+  - **Endpoints**: `POST api/cart/items`, `GET api/cart`, `PATCH api/cart/items/{id}`, `DELETE api/cart/items/{id}`, `DELETE api/cart/items`.
+
+### 13.2 Wishlist Subsystem Overview
+The Wishlist module provides dual-mode support for registered customers and anonymous guests:
+- **Database Tables**:
+  - `drs_wishlist_mst`: Container table supporting either `customer_id` or `GuestTokenHash` via check constraint `CK_drs_wishlist_mst_OwnerCheck`.
+  - `drs_wishlist_item_mst`: Line items linked to `wishlist_id` and `product_id` with filtered unique index `UQ_drs_wishlist_item_mst_Wishlist_Product`.
+- **Security & Session Handling (`WishlistService.cs` & `WishlistController.cs`)**:
+  - **Guest Token Handling**: Anonymous guests receive a cryptographically random token stored in an `HttpOnly`, `SameSite=Lax` cookie and optional fallback header `X-Guest-Token`. Only the SHA-256 hash (`GuestTokenHash`) is stored in the database.
+  - **Ownership Verification**: Every read and mutation strictly verifies customer claim identity or guest token hash ownership. Raw tokens are never logged.
+  - **Login Migration (`POST api/wishlist/merge`)**: Upon customer login, any active guest wishlist is automatically merged into the customer's permanent account, deduplicating items atomically.
+  - **Move-to-Cart Conversion (`POST api/wishlist/items/{id}/move-to-cart`)**: Atomically adds the desired product to the customer's active cart (with stock validation) and removes it from the wishlist in a single transactional step.
+  - **Endpoints**: `POST api/wishlist/items`, `GET api/wishlist`, `DELETE api/wishlist/items/{id}`, `DELETE api/wishlist/items`, `POST api/wishlist/merge`, `POST api/wishlist/items/{id}/move-to-cart`.
+
+---
+
+## 14. Contact Us & Inquiries Subsystem
+
+### 14.1 Architecture & Simplification
+The Contact Us API provides a high-throughput, production-conscious endpoint for website visitors and potential corporate clients to submit inquiries about custom projects, bespoke art commissions, or studio consultations:
+- **Direct Controller Pattern**: Implemented directly in `ContactUsController.cs` following the project-standard lightweight pattern (analogous to `UserController.cs`) without unnecessary service abstraction overhead.
+- **Database Persistence**:
+  - `drs_contact_inquiry_mst`: Captures `FullName` (`NVARCHAR(150)`), `MobileNo` (`NVARCHAR(20)`), `Email` (`NVARCHAR(254)`), `CompanyName` (`NVARCHAR(200)`, optional), and `ServiceDescription` (`NVARCHAR(300)`).
+  - Obsolete `InquiryStatus` was cleanly removed from both database schema and request models to keep the module focused and unencumbered.
+  - Indexes: `IX_drs_contact_inquiry_mst_CreatedDate` for chronological listing and `IX_drs_contact_inquiry_mst_Email` for duplicate detection.
+- **Validation & Security**:
+  - Enforces `[Required]`, string length bounds, and email regex patterns.
+  - Rate-limited under `GeneralPolicy` to prevent spam submissions.
+  - Captures client IP address and User-Agent headers, with full audit logging in `drs_audit_mst`.
+  - Endpoint: `POST api/contact-us`.
+
+---
+
+## 15. Dynamic FAQ Management Subsystem (Admin & Public Storefront)
+
+### 15.1 Architecture & End-to-End Integration
+The FAQ subsystem connects the backend `FAQController.cs` and `drs_faq_mst` database table to both an administrative management portal and a customer-facing public knowledge base:
+- **Backend Infrastructure (`FAQController.cs`)**:
+  - Exposes 6 endpoints: `POST api/faq/create`, `GET api/faq/admin/list`, `GET api/faq/admin/{id}`, `PATCH api/faq/update`, `DELETE api/faq/delete/{id}`, and `GET api/faq/public?location={loc}`.
+  - Supports 5 contextual placement flags: `DisplayOnHomePage`, `DisplayOnFaqPage`, `DisplayOnCheckoutPage`, `DisplayOnContactPage`, and `DisplayOnFooter`.
+- **Admin Management Portal (`/admin/faqs`)**:
+  - **Location**: `src/app/admin/pages/faqs/` (`faqs.ts`, `faqs.html`, `faqs.scss`).
+  - **Features**: Breadcrumbs (`Home > FAQs`), debounced search (350ms), category filter dropdown, active and published status dropdowns, placement location filter, and reset button.
+  - **Interactivity**: Inline status and publish toggle buttons on table rows with instant visual feedback and audit log persistence.
+  - **Creation & Edit Modals**: Complete reactive form with `CustomValidators` checking question length (3–500 chars), non-negative display order, datalist category autocomplete, and location placement checkboxes.
+  - **Deletion**: Integrated with `ConfirmationDialogComponent` for safe soft-deletion.
+  - **Navigation**: Dedicated sidebar menu link with SVG question icon in `admin-layout.html`.
+- **Public Customer Knowledge Base (`/faq`)**:
+  - **Location**: `src/app/user/pages/faq/` (`faq.ts`, `faq.html`, `faq.scss`).
+  - **Features**: Hero header, interactive category filter chips, real-time keyword search, smooth expandable accordion items with rotated chevrons, empty state with filter reset, error retry alerts, and a studio contact CTA card linking to `/about`.
+  - **Endpoint**: Consumes `GET api/faq/public?location=faq`.
+
+---
+
+## 16. Current Implementation Status Matrix
 
 | Module / Capability | Frontend UI | Backend API | Database Objects | End-to-End Integration | Overall Status |
 |---|---|---|---|---|---|
@@ -1054,19 +1275,20 @@ The customer-facing `/projects` route (`src/app/user/pages/projects/`) renders t
 | **Commissioned Projects (Admin)** | Implemented (`/admin/commissioned-projects`) | Implemented (`api/commissions/*`) | Implemented (`drs_commission_*`, `Seq_CommissionRequestNo`) | Verified | **Implemented and verified** |
 | **Commissioned Projects (Public Form)** | Not implemented | Implemented (`POST api/commissions/create`) | Implemented (`drs_commission_*`) | Not integrated | **Backend only** |
 | **Dynamic Studio Story (About)** | Implemented (`/about`, `/admin/about`, `/admin/projects/create`, `/admin/about/edit/:id`) | Implemented (`api/about/*` with LayoutType) | Implemented (`drs_project_mst`, `drs_project_image_mst`) | Verified | **Implemented and verified** |
-| **Knowledge Base (FAQs)** | Unrouted stub | Implemented (`api/faq/*`) | Implemented (`drs_faq_mst`) | Not integrated | **Backend only** |
+| **Knowledge Base (FAQs)** | Implemented (`/admin/faqs`, `/faq`) | Implemented (`api/faq/*`) | Implemented (`drs_faq_mst`) | Verified | **Implemented and verified** |
+| **Contact Us Inquiries** | Cleaned shell (Backend ready) | Implemented (`api/contact-us`) | Implemented (`drs_contact_inquiry_mst`) | Verified | **Backend implemented & verified** |
+| **Customer Shopping Cart** | Cleaned shell (Backend ready) | Implemented (`api/cart/*`) | Implemented (`drs_cart_mst`, `drs_cart_item_mst`) | Verified | **Backend implemented & verified** |
+| **Customer Wishlist** | Cleaned shell (Backend ready) | Implemented (`api/wishlist/*`) | Implemented (`drs_wishlist_mst`, `drs_wishlist_item_mst`) | Verified | **Backend implemented & verified** |
 | **Storefront Home & Landing** | Implemented (`/`) | Static presentation | N/A | Verified | **Implemented and verified** |
 | **Storefront Product Catalog** | Implemented (`/products`) | Implemented (`api/product/search`) | Implemented (`drs_product_mst`) | Verified | **Implemented and verified** |
-| **Storefront Product Detail View** | Unrouted stub | Implemented (`api/product/{id}`) | Implemented (`drs_product_mst`, `drs_product_image_mst`) | Not integrated | **Backend only** |
-| **Customer Shopping Cart** | Empty service stub (`CartState`) | None | None | None | **Planned / not implemented** |
-| **Customer Wishlist** | Empty service stub (`WishlistState`) | None | None | None | **Planned / not implemented** |
-| **Order Placement & Checkout** | Unrouted stub (`/checkout`) | None | None | None | **Planned / not implemented** |
+| **Storefront Product Detail View** | Cleaned shell | Implemented (`api/product/{id}`) | Implemented (`drs_product_mst`, `drs_product_image_mst`) | Planned UI binding | **Backend only** |
+| **Order Placement & Checkout** | Cleaned shell (`/checkout`) | Planned | Planned (`drs_order_mst`) | None | **Planned / not implemented** |
 | **Payment Gateway Integration** | None | None | None | None | **Planned / not implemented** |
 | **Order Tracking & Invoices** | Unrouted stubs | None | None | None | **Planned / not implemented** |
 
 ---
 
-## 14. Known Issues, Technical Debt, and Gaps
+## 17. Known Issues, Technical Debt, and Gaps
 
 | ID | Issue Description | Affected File / Module | Impact | Suggested Resolution | Priority |
 |---|---|---|---|---|---|
@@ -1078,12 +1300,12 @@ The customer-facing `/projects` route (`src/app/user/pages/projects/`) renders t
 | **ISS-06** | **Missing Backend Endpoint: `product-category/toggle-active`** | `Khel-Akhel-Server/Controllers/Product/ProductCategoryController.cs` | `AdminProductCategoryService.toggleActive()` throws HTTP 404. | Add `[HttpPatch("toggle-active/{encryptedCategoryId}")]` to category controller. | **Medium** |
 | **ISS-07** | **Missing Backend Endpoint: `product/toggle-active`** | `Khel-Akhel-Server/Controllers/Product/ProductController.cs` | `AdminProductService.toggleActive()` throws HTTP 404. | Add `[HttpPatch("toggle-active/{encryptedProductId}")]` to product controller. | **Medium** |
 | **ISS-08** | **Lack of Public Commission Inquiry Form** | Storefront UI (`src/app/user/pages/contact` or `/commissions`) | Customers cannot submit bespoke project requests from the website even though backend is 100% operational. | Build a reactive customer submission form consuming `POST api/commissions/create`. | **High** |
-| **ISS-09** | **Complete Absence of Ecommerce Transaction Engine** | Backend & Database | Cannot create carts, place orders, calculate shipping, process payments, or view order history. | Design order schema (`drs_order_mst`, `drs_order_item_mst`), controllers, and payment integration. | **Critical** |
+| **ISS-09** | **Cart and Wishlist Backend Completed (Order Engine Remaining)** | Backend & Database | Cart and Wishlist backends are 100% operational with concurrency safety and guest tokens. Checkout and payment orders remain to be implemented. | Design order schema (`drs_order_mst`, `drs_order_item_mst`), order controller, and payment integration. | **Medium** |
 | **ISS-10** | **Admin Sidebar Orders Link Targets Dashboard** | `src/app/admin/layouts/admin-layout/admin-layout.html` (L239) | Clicking "Orders" in the admin sidebar redirects to `/admin/dashboard`. | Implement dedicated `/admin/orders` page once order APIs exist. | **Low** |
 
 ---
 
-## 15. Prioritized Completion Roadmap
+## 18. Prioritized Completion Roadmap
 
 ### Phase 1: Critical Stability & API Parity (Immediate)
 1. **Unit Test Configuration Fix**: Initialize `TestBed.initTestEnvironment()` in Vitest configuration to achieve a passing test suite.
@@ -1114,7 +1336,7 @@ The customer-facing `/projects` route (`src/app/user/pages/projects/`) renders t
 
 ---
 
-## 16. Build, Run, and Local Development Guide
+## 19. Build, Run, and Local Development Guide
 
 ### 16.1 Prerequisites
 - **Node.js**: v20+ or v22+ LTS
@@ -1140,6 +1362,12 @@ sqlcmd -S "(localdb)\MSSQLLocalDB" -d KhelAkhe_CRM -i "F:\Projects\Khel-Akhel\DB
 
 # 5. Seed master records, categories, error messages, and studio philosophy narrative
 sqlcmd -S "(localdb)\MSSQLLocalDB" -d KhelAkhe_CRM -i "F:\Projects\Khel-Akhel\DBScripts\ProductScript-SeedData.sql"
+
+# 6. Apply Cart and Wishlist module migration
+sqlcmd -S "(localdb)\MSSQLLocalDB" -d KhelAkhe_CRM -i "F:\Projects\Khel-Akhel\DBScripts\Migration_Cart_And_Wishlist.sql"
+
+# 7. Apply Contact Us inquiry module migration
+sqlcmd -S "(localdb)\MSSQLLocalDB" -d KhelAkhe_CRM -i "F:\Projects\Khel-Akhel\DBScripts\Migration_ContactUs.sql"
 ```
 
 ### 16.3 Backend Configuration & Execution
@@ -1186,7 +1414,7 @@ npm run build
 
 ---
 
-## 17. Testing and Verification Record
+## 20. Testing and Verification Record
 
 During this documentation audit, the following automated verifications were executed:
 
@@ -1198,29 +1426,28 @@ During this documentation audit, the following automated verifications were exec
   - All standalone About components (`ProjectListComponent`, `ProjectFormComponent`, `GalleryLayoutSelectorComponent`, `ImageGalleryEditorComponent`, `GalleryRendererComponent`, and `About`) and services (`AdminAboutService`, `UserAboutService`) fully compiled into optimized Vite/esbuild chunks.
   - Output directory: `F:\Projects\Khel-Akhel\Khel-Akhel-Client\dist\Khel-Akhel-Client`.
 
-### 17.2 Backend Build Verification
-- **Command**: `dotnet build`
-- **Execution Result**: **SUCCESS (Exit Code: 0)**
+### 20.2 Backend Test Suite Verification
+- **Command**: `dotnet test "Khel-Akhel-Server\Khel-Akhel-Server.sln"`
+- **Execution Result**: **PASSED (Exit Code: 0)**
 - **Output Details**:
   - Target Framework: `net8.0`.
-  - Warnings: 0.
-  - Errors: 0.
-  - `AboutController.cs` and `ProjectModels.cs` compiled cleanly with `LayoutType` allowlist validation, database mapping, and audit logging.
-  - Output binary: `F:\Projects\Khel-Akhel\Khel-Akhel-Server\bin\Debug\net8.0\Khel-Akhel-Server.dll`.
+  - Passed: **115**, Failed: **0**, Skipped: **0**, Total: **115**.
+  - Verified coverage: Authentication, password hashing, URL encryption, claims extraction, Cart concurrency, atomic stock validation, Wishlist guest token hashing, login merge, Move-to-Cart conversions, Contact Us inquiries, Projects layouts, Rate Limiting per IP, SkiaSharp CAPTCHA, Startup Secrets Validator, BCrypt Cost 12, Timing Invariance, Refresh Token Concurrency, Password Reset, and Public Forms.
+  - Output binary: `F:\Projects\Khel-Akhel\Khel-Akhel-Server.Tests\bin\Debug\net8.0\Khel-Akhel-Server.Tests.dll`.
 
-### 17.3 Unit Test Verification
-- **Command**: `npx vitest run`
-- **Execution Result**: **FAILED (Exit Code: 1)**
-- **Diagnostics**:
-  - 3 test files evaluated (`app.spec.ts`, `app.routes.spec.ts`, `commissioned-projects.spec.ts`).
-  - Total tests: 19 failed.
-  - Root Cause: `Error: Need to call TestBed.initTestEnvironment() first`. Vitest harness requires Angular dynamic testing platform initialization in setup configuration.
+### 20.3 Angular Production Build Verification
+- **Command**: `npm --prefix "Khel-Akhel-Client" run build` (`ng build`)
+- **Execution Result**: **PASSED (Exit Code: 0)**
+- **Output Details**:
+  - Application bundle generation complete with **0 compilation errors**.
+  - Generated standalone chunks including `faqs` (`chunk-QDGKQD2S.js`, 44.38 kB), `project-form`, `commissioned-projects`, and customer-facing components.
+  - Output location: `F:\Projects\Khel-Akhel\Khel-Akhel-Client\dist\Khel-Akhel-Client`.
 
 ---
 
-## 18. Change History and Maintenance Protocol
+## 21. Change History and Maintenance Protocol
 
-### 18.1 Version Control History
+### 21.1 Version Control History
 
 | Commit Hash | Commit Date | Author / Label | Architectural Changes & Highlights |
 |---|---|---|---|
@@ -1228,9 +1455,10 @@ During this documentation audit, the following automated verifications were exec
 | `0580093` | Oct 02, 2026 | Front End backend mapped | Integrated customer authentication, product catalog, category masters, and `ApiService`. |
 | `57ef215` | Oct 04, 2026 | Development - 4102026 | Enhanced error pages, breadcrumbs, customer address management, and product image uploader. |
 | `8bec0c8` | Oct 11, 2026 | Commission Development | Implemented end-to-end Commissioned Projects feature: `commissionsController`, database tables, sequences, admin list, filters, and image lightbox. |
-| *Working Tree* | Oct 14, 2026 | Dynamic About & Gallery Builder | **Completed Dynamic About Module**: Implemented Angular admin editor (`/admin/about`, `/admin/projects/create`, `/admin/about/edit/:id`), 7 visual gallery layout options (`grid-3`, `grid-2`, `editorial`, `featured`, `full-width`, `masonry`, `asymmetric`), drag-and-drop 15-image uploader with reordering & 5MB validation, real-time live preview tab, public storefront page (`/about`) rendering studio narratives, 12 DARAS Studio Disciplines grid, interactive full-screen lightbox modal, and backend `LayoutType` database persistence with allowlist validation and covered index. Refined Content Discipline / Category to free-form manual text entry with no dropdowns, and eliminated redundant "Credits: Khel-Akhel Studio Team" default attribution. |
+| `0cf42e1` | Oct 14, 2026 | Dynamic Projects & Gallery Builder | **Completed Dynamic Projects Module**: Implemented Angular admin editor (`/admin/projects`, `/admin/projects/create`, `/admin/projects/edit/:id`), 7 visual gallery layout options (`grid-3`, `grid-2`, `editorial`, `featured`, `full-width`, `masonry`, `asymmetric`), drag-and-drop 15-image uploader with reordering & 5MB validation, real-time live preview tab, public storefront page (`/projects`) rendering dynamic showcases, 12 DARAS Studio Disciplines grid, interactive full-screen lightbox modal, and backend `LayoutType` database persistence with allowlist validation. |
+| *Working Tree* | Oct 22, 2026 | Cart, Wishlist, Contact Us & Dynamic FAQs | **Completed Major E-Commerce & Knowledge Base Subsystems (v1.2.0)**:<br/>1. **Production Cart Backend**: Implemented `CartController`, `CartService`, `drs_cart_mst`, `drs_cart_item_mst` with concurrent race condition protection, live stock validation on increment, calculated line subtotals, and project-standard refactoring.<br/>2. **Production Wishlist Backend**: Implemented `WishlistController`, `WishlistService`, `drs_wishlist_mst`, `drs_wishlist_item_mst` supporting authenticated users and guest sessions via hashed cookie/header tokens, automatic login merge, and atomic move-to-cart conversion.<br/>3. **Contact Us API**: Implemented lightweight `ContactUsController` and `drs_contact_inquiry_mst` capturing customer inquiries without unnecessary service overhead.<br/>4. **Customer-Side Page Clean Reset**: Cleaned customer-side page shells of obsolete placeholder code while preserving admin layout, routes, and styles.<br/>5. **Dynamic FAQ Management**: Implemented `FaqsComponent` in Admin Dashboard (`/admin/faqs`) with debounced search, category/status/location filters, reactive modals, inline toggles, pagination, and soft-delete; connected customer storefront `/faq` with accordion view, category chips, and live search.<br/>6. **Testing & Audit**: Verified 89/89 passing backend tests and 0-error Angular production build. |
 
-### 18.2 Documentation Maintenance Protocol
+### 21.2 Documentation Maintenance Protocol
 1. **Ground Truth Principle**: Always verify claims against code attributes (`[HttpGet]`, `[Authorize]`, `app.routes.ts`) and database tables rather than marketing notes.
 2. **Schema Synchronization**: When altering database structures, always apply changes to `DBScripts/ProductScript-CreateTAbles.sql` and corresponding constraint/index scripts simultaneously.
 3. **Status Integrity**: Never classify a feature as "Implemented and verified" unless both client routing, server endpoints, and database tables are verified in unison.

@@ -8,7 +8,7 @@ export interface PortalLoginRequest {
 
 export interface CaptchaResponseData {
   captchaId: string;
-  captcha: string;
+  captchaImage: string;
 }
 
 export interface AuthResponseData {
@@ -16,6 +16,12 @@ export interface AuthResponseData {
   expiresIn: number;
   isAdmin?: boolean | number | string;
   role?: string;
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
 }
 
 export interface UserSession {

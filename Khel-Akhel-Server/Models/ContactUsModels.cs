@@ -80,6 +80,11 @@ namespace Khel_Akhel_Server.Models
             get => _serviceDescription;
             set => _serviceDescription = value?.Trim() ?? string.Empty;
         }
+
+        /// <summary>
+        /// Honeypot field for spam prevention. Must remain empty for valid user submissions.
+        /// </summary>
+        public string? Website { get; set; }
     }
     #endregion
 

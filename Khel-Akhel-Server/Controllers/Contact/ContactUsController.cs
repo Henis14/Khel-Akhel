@@ -13,7 +13,7 @@ namespace Khel_Akhel_Server.Controllers.Contact
 {
     [ApiController]
     [Route("api/contact-us")]
-    [EnableRateLimiting("ContactUsPolicy")]
+    [EnableRateLimiting("public-form")]
     public class ContactUsController : ControllerBase
     {
         private readonly DbHelper _db;
@@ -77,6 +77,28 @@ namespace Khel_Akhel_Server.Controllers.Contact
                             StatusCode = 400,
                             Message = "REQUEST_BODY_REQUIRED",
                             Errors = new List<string> { "Request body cannot be null." },
+                        }
+                    );
+                }
+
+                // Honeypot check
+                if (!string.IsNullOrWhiteSpace(request.Website))
+                {
+                    sw.Stop();
+                    Logs.Warning($"Honeypot triggered for SubmitInquiry from IP {GetClientIpAddress()}");
+                    return Ok(
+                        new ApiResponse
+                        {
+                            Success = true,
+                            StatusCode = 200,
+                            Message = "CONTACT_INQUIRY_SUBMITTED",
+                            Data = new ContactInquirySubmitResult
+                            {
+                                EncryptedInquiryId = string.Empty,
+                                FullName = request.FullName,
+                                Email = request.Email,
+                                ConfirmationMessage = "Your inquiry has been received. Our team will contact you shortly.",
+                            },
                         }
                     );
                 }

@@ -1,1 +1,161 @@
-<p>faq works!</p>
+<div class="faq-container">
+  <!-- Hero Section -->
+  <section class="faq-hero">
+    <div class="faq-hero-content">
+      <span class="faq-tag">Help Center</span>
+      <h1 class="faq-title">Frequently Asked Questions</h1>
+      <p class="faq-subtitle">
+        Have questions about our studio works, commissioned projects, shipping, or returns?
+        Find answers to our most common inquiries below.
+      </p>
+
+      <!-- Search Input -->
+      <div class="faq-search-wrapper">
+        <svg
+          class="search-icon"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input
+          type="text"
+          class="faq-search-input"
+          placeholder="Search by keywords (e.g. shipping, returns, custom art)..."
+          [(ngModel)]="searchQuery"
+          (input)="onSearch()"
+        />
+        @if (searchQuery) {
+          <button class="clear-search" (click)="searchQuery = ''; onSearch()">✕</button>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Categories Filter -->
+  @if (categories.length > 1) {
+    <div class="categories-bar">
+      <div class="categories-scroll">
+        @for (cat of categories; track cat) {
+          <button
+            type="button"
+            class="category-pill"
+            [class.active]="selectedCategory === cat"
+            (click)="selectCategory(cat)"
+          >
+            {{ cat }}
+          </button>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Error Feedback -->
+  @if (errorMessage) {
+    <div class="faq-alert alert-error">
+      <span>{{ errorMessage }}</span>
+      <button class="btn-retry" (click)="loadFaqs()">Retry</button>
+    </div>
+  }
+
+  <!-- Loading State -->
+  @if (loading) {
+    <div class="faq-loader">
+      <div class="spinner"></div>
+      <p>Loading questions...</p>
+    </div>
+  } @else {
+    <!-- Accordion List -->
+    <div class="faq-accordion-section">
+      @if (filteredFaqs.length > 0) {
+        <div class="accordion-list">
+          @for (faq of filteredFaqs; track faq.encryptedFaqId; let idx = $index) {
+            <div
+              class="accordion-item"
+              [class.open]="isExpanded(idx)"
+              (click)="toggleAccordion(idx)"
+            >
+              <div class="accordion-header">
+                <div class="header-left">
+                  @if (faq.category) {
+                    <span class="faq-category-label">{{ faq.category }}</span>
+                  }
+                  <h3 class="question-text">{{ faq.question }}</h3>
+                </div>
+                <div class="chevron-wrapper" [class.rotated]="isExpanded(idx)">
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </div>
+              </div>
+
+              @if (isExpanded(idx)) {
+                <div class="accordion-body" (click)="$event.stopPropagation()">
+                  <p class="answer-text">{{ faq.answer }}</p>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      } @else {
+        <!-- Empty State -->
+        <div class="faq-empty-state">
+          <svg
+            class="empty-icon"
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+          <h3>No Questions Found</h3>
+          <p>
+            @if (searchQuery || selectedCategory !== 'All') {
+              We couldn't find any questions matching your filter. Try adjusting your search keywords.
+            } @else {
+              No FAQs have been published yet. Please check back soon or get in touch with our team.
+            }
+          </p>
+          @if (searchQuery || selectedCategory !== 'All') {
+            <button
+              class="btn-reset-filter"
+              (click)="searchQuery = ''; selectedCategory = 'All'; filterFaqs()"
+            >
+              Reset Filters
+            </button>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Contact CTA Box -->
+  <section class="faq-contact-cta">
+    <div class="cta-card">
+      <div class="cta-content">
+        <h3>Still have questions?</h3>
+        <p>Can't find the answer you're looking for? Reach out to our studio team directly.</p>
+      </div>
+      <div class="cta-action">
+        <a routerLink="/about" class="cta-button">Contact Us</a>
+      </div>
+    </div>
+  </section>
+</div>

@@ -1,42 +1,172 @@
-<div class="user-login-wrapper">
-  <div class="login-card card">
-    <h2>Customer Login</h2>
-    <p class="subtitle">Sign in to your Khel-Akhel customer account</p>
+<section class="login-page" aria-labelledby="login-title">
+  <div class="login-panel">
+    <div class="login-card">
+      <header class="login-header">
+        <h1 id="login-title" class="login-title">Sign in</h1>
+      </header>
 
-    @if (errorMessage()) {
-      <div class="alert alert-danger">
-        {{ errorMessage() }}
-      </div>
-    }
+      @if (errorMessage()) {
+        <div class="login-alert" role="alert">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 7.5v5.5M12 16.5v.01" stroke-linecap="round" />
+          </svg>
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
 
-    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-      <div class="form-group">
-        <label>Email or Mobile Number</label>
-        <input type="text" class="form-control" formControlName="userName" placeholder="Enter your email or mobile" />
-        @if (f['userName'].touched && f['userName'].invalid) {
-          <div class="invalid-feedback">
-            Email or mobile number is required.
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+        <!-- Email or mobile -->
+        <div class="field" [class.has-error]="f['userName'].touched && f['userName'].invalid">
+          <label for="loginUserName">Email or mobile number</label>
+          <input
+            id="loginUserName"
+            type="text"
+            formControlName="userName"
+            autocomplete="username"
+            inputmode="email"
+            [attr.aria-invalid]="f['userName'].touched && f['userName'].invalid"
+            aria-describedby="loginUserNameError"
+          />
+          @if (f['userName'].touched && f['userName'].errors?.['required']) {
+            <p id="loginUserNameError" class="field-error">Enter your email or mobile number.</p>
+          }
+        </div>
+
+        <!-- Password -->
+        <div class="field" [class.has-error]="f['password'].touched && f['password'].invalid">
+          <div class="field-label-row">
+            <label for="loginPassword">Password</label>
+            <a routerLink="/forgot-password" class="field-link">Forgot password?</a>
           </div>
-        }
-      </div>
-
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" class="form-control" formControlName="password" placeholder="••••••••" />
-        @if (f['password'].touched && f['password'].invalid) {
-          <div class="invalid-feedback">
-            Password is required.
+          <div class="password-wrap">
+            <input
+              id="loginPassword"
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              autocomplete="current-password"
+              [attr.aria-invalid]="f['password'].touched && f['password'].invalid"
+              aria-describedby="loginPasswordError"
+            />
+            <button
+              type="button"
+              class="password-toggle"
+              (click)="togglePasswordVisibility()"
+              [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+              [attr.aria-pressed]="showPassword()"
+            >
+              @if (showPassword()) {
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.2A9.6 9.6 0 0 1 12 5c6.5 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.1M6.6 6.6C3.8 8.4 2 12 2 12s3.5 7 10 7a9.4 9.4 0 0 0 5.4-1.6"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              } @else {
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  aria-hidden="true"
+                >
+                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              }
+            </button>
           </div>
-        }
-      </div>
+          @if (f['password'].touched && f['password'].errors?.['required']) {
+            <p id="loginPasswordError" class="field-error">Enter your password.</p>
+          }
+        </div>
 
-      <button type="submit" class="btn btn-primary btn-block" [disabled]="loading() || loginForm.invalid">
-        Sign In
-      </button>
+        <!-- Captcha -->
+        <div class="field" [class.has-error]="f['captcha'].touched && f['captcha'].invalid">
+          <label for="loginCaptcha">Security code</label>
+          <div class="captcha-row">
+            <div class="captcha-image" [class.is-loading]="captchaLoading()">
+              @if (captchaImage() && !captchaError()) {
+                <img [src]="captchaImage()" alt="Security code to type" />
+              } @else if (captchaError()) {
+                <span class="captcha-fallback">Could not load</span>
+              } @else {
+                <span class="captcha-fallback">Loading…</span>
+              }
+            </div>
+            <button
+              type="button"
+              class="captcha-refresh"
+              (click)="loadCaptcha()"
+              [disabled]="captchaLoading()"
+              aria-label="Load a new security code"
+              title="Load a new security code"
+            >
+              <svg
+                [class.is-spinning]="captchaLoading()"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                aria-hidden="true"
+              >
+                <path
+                  d="M20 12a8 8 0 1 1-2.3-5.7M20 4v4.5h-4.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </button>
+            <input
+              id="loginCaptcha"
+              type="text"
+              class="captcha-input"
+              formControlName="captcha"
+              maxlength="5"
+              autocomplete="off"
+              autocapitalize="characters"
+              spellcheck="false"
+              [attr.aria-invalid]="f['captcha'].touched && f['captcha'].invalid"
+              aria-describedby="loginCaptchaError"
+            />
+          </div>
+          @if (f['captcha'].touched && f['captcha'].invalid) {
+            <p id="loginCaptchaError" class="field-error">
+              @if (f['captcha'].errors?.['required']) {
+                Type the 5 characters shown in the image.
+              } @else {
+                The code is 5 letters or numbers.
+              }
+            </p>
+          }
+        </div>
 
-      <div class="register-link">
-        Don't have an account? <a routerLink="/register">Register here</a>
-      </div>
-    </form>
+        <button type="submit" class="login-submit" [disabled]="loading()">
+          @if (loading()) {
+            <span class="spinner" aria-hidden="true"></span>
+            Signing in…
+          } @else {
+            Sign in <span aria-hidden="true">→</span>
+          }
+        </button>
+      </form>
+
+      <p class="login-register">
+        New to Khel Akhel?
+        <a routerLink="/register">Create an account</a>
+      </p>
+    </div>
   </div>
-</div>
+</section>

@@ -7,6 +7,7 @@ import { AdminProductCategoryService } from '../../services/admin-product-catego
 import { AdminProductService } from '../../services/admin-product.service';
 import { AdminProductStockService } from '../../services/admin-product-stock.service';
 import { AdminCommissionedProjectService } from '../../services/admin-commissioned-project.service';
+import { AdminProjectService } from '../../services/admin-project.service';
 import { BreadcrumbComponent } from '../../../common/components/breadcrumb/breadcrumb';
 import { BreadcrumbItem } from '../../../common/models/breadcrumb.model';
 import { AppLoaderComponent } from '../../../common/components/app-loader/app-loader';
@@ -28,6 +29,7 @@ export class AdminDashboardComponent implements OnInit {
   private productService = inject(AdminProductService);
   private stockService = inject(AdminProductStockService);
   private commissionService = inject(AdminCommissionedProjectService);
+  private projectService = inject(AdminProjectService);
   private cdr = inject(ChangeDetectorRef);
 
   loading = true;
@@ -38,6 +40,7 @@ export class AdminDashboardComponent implements OnInit {
   totalProducts = 0;
   totalStockRecords = 0;
   totalCommissionRequests = 0;
+  totalProjects = 0;
 
   recentProducts: any[] = [];
 
@@ -55,6 +58,7 @@ export class AdminDashboardComponent implements OnInit {
       products: this.productService.getList({ pageIndex: 1, pageSize: 5 }),
       stock: this.stockService.getList({ pageIndex: 1, pageSize: 1 }),
       commissions: this.commissionService.getList({ pageIndex: 1, pageSize: 1 }),
+      projects: this.projectService.getList({ pageIndex: 1, pageSize: 1 }),
     }).subscribe({
       next: (res) => {
         this.loading = false;
@@ -73,6 +77,9 @@ export class AdminDashboardComponent implements OnInit {
         }
         if (res.commissions.success && res.commissions.data) {
           this.totalCommissionRequests = res.commissions.data.totalRecords;
+        }
+        if (res.projects.success && res.projects.data) {
+          this.totalProjects = res.projects.data.totalRecords;
         }
         this.cdr.markForCheck();
       },

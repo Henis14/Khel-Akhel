@@ -1,64 +1,214 @@
-<div class="user-register-wrapper">
-  <div class="register-card card">
-    <h2>Create Customer Account</h2>
-    <p class="subtitle">Register to shop on Khel-Akhel E-Commerce</p>
+<div class="register-page-container">
+  <div class="register-card">
+    <div class="register-header">
+      <h2>Create an Account</h2>
+      <p class="subtitle">Join Khel-Akhel to explore curated art and manage your orders</p>
+    </div>
 
-    @if (errorMessage) {
-      <div class="alert alert-danger">
-        {{ errorMessage }}
+    @if (successMessage()) {
+      <div class="alert alert-success">
+        <p>{{ successMessage() }}</p>
+        <a routerLink="/login" class="btn btn-primary btn-sm mt-2">Go to Sign In</a>
       </div>
     }
 
-    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-      <div class="form-row">
-        <div class="form-group col">
-          <label>First Name *</label>
-          <input type="text" class="form-control" formControlName="firstName" />
-          @if (f['firstName'].touched && f['firstName'].invalid) {
-            <div class="invalid-feedback">First name is required.</div>
+    @if (errorMessage()) {
+      <div class="alert alert-danger">
+        {{ errorMessage() }}
+      </div>
+    }
+
+    @if (!successMessage()) {
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" novalidate>
+        <!-- Honeypot field (hidden from legitimate users, catches automated bots) -->
+        <div class="hp-field" aria-hidden="true">
+          <label for="website-hp">Website</label>
+          <input
+            id="website-hp"
+            type="text"
+            formControlName="website"
+            tabindex="-1"
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName">First Name <span class="required">*</span></label>
+            <input
+              id="firstName"
+              type="text"
+              class="form-control"
+              [class.is-invalid]="f['firstName'].touched && f['firstName'].invalid"
+              formControlName="firstName"
+              placeholder="First name"
+            />
+            @if (f['firstName'].touched && f['firstName'].invalid) {
+              <div class="invalid-feedback">First name (2-50 characters) is required.</div>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="lastName">Last Name <span class="required">*</span></label>
+            <input
+              id="lastName"
+              type="text"
+              class="form-control"
+              [class.is-invalid]="f['lastName'].touched && f['lastName'].invalid"
+              formControlName="lastName"
+              placeholder="Last name"
+            />
+            @if (f['lastName'].touched && f['lastName'].invalid) {
+              <div class="invalid-feedback">Last name (2-50 characters) is required.</div>
+            }
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address <span class="required">*</span></label>
+          <input
+            id="email"
+            type="email"
+            class="form-control"
+            [class.is-invalid]="f['email'].touched && f['email'].invalid"
+            formControlName="email"
+            placeholder="you@example.com"
+            autocomplete="email"
+          />
+          @if (f['email'].touched && f['email'].invalid) {
+            <div class="invalid-feedback">Valid email address is required.</div>
           }
         </div>
 
-        <div class="form-group col">
-          <label>Last Name *</label>
-          <input type="text" class="form-control" formControlName="lastName" />
-          @if (f['lastName'].touched && f['lastName'].invalid) {
-            <div class="invalid-feedback">Last name is required.</div>
+        <div class="form-group">
+          <label for="mobileNo">Mobile Number <span class="required">*</span></label>
+          <input
+            id="mobileNo"
+            type="tel"
+            class="form-control"
+            [class.is-invalid]="f['mobileNo'].touched && f['mobileNo'].invalid"
+            formControlName="mobileNo"
+            placeholder="10-digit mobile number"
+            autocomplete="tel"
+          />
+          @if (f['mobileNo'].touched && f['mobileNo'].invalid) {
+            <div class="invalid-feedback">
+              Valid 10-digit mobile number starting with 6-9 is required.
+            </div>
           }
         </div>
-      </div>
 
-      <div class="form-group">
-        <label>Email Address *</label>
-        <input type="email" class="form-control" formControlName="email" placeholder="you@example.com" />
-        @if (f['email'].touched && f['email'].invalid) {
-          <div class="invalid-feedback">Valid email address is required.</div>
-        }
-      </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="password">Password <span class="required">*</span></label>
+            <div class="password-wrapper">
+              <input
+                id="password"
+                [type]="showPassword() ? 'text' : 'password'"
+                class="form-control"
+                [class.is-invalid]="f['password'].touched && f['password'].invalid"
+                formControlName="password"
+                placeholder="At least 8 characters"
+                autocomplete="new-password"
+              />
+              <button
+                type="button"
+                class="toggle-pwd-btn"
+                (click)="togglePasswordVisibility()"
+                tabindex="-1"
+              >
+                {{ showPassword() ? 'Hide' : 'Show' }}
+              </button>
+            </div>
+            @if (f['password'].touched && f['password'].invalid) {
+              <div class="invalid-feedback">
+                Must be at least 8 chars with uppercase, lowercase, number, and special symbol.
+              </div>
+            }
+          </div>
 
-      <div class="form-group">
-        <label>Mobile Number *</label>
-        <input type="text" class="form-control" formControlName="mobileNo" placeholder="10-digit mobile number" />
-        @if (f['mobileNo'].touched && f['mobileNo'].invalid) {
-          <div class="invalid-feedback">Valid 10-digit mobile number is required.</div>
-        }
-      </div>
+          <div class="form-group">
+            <label for="confirmPassword">Confirm Password <span class="required">*</span></label>
+            <div class="password-wrapper">
+              <input
+                id="confirmPassword"
+                [type]="showConfirmPassword() ? 'text' : 'password'"
+                class="form-control"
+                [class.is-invalid]="
+                  (f['confirmPassword'].touched && f['confirmPassword'].invalid) ||
+                  (registerForm.errors?.['passwordMismatch'] && f['confirmPassword'].touched)
+                "
+                formControlName="confirmPassword"
+                placeholder="Confirm password"
+                autocomplete="new-password"
+              />
+              <button
+                type="button"
+                class="toggle-pwd-btn"
+                (click)="toggleConfirmPasswordVisibility()"
+                tabindex="-1"
+              >
+                {{ showConfirmPassword() ? 'Hide' : 'Show' }}
+              </button>
+            </div>
+            @if (registerForm.errors?.['passwordMismatch'] && f['confirmPassword'].touched) {
+              <div class="invalid-feedback">Passwords do not match.</div>
+            }
+          </div>
+        </div>
 
-      <div class="form-group">
-        <label>Password *</label>
-        <input type="password" class="form-control" formControlName="password" placeholder="At least 8 chars (uppercase, lowercase, number, special)" />
-        @if (f['password'].touched && f['password'].invalid) {
-          <div class="invalid-feedback">Password must be at least 8 characters long and contain uppercase, lowercase, number, and special character.</div>
-        }
-      </div>
+        <!-- Captcha Section -->
+        <div class="form-group captcha-section">
+          <label>Security Verification <span class="required">*</span></label>
+          <div class="captcha-row">
+            <div class="captcha-preview">
+              @if (captchaImage()) {
+                <img [src]="captchaImage()" alt="Security captcha" class="captcha-img" />
+              } @else {
+                <span class="captcha-placeholder">Loading...</span>
+              }
+            </div>
+            <button
+              type="button"
+              class="btn-refresh"
+              (click)="loadCaptcha()"
+              [disabled]="captchaLoading()"
+              title="Get new code"
+            >
+              ↻
+            </button>
+          </div>
 
-      <button type="submit" class="btn btn-primary btn-block" [disabled]="loading || registerForm.invalid">
-        Register
-      </button>
+          <input
+            type="text"
+            class="form-control captcha-input"
+            [class.is-invalid]="f['captcha'].touched && f['captcha'].invalid"
+            formControlName="captcha"
+            placeholder="Enter the 5 characters shown above"
+            maxlength="5"
+            autocomplete="off"
+          />
+          @if (f['captcha'].touched && f['captcha'].invalid) {
+            <div class="invalid-feedback">5-character security CAPTCHA is required.</div>
+          }
+        </div>
 
-      <div class="login-link">
-        Already have an account? <a routerLink="/login">Sign in</a>
-      </div>
-    </form>
+        <button
+          type="submit"
+          class="btn btn-primary btn-block"
+          [disabled]="loading() || registerForm.invalid"
+        >
+          @if (loading()) {
+            <span>Creating Account...</span>
+          } @else {
+            <span>Create Account</span>
+          }
+        </button>
+
+        <div class="form-footer">
+          <p>Already have an account? <a routerLink="/login">Sign In</a></p>
+        </div>
+      </form>
+    }
   </div>
 </div>

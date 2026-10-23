@@ -30,8 +30,14 @@ export class AdminProductCategoryService {
     return this.api.patch<ProductCategoryResponse>('product-category/update', request);
   }
 
-  toggleActive(encryptedCategoryId: string): Observable<ApiResponse<null>> {
-    return this.api.patch<null>(`product-category/toggle-active/${encryptedCategoryId}`);
+  toggleActive(
+    encryptedCategoryId: string,
+    isActive: boolean = true,
+  ): Observable<ApiResponse<ProductCategoryResponse>> {
+    return this.api.patch<ProductCategoryResponse>('product-category/update', {
+      encryptedCategoryId,
+      isActive,
+    });
   }
 
   delete(encryptedCategoryId: string): Observable<ApiResponse<null>> {

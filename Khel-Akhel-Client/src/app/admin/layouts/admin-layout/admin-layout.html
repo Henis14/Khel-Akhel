@@ -74,6 +74,25 @@
         }
       </div>
 
+      <!-- Password Resets -->
+      <a routerLink="/admin/password-reset-requests" routerLinkActive="active" class="nav-item">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+        <span>Password Resets</span>
+        @if (pendingResetCount() > 0) {
+          <span style="margin-left: auto; background: #ef4444; color: #fff; font-size: 0.75rem; padding: 0.15rem 0.5rem; border-radius: 9999px;">{{ pendingResetCount() }}</span>
+        }
+      </a>
+
       <!-- Products Group -->
       <div class="nav-group" [class.open]="productsMenuOpen">
         <button class="nav-item group-header" (click)="toggleMenu('products')">
@@ -284,6 +303,24 @@
           <polyline points="21 15 16 10 5 21"></polyline>
         </svg>
         <span>Projects</span>
+      </a>
+
+      <!-- Hero Section -->
+      <a routerLink="/admin/hero-banner" routerLinkActive="active" class="nav-item">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+          <line x1="8" y1="21" x2="16" y2="21"></line>
+          <line x1="12" y1="17" x2="12" y2="21"></line>
+          <polygon points="10 8 15 10 10 12"></polygon>
+        </svg>
+        <span>Hero Section</span>
       </a>
 
       <!-- Reports Group -->

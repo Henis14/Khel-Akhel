@@ -6,6 +6,7 @@ using Khel_Akhel_Server.BL.Services;
 using Khel_Akhel_Server.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Data.SqlClient;
 using static Khel_Akhel_Server.Models.CommonResponse;
 
@@ -18,16 +19,19 @@ namespace Khel_Akhel_Server.Controllers.Customer
         private readonly DbHelper _db;
         private readonly IUrlEncryptionService _encryption;
         private readonly IAuditService _audit;
+        private readonly ICaptchaService _captchaService;
 
         public CustomerController(
             DbHelper db,
             IUrlEncryptionService encryption,
-            IAuditService audit
+            IAuditService audit,
+            ICaptchaService captchaService
         )
         {
             _db = db;
             _encryption = encryption;
             _audit = audit;
+            _captchaService = captchaService;
         }
 
         #region Helper Methods
@@ -59,6 +63,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
 
         #region Create Customer API
         [AllowAnonymous]
+        [EnableRateLimiting("public-form")]
         [HttpPost("create")]
         public async Task<IActionResult> CustomerCreate([FromBody] CustomerCreateRequest? request)
         {
@@ -80,6 +85,53 @@ namespace Khel_Akhel_Server.Controllers.Customer
                             Errors = new List<string> { "Request body cannot be null." },
                         }
                     );
+                }
+
+                // Honeypot check
+                if (!string.IsNullOrWhiteSpace(request.Website))
+                {
+                    sw.Stop();
+                    Logs.Warning($"Honeypot triggered for CustomerCreate from IP {GetClientIpAddress()}");
+                    return Ok(
+                        new ApiResponse
+                        {
+                            Success = true,
+                            StatusCode = 200,
+                            Message = "CUSTOMER_CREATED",
+                            Data = new CustomerResponse
+                            {
+                                EncryptedId = string.Empty,
+                                AccountNo = "DRC000000",
+                                FirstName = request.FirstName ?? string.Empty,
+                                LastName = request.LastName ?? string.Empty,
+                                Email = request.Email ?? string.Empty,
+                                MobileNo = request.MobileNo ?? string.Empty,
+                                IsActive = true,
+                                CreatedDate = DateTimeFormat.Format(DateTime.Now),
+                            },
+                        }
+                    );
+                }
+
+                // Captcha validation for anonymous requests (exempt for authenticated Admin users)
+                if (!IsCurrentUserAdmin())
+                {
+                    if (string.IsNullOrWhiteSpace(request.CaptchaId)
+                        || string.IsNullOrWhiteSpace(request.Captcha)
+                        || !_captchaService.ValidateCaptcha(request.CaptchaId, request.Captcha))
+                    {
+                        sw.Stop();
+                        Logs.Warning($"CustomerCreate rejected | Reason: Invalid or missing CAPTCHA from IP {GetClientIpAddress()}");
+                        return BadRequest(
+                            new ApiResponse
+                            {
+                                Success = false,
+                                StatusCode = 400,
+                                Message = "INVALID_CAPTCHA",
+                                Errors = new List<string> { "Invalid or expired CAPTCHA. Please solve the security verification again." },
+                            }
+                        );
+                    }
                 }
 
                 // Trim inputs (Do NOT trim password!)

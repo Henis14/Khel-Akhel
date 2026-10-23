@@ -23,6 +23,9 @@ namespace Khel_Akhel_Server.Models
         public string ProjectDescription { get; set; } = string.Empty;
         public string? Keywords { get; set; }
         public List<IFormFile>? Images { get; set; }
+        public string? CaptchaId { get; set; }
+        public string? Captcha { get; set; }
+        public string? Website { get; set; }
     }
 
     public class CommissionImageDto

@@ -475,6 +475,14 @@ form {
   opacity: 0.6;
 }
 
+.captcha-image {
+  height: 100%;
+  max-height: 42px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
 .captcha-code {
   position: relative;
   color: var(--login-indigo);

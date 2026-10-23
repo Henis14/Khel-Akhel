@@ -3,38 +3,56 @@
      1. Brand Color Palette
      ------------------------------------------------------------------------ */
   /* Core Brand Colors */
-  --user-navy: #1f3557; /* Deep Navy (Primary brand anchor) */
-  --user-navy-hover: #162a45; /* Darkened Navy for button hovers */
-  --user-navy-dark: #122137; /* Deepest Navy for high contrast */
-  --user-navy-light: #2c4a75; /* Medium Navy for accents */
-  --user-navy-soft: rgba(31, 53, 87, 0.07);
+  --user-navy: #34392c;
+  --user-navy-hover: #25291f;
+  --user-navy-dark: #25251f;
+  --user-navy-light: #505746;
+  --user-navy-soft: rgba(52, 57, 44, 0.07);
 
-  --user-terracotta: #b45132; /* Terracotta (Primary warm accent) */
-  --user-terracotta-hover: #923f28; /* Deepened Terracotta for hovers */
-  --user-terracotta-light: #c9684b; /* Light Terracotta */
-  --user-terracotta-soft: rgba(180, 81, 50, 0.08);
+  --user-terracotta: #bd754f;
+  --user-terracotta-hover: #985b3d;
+  --user-terracotta-light: #c98a68;
+  --user-terracotta-soft: rgba(189, 117, 79, 0.09);
 
-  --user-ochre: #d9a441; /* Warm Ochre (Lustrous craft accent) */
-  --user-ochre-hover: #b07b22; /* Deepened Ochre */
-  --user-ochre-light: #e5b95c; /* Light Ochre */
-  --user-ochre-soft: rgba(217, 164, 65, 0.12);
+  --user-ochre: #d8c6a7;
+  --user-ochre-hover: #b49c75;
+  --user-ochre-light: #e3d5be;
+  --user-ochre-soft: rgba(216, 198, 167, 0.2);
 
-  --user-ivory: #f5f1e8; /* Ivory (Base warm canvas) */
+  --user-ivory: #fcfbf8;
+  --user-charcoal: #25251f;
+  --user-sage: #d8dfd0;
+
+  /* Khel Akhel brand: header & footer
+     Kattha maroon comes from the hand-drawn logo. Haldi is the one loud
+     colour. Rani + kesar are phulkari embroidery threads, used sparingly. */
+  --user-maroon: #45120a;
+  --user-maroon-soft: rgba(69, 18, 10, 0.08);
+  --user-haldi: #f2c230;
+  --user-rani: #b8336a;
+  --user-kesar: #e07b2e;
+  --user-gallery-white: #ffffff;
+  --user-limewash: #f7f4ee;
+  --user-cream: #f3ebdd;
+  --user-ink-slate: #574e4b;
+  --user-ink-mist: #8a817d;
+  --user-hairline: #eae3d8;
+  --user-scrim: rgba(26, 15, 12, 0.45);
 
   /* ------------------------------------------------------------------------
      2. Surface & Background Tokens
      ------------------------------------------------------------------------ */
-  --user-bg: #f5f1e8; /* Main warm storefront canvas */
-  --user-surface: #fbf9f4; /* Elevated surface: cards, modals, sheets */
-  --user-surface-alt: #f1e7d5; /* Subtle tinted contrast surface */
+  --user-bg: #fcfbf8;
+  --user-surface: #ffffff;
+  --user-surface-alt: #f3efe6;
   --user-surface-elevated: #ffffff; /* Clean white elevated panels */
-  --user-surface-translucent: rgba(245, 241, 232, 0.94); /* Frosted header */
-  --user-surface-drawer: #fbf9f4; /* Mobile navigation drawer */
+  --user-surface-translucent: rgba(252, 251, 248, 0.97);
+  --user-surface-drawer: #fcfbf8;
 
   /* ------------------------------------------------------------------------
      3. Typography & Text Color Tokens (WCAG AA / AAA Accessible)
      ------------------------------------------------------------------------ */
-  --user-text-primary: #1e2430; /* High contrast body and headings */
+  --user-text-primary: var(--user-charcoal);
   --user-text-secondary: #565c65; /* Secondary descriptive text */
   --user-text-muted: #7e848d; /* Meta, captions, timestamps */
   --user-text-subtle: #9c9990; /* Minimal decorative text */
@@ -42,10 +60,13 @@
   --user-text-on-navy: #f5f1e8; /* Warm Ivory text on Deep Navy surfaces */
   --user-text-on-terracotta: #ffffff;
 
-  /* Font Families */
-  --user-font-serif: Georgia, 'Times New Roman', Cambria, serif;
+  /* Font Families (loaded from Google Fonts in src/index.html)
+     Urbanist: one clean geometric sans for everything, light for reading,
+     spaced capitals for navigation. Instrument Serif: poetic lines only. */
+  --user-font-serif: 'Instrument Serif', Georgia, 'Times New Roman', serif;
   --user-font-sans:
-    'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    'Urbanist', 'Futura', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --user-font-gurmukhi: 'Baloo Paaji 2', 'Mukta Mahee', sans-serif;
 
   /* Font Weights */
   --user-fw-regular: 400;
@@ -131,7 +152,7 @@
   --user-gutter: clamp(1rem, 3.5vw, 2.5rem);
 
   /* Layout Heights */
-  --user-header-height: 72px;
+  --user-header-height: 80px;
   --user-header-height-mobile: 60px;
   --user-mobile-drawer-width: min(340px, 86vw);
 
@@ -160,6 +181,18 @@
   --user-primary: var(--user-navy);
   --user-primary-dark: var(--user-navy-dark);
   --user-accent: var(--user-terracotta);
+}
+
+/* Smooth in-page scrolling (back to top, skip link, #anchors).
+   Route changes jump straight to the top: see user-layout.ts */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 /* ==========================================================================

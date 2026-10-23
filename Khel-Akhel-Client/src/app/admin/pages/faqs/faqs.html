@@ -1,0 +1,645 @@
+<div class="faq-page">
+  <!-- Page Header -->
+  <div class="page-header">
+    <app-breadcrumb [items]="breadcrumbs"></app-breadcrumb>
+    <div class="header-content">
+      <div class="header-titles">
+        <h1>FAQs Management</h1>
+        <p class="subtitle">
+          Create, edit and organize frequently asked questions across store locations
+        </p>
+      </div>
+      <div class="page-actions">
+        <span class="faq-count-pill">
+          <span class="count-number">{{ totalRecords }}</span> FAQs
+        </span>
+        <button class="btn btn-primary" (click)="openCreateModal()">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>Add FAQ</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feedback Alerts -->
+  @if (successMessage) {
+    <div class="alert alert-success">
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+      <span>{{ successMessage }}</span>
+    </div>
+  }
+
+  @if (errorMessage) {
+    <div class="alert alert-danger">
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span>{{ errorMessage }}</span>
+    </div>
+  }
+
+  <!-- Filter & Search Toolbar -->
+  <div class="filter-card card">
+    <div class="filter-toolbar">
+      <div class="filter-row filter-row-primary">
+        <!-- Search Input -->
+        <div class="filter-item search-item">
+          <label class="filter-label" for="faq-search">Search FAQs</label>
+          <div class="input-with-icon">
+            <svg
+              class="icon"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input
+              id="faq-search"
+              type="text"
+              class="form-control"
+              placeholder="Search by question, answer, or category..."
+              [value]="searchQuery"
+              (input)="onSearchInput($any($event.target).value)"
+            />
+          </div>
+        </div>
+
+        <!-- Category Dropdown -->
+        <div class="filter-item category-item">
+          <label class="filter-label" for="faq-cat-filter">Category</label>
+          <select
+            id="faq-cat-filter"
+            class="form-control"
+            [(ngModel)]="selectedCategory"
+            (change)="onClientFilterChange()"
+          >
+            <option value="">All Categories</option>
+            @for (cat of categoriesList; track cat) {
+              <option [value]="cat">{{ cat }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Active Status Dropdown -->
+        <div class="filter-item status-item">
+          <label class="filter-label" for="faq-status-filter">Active Status</label>
+          <select
+            id="faq-status-filter"
+            class="form-control"
+            [(ngModel)]="statusFilter"
+            (change)="onFilterChange()"
+          >
+            <option value="all">All Statuses</option>
+            <option value="active">Active Only</option>
+            <option value="inactive">Inactive Only</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="filter-row filter-row-secondary">
+        <!-- Published Dropdown -->
+        <div class="filter-item publish-item">
+          <label class="filter-label" for="faq-publish-filter">Publish Status</label>
+          <select
+            id="faq-publish-filter"
+            class="form-control"
+            [(ngModel)]="publishFilter"
+            (change)="onFilterChange()"
+          >
+            <option value="all">All</option>
+            <option value="published">Published Only</option>
+            <option value="unpublished">Draft / Unpublished</option>
+          </select>
+        </div>
+
+        <!-- Location Placement Filter -->
+        <div class="filter-item location-item">
+          <label class="filter-label" for="faq-location-filter">Display Location</label>
+          <select
+            id="faq-location-filter"
+            class="form-control"
+            [(ngModel)]="locationFilter"
+            (change)="onClientFilterChange()"
+          >
+            <option value="all">All Locations</option>
+            <option value="faq">FAQ Page</option>
+            <option value="home">Home Page</option>
+            <option value="checkout">Checkout Page</option>
+            <option value="contact">Contact Page</option>
+            <option value="footer">Footer</option>
+          </select>
+        </div>
+
+        <!-- Reset Button -->
+        <div class="filter-actions">
+          <button
+            type="button"
+            class="btn btn-secondary btn-reset"
+            (click)="resetFilters()"
+            title="Reset All Filters"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="1 4 1 10 7 10"></polyline>
+              <polyline points="23 20 23 14 17 14"></polyline>
+              <path
+                d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"
+              ></path>
+            </svg>
+            <span>Reset</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQs Table Card -->
+  <div class="table-card card">
+    @if (loading) {
+      <app-loader text="Loading FAQs..."></app-loader>
+    } @else {
+      <div class="table-responsive">
+        <table class="table faqs-table">
+          <thead>
+            <tr>
+              <th class="col-order text-center">Order</th>
+              <th class="col-question">Question & Category</th>
+              <th class="col-locations">Display Locations</th>
+              <th class="col-status text-center">Status</th>
+              <th class="col-published text-center">Published</th>
+              <th class="col-date">Created Date</th>
+              <th class="col-actions text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (faq of pagedFaqs; track faq.encryptedFaqId) {
+              <tr class="faq-row" (click)="openDetailModal(faq)">
+                <!-- Order -->
+                <td class="col-order text-center" (click)="$event.stopPropagation()">
+                  <code class="order-badge">{{ faq.displayOrder }}</code>
+                </td>
+
+                <!-- Question & Category -->
+                <td class="col-question">
+                  <div class="question-main font-weight-600">
+                    {{ faq.question }}
+                  </div>
+                  <div class="answer-preview text-muted">
+                    {{ faq.answer.length > 100 ? (faq.answer | slice: 0 : 100) + '...' : faq.answer }}
+                  </div>
+                  @if (faq.category) {
+                    <span class="category-badge">{{ faq.category }}</span>
+                  }
+                </td>
+
+                <!-- Display Locations -->
+                <td class="col-locations">
+                  <div class="location-badges">
+                    @if (faq.displayOnFaqPage) {
+                      <span class="loc-pill loc-faq" title="Shown on FAQ Page">FAQ</span>
+                    }
+                    @if (faq.displayOnHomePage) {
+                      <span class="loc-pill loc-home" title="Shown on Home Page">Home</span>
+                    }
+                    @if (faq.displayOnCheckoutPage) {
+                      <span class="loc-pill loc-checkout" title="Shown on Checkout">Checkout</span>
+                    }
+                    @if (faq.displayOnContactPage) {
+                      <span class="loc-pill loc-contact" title="Shown on Contact Page">Contact</span>
+                    }
+                    @if (faq.displayOnFooter) {
+                      <span class="loc-pill loc-footer" title="Shown on Footer">Footer</span>
+                    }
+                    @if (!faq.displayOnFaqPage && !faq.displayOnHomePage && !faq.displayOnCheckoutPage && !faq.displayOnContactPage && !faq.displayOnFooter) {
+                      <span class="loc-pill loc-none">None</span>
+                    }
+                  </div>
+                </td>
+
+                <!-- Active Status -->
+                <td class="col-status text-center" (click)="$event.stopPropagation()">
+                  <button
+                    type="button"
+                    class="badge status-toggle"
+                    [class.badge-success]="faq.isActive"
+                    [class.badge-danger]="!faq.isActive"
+                    (click)="toggleStatus(faq, $event)"
+                    title="Click to toggle active status"
+                  >
+                    {{ faq.isActive ? 'Active' : 'Inactive' }}
+                  </button>
+                </td>
+
+                <!-- Published Status -->
+                <td class="col-published text-center" (click)="$event.stopPropagation()">
+                  <button
+                    type="button"
+                    class="badge publish-toggle"
+                    [class.badge-primary]="faq.isPublished"
+                    [class.badge-neutral]="!faq.isPublished"
+                    (click)="togglePublished(faq, $event)"
+                    title="Click to toggle publish status"
+                  >
+                    {{ faq.isPublished ? 'Published' : 'Draft' }}
+                  </button>
+                </td>
+
+                <!-- Created Date -->
+                <td class="col-date text-muted">{{ faq.createdDate || '-' }}</td>
+
+                <!-- Actions -->
+                <td class="col-actions text-right actions-cell" (click)="$event.stopPropagation()">
+                  <button
+                    type="button"
+                    class="btn btn-icon btn-sm"
+                    (click)="openDetailModal(faq)"
+                    title="View Details"
+                  >
+                    <svg
+                      width="15"
+                      height="15"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-secondary btn-sm"
+                    (click)="openEditModal(faq)"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-danger btn-sm"
+                    (click)="confirmDelete(faq)"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            }
+
+            @if (filteredFaqs.length === 0) {
+              <tr>
+                <td colspan="7">
+                  <div class="empty-state">
+                    <div class="empty-icon">
+                      <svg
+                        width="36"
+                        height="36"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                      </svg>
+                    </div>
+                    <h3 class="empty-title">No FAQs Found</h3>
+                    <p class="empty-subtitle">
+                      @if (searchQuery || selectedCategory || statusFilter !== 'all' || publishFilter !== 'all' || locationFilter !== 'all') {
+                        No frequently asked questions match your current filters. Try resetting the filters.
+                      } @else {
+                        No FAQs have been created yet. Add your first FAQ to assist customers across the storefront.
+                      }
+                    </p>
+                    @if (searchQuery || selectedCategory || statusFilter !== 'all' || publishFilter !== 'all' || locationFilter !== 'all') {
+                      <button class="btn btn-secondary btn-sm" (click)="resetFilters()">
+                        Reset Filters
+                      </button>
+                    } @else {
+                      <button class="btn btn-primary btn-sm" (click)="openCreateModal()">
+                        + Add First FAQ
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination Component -->
+      @if (totalRecords > pageSize) {
+        <div class="pagination-wrapper">
+          <app-pagination
+            [pageIndex]="pageIndex"
+            [pageSize]="pageSize"
+            [totalRecords]="totalRecords"
+            (pageChange)="onPageChange($event)"
+          ></app-pagination>
+        </div>
+      }
+    }
+  </div>
+
+  <!-- Create / Edit Modal -->
+  @if (isModalOpen) {
+    <div class="modal-backdrop">
+      <div class="modal-content faq-modal">
+        <div class="modal-header">
+          <h3>{{ isEditMode ? 'Edit FAQ' : 'Add New FAQ' }}</h3>
+          <button class="close-btn" (click)="closeModal()" aria-label="Close modal">✕</button>
+        </div>
+
+        <form [formGroup]="faqForm" (ngSubmit)="saveFaq()">
+          <div class="modal-body">
+            <!-- Question -->
+            <div class="form-group">
+              <label for="modal-question">Question <span class="required-star">*</span></label>
+              <textarea
+                id="modal-question"
+                class="form-control"
+                rows="2"
+                formControlName="question"
+                placeholder="e.g. How can I track my commissioned artwork or studio order?"
+              ></textarea>
+              @if (faqForm.get('question')?.touched && faqForm.get('question')?.invalid) {
+                <div class="invalid-feedback">
+                  Question is required and must be between 3 and 500 characters.
+                </div>
+              }
+            </div>
+
+            <!-- Answer -->
+            <div class="form-group">
+              <label for="modal-answer">Answer <span class="required-star">*</span></label>
+              <textarea
+                id="modal-answer"
+                class="form-control"
+                rows="4"
+                formControlName="answer"
+                placeholder="Provide a clear, helpful answer for website visitors..."
+              ></textarea>
+              @if (faqForm.get('answer')?.touched && faqForm.get('answer')?.invalid) {
+                <div class="invalid-feedback">Answer is required.</div>
+              }
+            </div>
+
+            <!-- Category & Display Order Row -->
+            <div class="form-row">
+              <div class="form-group col-half">
+                <label for="modal-category">Category</label>
+                <input
+                  id="modal-category"
+                  type="text"
+                  class="form-control"
+                  formControlName="category"
+                  placeholder="e.g. Orders, Shipping, Artwork, Studio"
+                  list="existing-categories"
+                />
+                <datalist id="existing-categories">
+                  @for (cat of categoriesList; track cat) {
+                    <option [value]="cat"></option>
+                  }
+                </datalist>
+                <small class="form-hint">Optional category grouping (max 100 characters)</small>
+              </div>
+
+              <div class="form-group col-half">
+                <label for="modal-order">Display Order</label>
+                <input
+                  id="modal-order"
+                  type="number"
+                  class="form-control"
+                  formControlName="displayOrder"
+                  min="0"
+                  placeholder="0"
+                />
+                <small class="form-hint">Lower numbers appear first</small>
+                @if (faqForm.get('displayOrder')?.touched && faqForm.get('displayOrder')?.invalid) {
+                  <div class="invalid-feedback">Must be a non-negative integer.</div>
+                }
+              </div>
+            </div>
+
+            <!-- Status Toggles Row -->
+            <div class="form-section-title">Visibility & Status</div>
+            <div class="toggles-grid">
+              <label class="toggle-checkbox">
+                <input type="checkbox" formControlName="isActive" />
+                <span class="toggle-label">
+                  <strong>Active Status</strong>
+                  <span class="toggle-desc">When disabled, this FAQ is suppressed everywhere</span>
+                </span>
+              </label>
+
+              <label class="toggle-checkbox">
+                <input type="checkbox" formControlName="isPublished" />
+                <span class="toggle-label">
+                  <strong>Published</strong>
+                  <span class="toggle-desc">Ready for customer view on enabled pages</span>
+                </span>
+              </label>
+            </div>
+
+            <!-- Display Locations Group -->
+            <div class="form-section-title">Display Placement Locations</div>
+            <p class="section-subtitle">
+              Select which storefront sections or pages this FAQ should be rendered on:
+            </p>
+            <div class="locations-checkbox-grid">
+              <label class="checkbox-pill">
+                <input type="checkbox" formControlName="displayOnFaqPage" />
+                <span>FAQ Page</span>
+              </label>
+              <label class="checkbox-pill">
+                <input type="checkbox" formControlName="displayOnHomePage" />
+                <span>Home Page</span>
+              </label>
+              <label class="checkbox-pill">
+                <input type="checkbox" formControlName="displayOnCheckoutPage" />
+                <span>Checkout Page</span>
+              </label>
+              <label class="checkbox-pill">
+                <input type="checkbox" formControlName="displayOnContactPage" />
+                <span>Contact Page</span>
+              </label>
+              <label class="checkbox-pill">
+                <input type="checkbox" formControlName="displayOnFooter" />
+                <span>Footer</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              [disabled]="formSubmitting"
+              (click)="closeModal()"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="formSubmitting || faqForm.invalid"
+            >
+              @if (formSubmitting) {
+                <span class="btn-spinner"></span>
+                <span>Saving...</span>
+              } @else {
+                <span>{{ isEditMode ? 'Save Changes' : 'Create FAQ' }}</span>
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- View Details Modal -->
+  @if (isDetailModalOpen && detailFaq) {
+    <div class="modal-backdrop">
+      <div class="modal-content detail-modal">
+        <div class="modal-header">
+          <div class="detail-header-badges">
+            <span
+              class="badge"
+              [class.badge-success]="detailFaq.isActive"
+              [class.badge-danger]="!detailFaq.isActive"
+            >
+              {{ detailFaq.isActive ? 'Active' : 'Inactive' }}
+            </span>
+            <span
+              class="badge"
+              [class.badge-primary]="detailFaq.isPublished"
+              [class.badge-neutral]="!detailFaq.isPublished"
+            >
+              {{ detailFaq.isPublished ? 'Published' : 'Draft' }}
+            </span>
+            @if (detailFaq.category) {
+              <span class="category-badge">{{ detailFaq.category }}</span>
+            }
+          </div>
+          <button class="close-btn" (click)="closeDetailModal()" aria-label="Close details">✕</button>
+        </div>
+
+        <div class="modal-body detail-body">
+          <div class="detail-section">
+            <label class="detail-label">Question</label>
+            <h3 class="detail-question">{{ detailFaq.question }}</h3>
+          </div>
+
+          <div class="detail-section">
+            <label class="detail-label">Answer</label>
+            <div class="detail-answer">{{ detailFaq.answer }}</div>
+          </div>
+
+          <div class="detail-meta-grid">
+            <div class="meta-item">
+              <span class="meta-label">Display Order</span>
+              <span class="meta-value">{{ detailFaq.displayOrder }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Created Date</span>
+              <span class="meta-value">{{ detailFaq.createdDate || '-' }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Last Modified</span>
+              <span class="meta-value">{{ detailFaq.modifiedDate || '-' }}</span>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <label class="detail-label">Storefront Placements</label>
+            <div class="location-badges detail-locations">
+              @if (detailFaq.displayOnFaqPage) {
+                <span class="loc-pill loc-faq">FAQ Page</span>
+              }
+              @if (detailFaq.displayOnHomePage) {
+                <span class="loc-pill loc-home">Home Page</span>
+              }
+              @if (detailFaq.displayOnCheckoutPage) {
+                <span class="loc-pill loc-checkout">Checkout Page</span>
+              }
+              @if (detailFaq.displayOnContactPage) {
+                <span class="loc-pill loc-contact">Contact Page</span>
+              }
+              @if (detailFaq.displayOnFooter) {
+                <span class="loc-pill loc-footer">Footer</span>
+              }
+              @if (!detailFaq.displayOnFaqPage && !detailFaq.displayOnHomePage && !detailFaq.displayOnCheckoutPage && !detailFaq.displayOnContactPage && !detailFaq.displayOnFooter) {
+                <span class="text-muted">No storefront locations assigned</span>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeDetailModal()">
+            Close
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="closeDetailModal(); openEditModal(detailFaq)"
+          >
+            Edit FAQ
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Delete Confirmation Dialog -->
+  <app-confirmation-dialog
+    [isOpen]="isConfirmOpen"
+    [title]="confirmTitle"
+    [message]="confirmMessage"
+    [isDanger]="true"
+    [isSubmitting]="isActionSubmitting"
+    (confirm)="onConfirmAction()"
+    (cancel)="onCancelAction()"
+  ></app-confirmation-dialog>
+</div>

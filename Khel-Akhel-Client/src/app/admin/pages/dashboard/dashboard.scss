@@ -93,6 +93,11 @@
       background-color: var(--admin-surface-alt, #eef1f4);
       color: var(--admin-secondary, #344451);
     }
+
+    &.icon-projects {
+      background-color: var(--admin-surface-alt, #eef1f4);
+      color: var(--admin-primary, #263541);
+    }
   }
 
   .stat-info {

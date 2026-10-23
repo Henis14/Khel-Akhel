@@ -15,10 +15,16 @@ namespace Khel_Akhel_Server.BL.Services
 
         public UrlEncryptionService(IConfiguration configuration)
         {
-            string rawKey = configuration["Security:UrlEncryptionKey"] 
-                         ?? configuration["Jwt:Key"] 
-                         ?? "DefaultUrlEncryptionKey2026SecureKey!";
-            
+            string? rawKey = configuration["Security:UrlEncryptionKey"];
+            if (string.IsNullOrWhiteSpace(rawKey))
+            {
+                throw new InvalidOperationException("Configuration 'Security:UrlEncryptionKey' is required and cannot be empty.");
+            }
+            if (Encoding.UTF8.GetByteCount(rawKey) < 32)
+            {
+                throw new InvalidOperationException("Configuration 'Security:UrlEncryptionKey' must be at least 32 bytes long.");
+            }
+
             using var sha256 = SHA256.Create();
             _key = sha256.ComputeHash(Encoding.UTF8.GetBytes(rawKey));
         }

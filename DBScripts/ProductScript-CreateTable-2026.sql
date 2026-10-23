@@ -1,6 +1,5 @@
-USE KhelAkhe_CRM;
+USE CRM_Kehl_Akhel;
 
--- Customer Master Table
 CREATE TABLE drs_customer_mst (
     ID                  BIGINT         IDENTITY (1, 1) NOT NULL PRIMARY KEY,
     Account_no          VARCHAR (9)    NOT NULL,
@@ -22,25 +21,19 @@ CREATE TABLE drs_customer_mst (
     ModifiedDate        DATETIME       NULL
 );
 
-
 GO
--- Customer Account Sequence
 CREATE SEQUENCE Seq_CustomerAccount
     AS BIGINT
     START WITH 1
     INCREMENT BY 1;
 
-
 GO
--- Product Code Sequence
 CREATE SEQUENCE Seq_ProductCode
     AS BIGINT
     START WITH 1
     INCREMENT BY 1;
 
-
 GO
--- Customer Address Master Table
 CREATE TABLE drs_customer_address_mst (
     ID           BIGINT         IDENTITY (1, 1) NOT NULL PRIMARY KEY,
     customer_id  BIGINT         NOT NULL,
@@ -64,9 +57,7 @@ CREATE TABLE drs_customer_address_mst (
     ModifiedDate DATETIME       NULL
 );
 
-
 GO
--- Product Category Master Table
 CREATE TABLE drs_product_category_mst (
     ID           BIGINT         IDENTITY (1, 1) NOT NULL PRIMARY KEY,
     CategoryName NVARCHAR (100) NOT NULL,
@@ -78,9 +69,7 @@ CREATE TABLE drs_product_category_mst (
     ModifiedDate DATETIME       NULL
 );
 
-
 GO
--- Product Master Table
 CREATE TABLE drs_product_mst (
     ID                  BIGINT          IDENTITY (1, 1) NOT NULL PRIMARY KEY,
     product_category_id BIGINT          NOT NULL,
@@ -104,9 +93,7 @@ CREATE TABLE drs_product_mst (
     CONSTRAINT CK_drs_product_mst_SellingPrice CHECK (SellingPrice >= 0)
 );
 
-
 GO
--- Product Stock Master Table
 CREATE TABLE drs_product_stock_mst (
     ID           BIGINT   IDENTITY (1, 1) NOT NULL PRIMARY KEY,
     product_id   BIGINT   NOT NULL,
@@ -120,9 +107,7 @@ CREATE TABLE drs_product_stock_mst (
     CONSTRAINT CK_drs_product_stock_mst_ReservedQty CHECK (ReservedQty >= 0)
 );
 
-
 GO
--- Product Image Master Table
 CREATE TABLE drs_product_image_mst (
     ID           BIGINT         IDENTITY (1, 1) NOT NULL PRIMARY KEY,
     product_id   BIGINT         NOT NULL,
@@ -135,9 +120,7 @@ CREATE TABLE drs_product_image_mst (
     ModifiedDate DATETIME       NULL
 );
 
-
 GO
--- Refresh Token Master Table
 CREATE TABLE drs_refresh_token_mst (
     ID                  BIGINT         IDENTITY (1, 1) NOT NULL PRIMARY KEY,
     customer_id         BIGINT         NOT NULL,
@@ -157,9 +140,7 @@ CREATE TABLE drs_refresh_token_mst (
     ModifiedDate        DATETIME       NULL
 );
 
-
 GO
--- Login History Master Table
 CREATE TABLE drs_login_history_mst (
     ID            BIGINT         IDENTITY (1, 1) NOT NULL PRIMARY KEY,
     customer_id   BIGINT         NULL,
@@ -171,9 +152,7 @@ CREATE TABLE drs_login_history_mst (
     CreatedDate   DATETIME       DEFAULT GETDATE() NOT NULL
 );
 
-
 GO
--- Audit Master Table
 CREATE TABLE drs_audit_mst (
     ID          BIGINT         IDENTITY (1, 1) NOT NULL PRIMARY KEY,
     customer_id BIGINT         NULL,
@@ -188,9 +167,7 @@ CREATE TABLE drs_audit_mst (
     CreatedDate DATETIME       DEFAULT GETDATE() NOT NULL
 );
 
-
 GO
--- Error Message Master Table
 CREATE TABLE drs_error_message_mst (
     ID             BIGINT         IDENTITY (1, 1) NOT NULL PRIMARY KEY,
     MessageCode    VARCHAR (100)  NOT NULL,
@@ -203,9 +180,7 @@ CREATE TABLE drs_error_message_mst (
     ModifiedDate   DATETIME       NULL
 );
 
-
 GO
--- Country Master Table
 CREATE TABLE drs_country_mst (
     ID           BIGINT         IDENTITY (1, 1) NOT NULL PRIMARY KEY,
     CountryName  NVARCHAR (100) NOT NULL,
@@ -217,9 +192,7 @@ CREATE TABLE drs_country_mst (
     ModifiedDate DATETIME       NULL
 );
 
-
 GO
--- State Master Table
 CREATE TABLE drs_state_mst (
     ID           BIGINT         IDENTITY (1, 1) NOT NULL PRIMARY KEY,
     country_id   BIGINT         NOT NULL,
@@ -231,9 +204,7 @@ CREATE TABLE drs_state_mst (
     ModifiedDate DATETIME       NULL
 );
 
-
 GO
--- FAQ Master Table
 CREATE TABLE drs_faq_mst (
     ID                    INT            IDENTITY (1, 1) PRIMARY KEY,
     Category              NVARCHAR (100),
@@ -252,17 +223,13 @@ CREATE TABLE drs_faq_mst (
     ModifiedDate          DATETIME       NULL
 );
 
-
 GO
--- Commission Request Sequence
 CREATE SEQUENCE Seq_CommissionRequestNo
     AS BIGINT
     START WITH 1
     INCREMENT BY 1;
 
-
 GO
--- Commission Category Master Table
 CREATE TABLE drs_commission_category_mst (
     ID           BIGINT         IDENTITY (1, 1) NOT NULL PRIMARY KEY,
     CategoryName NVARCHAR (100) NOT NULL,
@@ -274,9 +241,7 @@ CREATE TABLE drs_commission_category_mst (
     ModifiedDate DATETIME       NULL
 );
 
-
 GO
--- Commission Request Master Table
 CREATE TABLE drs_commission_request_mst (
     ID                       BIGINT         IDENTITY (1, 1) NOT NULL PRIMARY KEY,
     RequestNo                VARCHAR (30)   NOT NULL,
@@ -300,9 +265,7 @@ CREATE TABLE drs_commission_request_mst (
     ModifiedDate             DATETIME       NULL
 );
 
-
 GO
--- Commission Request Image Master Table
 CREATE TABLE drs_commission_request_image_mst (
     ID                    BIGINT         IDENTITY (1, 1) NOT NULL PRIMARY KEY,
     commission_request_id BIGINT         NOT NULL,
@@ -318,9 +281,7 @@ CREATE TABLE drs_commission_request_image_mst (
     ModifiedDate          DATETIME       NULL
 );
 
-
 GO
--- Project Master Table
 CREATE TABLE drs_project_mst (
     ID                  BIGINT          IDENTITY (1, 1) NOT NULL PRIMARY KEY,
     Heading             NVARCHAR (200)  NOT NULL,
@@ -343,9 +304,7 @@ CREATE TABLE drs_project_mst (
     ModifiedDate        DATETIME        NULL
 );
 
-
 GO
--- Project Image Master Table
 CREATE TABLE drs_project_image_mst (
     ID               BIGINT         IDENTITY (1, 1) NOT NULL PRIMARY KEY,
     project_id       BIGINT         NOT NULL,
@@ -361,9 +320,7 @@ CREATE TABLE drs_project_image_mst (
     ModifiedDate     DATETIME       NULL
 );
 
-
 GO
--- Wishlist Master Table
 CREATE TABLE drs_wishlist_mst (
     ID              BIGINT         IDENTITY (1, 1) NOT NULL PRIMARY KEY,
     customer_id     BIGINT         NULL,
@@ -378,9 +335,7 @@ CREATE TABLE drs_wishlist_mst (
     )
 );
 
-
 GO
--- Wishlist Item Master Table
 CREATE TABLE drs_wishlist_item_mst (
     ID           BIGINT   IDENTITY (1, 1) NOT NULL PRIMARY KEY,
     wishlist_id  BIGINT   NOT NULL,
@@ -391,9 +346,7 @@ CREATE TABLE drs_wishlist_item_mst (
     ModifiedDate DATETIME NULL
 );
 
-
 GO
--- Cart Master Table
 CREATE TABLE drs_cart_mst (
     ID           BIGINT       IDENTITY (1, 1) NOT NULL PRIMARY KEY,
     customer_id  BIGINT       NOT NULL,
@@ -405,9 +358,7 @@ CREATE TABLE drs_cart_mst (
     CONSTRAINT CK_drs_cart_mst_Status CHECK (CartStatus IN ('Active', 'ConvertedToOrder', 'Abandoned'))
 );
 
-
 GO
--- Cart Item Master Table
 CREATE TABLE drs_cart_item_mst (
     ID           BIGINT   IDENTITY (1, 1) NOT NULL PRIMARY KEY,
     cart_id      BIGINT   NOT NULL,
@@ -420,9 +371,7 @@ CREATE TABLE drs_cart_item_mst (
     CONSTRAINT CK_drs_cart_item_mst_Quantity CHECK (Quantity > 0)
 );
 
-
 GO
--- Contact Inquiry Master Table
 CREATE TABLE drs_contact_inquiry_mst (
     ID                 BIGINT          IDENTITY (1, 1) NOT NULL PRIMARY KEY,
     FullName           NVARCHAR (150)  NOT NULL,
@@ -440,5 +389,53 @@ CREATE TABLE drs_contact_inquiry_mst (
     CONSTRAINT CK_drs_contact_inquiry_mst_ServiceDescLength CHECK (LEN(ServiceDescription) <= 300)
 );
 
-
 GO
+
+CREATE TABLE HeroBanners (
+        Id           BIGINT          IDENTITY (1, 1) NOT NULL PRIMARY KEY,
+        Title        NVARCHAR (200)  NULL,
+        MediaUrl     NVARCHAR (500)  NOT NULL,
+        IsImage      BIT             NOT NULL,
+        IsVideo      BIT             NOT NULL,
+        DisplayOrder INT             DEFAULT 0 NOT NULL,
+        IsActive     BIT             DEFAULT 1 NOT NULL,
+        IsDeleted    BIT             DEFAULT 0 NOT NULL,
+        CreatedAt    DATETIME        DEFAULT GETDATE() NOT NULL,
+        UpdatedAt    DATETIME        NULL,
+        CONSTRAINT CK_HeroBanners_MediaType CHECK (
+            (IsImage = 1 AND IsVideo = 0) OR
+            (IsImage = 0 AND IsVideo = 1)
+        )
+    );
+
+
+
+CREATE TABLE drs_password_reset_request_mst
+    (
+        ID BIGINT IDENTITY(1,1) NOT NULL
+            CONSTRAINT PK_drs_password_reset_request_mst PRIMARY KEY,
+        customer_id BIGINT NOT NULL,
+        Source VARCHAR(20) NOT NULL,
+        Status VARCHAR(20) NOT NULL
+            CONSTRAINT DF_drs_password_reset_request_mst_Status
+            DEFAULT ('PENDING'),
+        RequestedIp NVARCHAR(64) NULL,
+        UserAgent NVARCHAR(500) NULL,
+        TokenHash NVARCHAR(128) NULL,
+        TokenExpiresUtc DATETIME NULL,
+        IssuedByAdminId BIGINT NULL,
+        IssuedUtc DATETIME NULL,
+        UsedUtc DATETIME NULL,
+        AdminNotes NVARCHAR(1000) NULL,
+        IsActive BIT NOT NULL
+            CONSTRAINT DF_drs_password_reset_request_mst_IsActive
+            DEFAULT (1),
+        IsDeleted BIT NOT NULL
+            CONSTRAINT DF_drs_password_reset_request_mst_IsDeleted
+            DEFAULT (0),
+        CreatedDate DATETIME NOT NULL
+            CONSTRAINT DF_drs_password_reset_request_mst_CreatedDate
+            DEFAULT (GETDATE()),
+        ModifiedDate DATETIME NULL
+    );
+

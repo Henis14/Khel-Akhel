@@ -18,6 +18,9 @@ export interface CustomerCreateRequest {
   email: string;
   mobileNo: string;
   password: string;
+  captchaId?: string;
+  captcha?: string;
+  website?: string;
 }
 
 export interface CustomerUpdateRequest {

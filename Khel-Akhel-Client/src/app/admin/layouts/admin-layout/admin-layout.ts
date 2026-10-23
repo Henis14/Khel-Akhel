@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../../common/services/auth.service';
@@ -16,6 +16,7 @@ export class AdminLayoutComponent implements OnInit {
 
   sidebarOpen = true;
   currentUser = this.authService.currentUser;
+  pendingResetCount = signal<number>(0);
 
   // Submenu Toggle States
   customersMenuOpen = true;
@@ -32,6 +33,19 @@ export class AdminLayoutComponent implements OnInit {
     if (url.includes('/admin/product-stock')) this.stockMenuOpen = true;
     if (url.includes('/admin/customers') || url.includes('/admin/customer-addresses'))
       this.customersMenuOpen = true;
+
+    this.loadPendingResetCount();
+  }
+
+  loadPendingResetCount(): void {
+    this.authService.getPasswordResetRequests('PENDING', 1, 1).subscribe({
+      next: (res) => {
+        if (res.success && res.data) {
+          this.pendingResetCount.set(res.data.pendingCount || 0);
+        }
+      },
+      error: () => {},
+    });
   }
 
   toggleSidebar(): void {

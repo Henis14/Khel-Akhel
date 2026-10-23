@@ -6,6 +6,7 @@ using Khel_Akhel_Server.BL.Services;
 using Khel_Akhel_Server.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Data.SqlClient;
 using static Khel_Akhel_Server.Models.CommonResponse;
 
@@ -19,6 +20,7 @@ namespace Khel_Akhel_Server.Controllers.commissionedProjects
         private readonly IUrlEncryptionService _encryption;
         private readonly IAuditService _audit;
         private readonly IWebHostEnvironment _env;
+        private readonly ICaptchaService _captchaService;
 
         private const int MaxAllowedImages = 3;
         private const long MaxImageSizeInBytes = 5 * 1024 * 1024; // 5MB per file
@@ -42,13 +44,15 @@ namespace Khel_Akhel_Server.Controllers.commissionedProjects
             DbHelper db,
             IUrlEncryptionService encryption,
             IAuditService audit,
-            IWebHostEnvironment env
+            IWebHostEnvironment env,
+            ICaptchaService captchaService
         )
         {
             _db = db;
             _encryption = encryption;
             _audit = audit;
             _env = env;
+            _captchaService = captchaService;
         }
 
         #region Helper Methods
@@ -164,6 +168,9 @@ namespace Khel_Akhel_Server.Controllers.commissionedProjects
         /// Public customer endpoint to submit a customized art/design project commission request with up to 3 sketches/images.
         /// </summary>
         [AllowAnonymous]
+        [EnableRateLimiting("public-form")]
+        [RequestSizeLimit(16 * 1024 * 1024)]
+        [RequestFormLimits(MultipartBodyLengthLimit = 16 * 1024 * 1024)]
         [HttpPost("create")]
         public async Task<IActionResult> CreateCommissionRequest(
             [FromForm] CommissionRequestCreateDto? request
@@ -183,6 +190,52 @@ namespace Khel_Akhel_Server.Controllers.commissionedProjects
                         StatusCode = 400,
                         Message = "REQUEST_BODY_REQUIRED",
                         Errors = new List<string> { "Request body cannot be null." },
+                    }
+                );
+            }
+
+            // Honeypot check
+            if (!string.IsNullOrWhiteSpace(request.Website))
+            {
+                sw.Stop();
+                Logs.Warning($"Honeypot triggered for CreateCommissionRequest from IP {GetClientIpAddress()}");
+                return Ok(
+                    new ApiResponse
+                    {
+                        Success = true,
+                        StatusCode = 200,
+                        Message = "COMMISSION_REQUEST_SUBMITTED",
+                        Data = new CommissionCreateResponse
+                        {
+                            EncryptedRequestId = string.Empty,
+                            RequestNo = $"CP{DateTime.Now:yyyyMMdd}0000",
+                            FullName = request.FullName,
+                            Email = request.Email,
+                            MobileNo = request.MobileNo,
+                            CategoryName = "General",
+                            ExpectedTimeline = request.ExpectedTimeline,
+                            Status = "Submitted",
+                            UploadedImagesCount = 0,
+                            CreatedDate = DateTimeFormat.Format(DateTime.Now),
+                        },
+                    }
+                );
+            }
+
+            // Captcha validation (mandatory for all commission requests)
+            if (string.IsNullOrWhiteSpace(request.CaptchaId)
+                || string.IsNullOrWhiteSpace(request.Captcha)
+                || !_captchaService.ValidateCaptcha(request.CaptchaId, request.Captcha))
+            {
+                sw.Stop();
+                Logs.Warning($"CreateCommissionRequest rejected | Reason: Invalid or missing CAPTCHA from IP {GetClientIpAddress()}");
+                return BadRequest(
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 400,
+                        Message = "INVALID_CAPTCHA",
+                        Errors = new List<string> { "Invalid or expired CAPTCHA. Please solve the security verification again." },
                     }
                 );
             }

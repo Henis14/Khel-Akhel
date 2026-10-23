@@ -1,14 +1,17 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, BehaviorSubject, of, throwError } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Observable, BehaviorSubject, of, throwError, timer } from 'rxjs';
+import { catchError, tap, switchMap } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import {
   PortalLoginRequest,
   AuthResponseData,
   UserSession,
   CaptchaResponseData,
+  ChangePasswordRequest,
 } from '../models/auth.model';
+import { CustomerCreateRequest } from '../../admin/models/customer.model';
 import { ApiResponse } from '../models/api-response.model';
 
 @Injectable({
@@ -59,8 +62,12 @@ export class AuthService {
     return this.apiService.get<CaptchaResponseData>('auth/captcha');
   }
 
-  forgotPassword(userName: string): Observable<ApiResponse<null>> {
-    return this.apiService.post<null>('auth/forgot-password', { userName });
+  register(request: CustomerCreateRequest): Observable<ApiResponse<any>> {
+    return this.apiService.post<any>('customer/create', request);
+  }
+
+  changePassword(request: ChangePasswordRequest): Observable<ApiResponse<null>> {
+    return this.apiService.patch<null>('auth/change-password', request);
   }
 
   login(credentials: PortalLoginRequest): Observable<ApiResponse<AuthResponseData>> {
@@ -75,6 +82,15 @@ export class AuthService {
 
   refreshToken(): Observable<ApiResponse<AuthResponseData>> {
     return this.apiService.post<AuthResponseData>('auth/refresh', {}).pipe(
+      catchError((err: HttpErrorResponse) => {
+        if (err.status === 409) {
+          // Concurrent refresh race: wait 300ms and retry once
+          return timer(300).pipe(
+            switchMap(() => this.apiService.post<AuthResponseData>('auth/refresh', {}))
+          );
+        }
+        return throwError(() => err);
+      }),
       tap((res) => {
         if (res.success && res.data?.token) {
           this.setSession(res.data.token, res.data);
@@ -86,6 +102,64 @@ export class AuthService {
         this.clearSession();
         return throwError(() => err);
       }),
+    );
+  }
+
+  forgotPassword(userName: string, captchaId?: string, captcha?: string): Observable<ApiResponse<string>> {
+    return this.apiService.post<string>('auth/forgot-password', {
+      userName,
+      captchaId,
+      captcha,
+    });
+  }
+
+  validateResetToken(token: string): Observable<ApiResponse<{ valid: boolean }>> {
+    return this.apiService.get<{ valid: boolean }>('auth/reset-password/validate', { token });
+  }
+
+  resetPassword(token: string, newPassword: string, confirmPassword: string): Observable<ApiResponse<string>> {
+    return this.apiService.post<string>('auth/reset-password', {
+      token,
+      newPassword,
+      confirmPassword,
+    });
+  }
+
+  getPasswordResetRequests(
+    status = 'PENDING',
+    pageIndex = 1,
+    pageSize = 10,
+    search?: string,
+  ): Observable<ApiResponse<any>> {
+    const params: Record<string, string | number> = {
+      status,
+      pageIndex,
+      pageSize,
+    };
+    if (search) {
+      params['search'] = search;
+    }
+    return this.apiService.get<any>('admin/password-reset/requests', params);
+  }
+
+  issueResetLink(encryptedRequestId: string, adminNotes: string): Observable<ApiResponse<{ resetUrl: string; expiresUtc: string }>> {
+    return this.apiService.post<{ resetUrl: string; expiresUtc: string }>(
+      `admin/password-reset/requests/${encodeURIComponent(encryptedRequestId)}/issue-link`,
+      { adminNotes },
+    );
+  }
+
+  rejectResetRequest(encryptedRequestId: string, adminNotes: string): Observable<ApiResponse<string>> {
+    return this.apiService.post<string>(
+      `admin/password-reset/requests/${encodeURIComponent(encryptedRequestId)}/reject`,
+      { adminNotes },
+    );
+  }
+
+  issueResetLinkForCustomer(encryptedCustomerId: string, adminNotes: string): Observable<ApiResponse<{ resetUrl: string; expiresUtc: string }>> {
+    return this.apiService.post<{ resetUrl: string; expiresUtc: string }>(
+      `admin/password-reset/customers/${encodeURIComponent(encryptedCustomerId)}/issue-link`,
+      { adminNotes },
     );
   }
 
@@ -109,7 +183,8 @@ export class AuthService {
     } else if (wasAdmin) {
       this.router.navigate(['/admin/login']);
     } else {
-      this.router.navigate(['/admin/login']);
+      // Customers return to the storefront sign-in page
+      this.router.navigate(['/login']);
     }
   }
 

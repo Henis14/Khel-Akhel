@@ -1,7 +1,7 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AdminCustomerService } from '../../../services/admin-customer.service';
 import { AdminCustomerAddressService } from '../../../services/admin-customer-address.service';
 import { CustomerResponse, CustomerUpdateRequest } from '../../../models/customer.model';
@@ -11,6 +11,7 @@ import { REGEX_PATTERNS } from '../../../../common/constants/regex.constants';
 import { BreadcrumbComponent } from '../../../../common/components/breadcrumb/breadcrumb';
 import { BreadcrumbItem } from '../../../../common/models/breadcrumb.model';
 import { AppLoaderComponent } from '../../../../common/components/app-loader/app-loader';
+import { AuthService } from '../../../../common/services/auth.service';
 
 @Component({
   selector: 'app-customer-detail',
@@ -29,6 +30,7 @@ export class CustomerDetailComponent implements OnInit {
   private router = inject(Router);
   private customerService = inject(AdminCustomerService);
   private addressService = inject(AdminCustomerAddressService);
+  private authService = inject(AuthService);
   private fb = inject(FormBuilder);
   private cdr = inject(ChangeDetectorRef);
 
@@ -48,8 +50,18 @@ export class CustomerDetailComponent implements OnInit {
   editForm!: FormGroup;
   editSubmitting = false;
 
+  // Reset Link Modal
+  showResetModal = signal<boolean>(false);
+  resetForm!: FormGroup;
+  resetActionLoading = signal<boolean>(false);
+  resetActionError = signal<string | null>(null);
+  generatedResetLink = signal<string | null>(null);
+  generatedResetExpiry = signal<string | null>(null);
+  resetCopySuccess = signal<boolean>(false);
+
   ngOnInit(): void {
     this.initEditForm();
+    this.initResetForm();
     this.encryptedId = this.route.snapshot.paramMap.get('encryptedId');
 
     if (this.encryptedId) {
@@ -59,6 +71,12 @@ export class CustomerDetailComponent implements OnInit {
       this.errorMessage = 'Invalid customer ID.';
       this.loading = false;
     }
+  }
+
+  initResetForm(): void {
+    this.resetForm = this.fb.group({
+      adminNotes: ['', [Validators.required, Validators.minLength(5)]],
+    });
   }
 
   parseDate(dateStr: string | null | undefined): Date | null {
@@ -211,6 +229,64 @@ export class CustomerDetailComponent implements OnInit {
         this.errorMessage = err.error?.message || 'Failed to update customer details.';
       },
     });
+  }
+
+  // Password Reset Modal Handlers
+  openResetModal(): void {
+    if (!this.customer || this.customer.isAdmin) return;
+    this.generatedResetLink.set(null);
+    this.generatedResetExpiry.set(null);
+    this.resetCopySuccess.set(false);
+    this.resetActionError.set(null);
+    this.resetForm.reset();
+    this.showResetModal.set(true);
+  }
+
+  closeResetModal(): void {
+    this.showResetModal.set(false);
+    this.generatedResetLink.set(null);
+    this.generatedResetExpiry.set(null);
+    this.resetCopySuccess.set(false);
+  }
+
+  submitResetLink(): void {
+    if (this.resetForm.invalid || this.resetActionLoading() || !this.encryptedId) {
+      this.resetForm.markAllAsTouched();
+      return;
+    }
+
+    this.resetActionLoading.set(true);
+    this.resetActionError.set(null);
+
+    const notes = this.resetForm.value.adminNotes.trim();
+
+    this.authService.issueResetLinkForCustomer(this.encryptedId, notes).subscribe({
+      next: (res) => {
+        this.resetActionLoading.set(false);
+        if (res.success && res.data) {
+          this.generatedResetLink.set(res.data.resetUrl);
+          this.generatedResetExpiry.set(res.data.expiresUtc);
+        }
+      },
+      error: (err) => {
+        this.resetActionLoading.set(false);
+        this.resetActionError.set(
+          err.error?.errors?.[0] || err.error?.message || 'Failed to issue reset link.',
+        );
+      },
+    });
+  }
+
+  copyResetLink(): void {
+    const link = this.generatedResetLink();
+    if (!link) return;
+
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(link).then(() => {
+        this.resetCopySuccess.set(true);
+        setTimeout(() => this.resetCopySuccess.set(false), 2500);
+      });
+    }
   }
 
   goBack(): void {

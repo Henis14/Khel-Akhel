@@ -1,36 +1,93 @@
 <div class="user-home-page">
-  <!-- Hero Section -->
-  <section class="hero-banner">
-    <h1>Welcome to Khel-Akhel</h1>
-    <p>Your premier destination for high-quality sports gear, apparel, and athletic accessories.</p>
-    <a routerLink="/products" class="btn btn-primary btn-lg">Browse Products</a>
-  </section>
+  <section
+    class="home-hero"
+    [class.is-video-active]="isVideoMode()"
+    [class.is-image-active]="isImageMode()"
+    [style.background-image]="
+      isVideoMode() || !currentBackgroundUrl() ? 'none' : 'url(' + currentBackgroundUrl() + ')'
+    "
+    aria-label="Hero Banner"
+  >
+    <!-- Background Media Layer: Video Mode -->
+    @if (isVideoMode() && videoBanner(); as vBanner) {
+      <div class="home-hero-video-wrapper" aria-hidden="true">
+        <video
+          [src]="getFullMediaUrl(vBanner.mediaUrl)"
+          autoplay
+          muted
+          loop
+          playsinline
+          class="home-hero-video"
+        ></video>
+      </div>
+    }
 
-  <!-- Featured Products Section -->
-  <section class="featured-section">
-    <h2>Featured Sports Gear</h2>
-    <div class="product-grid">
-      @for (p of featuredProducts; track p.encryptedProductId) {
-        <div class="product-card card">
-          <div class="product-info">
-            <span class="category-tag">{{ p.categoryName || 'Sports' }}</span>
-            <h3 class="product-title">{{ p.productName }}</h3>
-            <p class="product-desc">{{ p.shortDescription }}</p>
-            <div class="price-row">
-              <span class="selling-price">₹{{ p.sellingPrice }}</span>
-              @if (p.mrp > p.sellingPrice) {
-                <span class="mrp">₹{{ p.mrp }}</span>
-              }
-            </div>
-          </div>
-        </div>
-      }
+    <!-- Background Media Layer: Multiple Images Carousel Slides -->
+    @if (isImageMode() && imageBanners().length > 1) {
+      <div class="home-hero-slides-layer" aria-hidden="true">
+        @for (slide of imageBanners(); track slide.id; let i = $index) {
+          <div
+            class="home-hero-slide"
+            [class.active]="i === activeSlideIndex()"
+            [style.background-image]="'url(' + getFullMediaUrl(slide.mediaUrl) + ')'"
+          ></div>
+        }
+      </div>
+    }
 
-      @if (featuredProducts.length === 0) {
-        <div class="no-data">
-          No featured products available at the moment.
+    <!-- Carousel Controls (Shown exclusively when multiple images are active) -->
+    @if (isImageMode() && imageBanners().length > 1) {
+      <div class="home-hero-carousel-nav" aria-label="Hero carousel navigation">
+        <button
+          type="button"
+          class="carousel-nav-btn prev"
+          (click)="prevSlide()"
+          aria-label="Previous hero image"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+
+        <div class="carousel-dots" role="tablist" aria-label="Hero slides">
+          @for (dot of imageBanners(); track dot.id; let i = $index) {
+            <button
+              type="button"
+              class="carousel-dot"
+              [class.active]="i === activeSlideIndex()"
+              (click)="goToSlide(i)"
+              [attr.aria-label]="'Go to slide ' + (i + 1)"
+              [attr.aria-selected]="i === activeSlideIndex()"
+              role="tab"
+            ></button>
+          }
         </div>
-      }
-    </div>
+
+        <button
+          type="button"
+          class="carousel-nav-btn next"
+          (click)="nextSlide()"
+          aria-label="Next hero image"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </div>
+    }
   </section>
 </div>

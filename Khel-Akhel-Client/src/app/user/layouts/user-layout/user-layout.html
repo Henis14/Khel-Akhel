@@ -1,52 +1,80 @@
 <div class="user-layout-container">
   <!-- Accessibility Skip Link -->
-  <a href="#main-content" class="skip-to-content">Skip to main content</a>
+  <a href="#main-content" class="skip-to-content" (click)="skipToMain($event)"
+    >Skip to main content</a
+  >
 
-  <!-- Storefront Header -->
-  <header class="storefront-header" role="banner">
+  <!-- =============================== HEADER =============================== -->
+  <header
+    #storefrontHeader
+    class="storefront-header"
+    [class.is-homepage-header]="isHomePage()"
+    [class.is-solid]="isHeaderSolid()"
+  >
     <div class="container storefront-header-inner">
-      <!-- Mobile Menu Toggle Button -->
-      <button
-        type="button"
-        class="mobile-menu-toggle"
-        [attr.aria-expanded]="isMobileMenuOpen()"
-        aria-controls="storefrontMobileNav"
-        aria-label="Toggle navigation menu"
-        (click)="toggleMobileMenu()"
-      >
-        <span class="hamburger-box" aria-hidden="true">
-          <span class="hamburger-inner" [class.is-active]="isMobileMenuOpen()"></span>
-        </span>
-      </button>
+      <!-- Left: menu toggle (mobile) + primary navigation (desktop) -->
+      <div class="header-start">
+        <button
+          type="button"
+          class="mobile-menu-toggle"
+          #mobileMenuToggle
+          [attr.aria-expanded]="isMobileMenuOpen()"
+          aria-controls="storefrontMobileNav"
+          aria-label="Open navigation menu"
+          (click)="toggleMobileMenu()"
+        >
+          <span class="hamburger-line"></span>
+          <span class="hamburger-line"></span>
+          <span class="hamburger-line"></span>
+        </button>
 
-      <!-- Brand Mark & Identity -->
-      <a routerLink="/" class="brand-link" (click)="closeMobileMenu()" aria-label="Khel-Akhel Home">
-        <span class="brand-title">Khel-Akhel</span>
-        <span class="brand-tagline">Studio &amp; Living</span>
+        <nav class="desktop-nav" aria-label="Primary navigation">
+          @for (menu of menus; track menu.id) {
+            @if (menu.columns) {
+              <div
+                class="nav-item"
+                (mouseenter)="openMega(menu.id)"
+                (mouseleave)="scheduleMegaClose()"
+              >
+                <a
+                  class="nav-link"
+                  [routerLink]="menu.link"
+                  routerLinkActive="active"
+                  ariaCurrentWhenActive="page"
+                  [attr.aria-expanded]="openMegaMenu() === menu.id"
+                  [attr.aria-controls]="'mega-' + menu.id"
+                  (click)="onMegaTriggerClick(menu.id, $event)"
+                  (keydown.enter)="toggleMega(menu.id, $event)"
+                  (keydown.space)="toggleMega(menu.id, $event)"
+                  >{{ menu.label }}</a
+                >
+              </div>
+            } @else {
+              <a
+                class="nav-link"
+                [routerLink]="menu.link"
+                routerLinkActive="active"
+                ariaCurrentWhenActive="page"
+                (mouseenter)="closeMegaMenu()"
+                >{{ menu.label }}</a
+              >
+            }
+          }
+        </nav>
+      </div>
+
+      <!-- Centre: logo -->
+      <a routerLink="/" class="brand-link" (click)="closeMobileMenu()" aria-label="Khel Akhel home">
+        <img class="brand-logo" src="/logo.png" alt="Khel Akhel" width="2988" height="948" />
       </a>
 
-      <!-- Desktop Primary Navigation -->
-      <nav class="desktop-nav" aria-label="Primary navigation">
-        <a
-          routerLink="/"
-          routerLinkActive="active"
-          [routerLinkActiveOptions]="{ exact: true }"
-          class="nav-link"
-        >
-          Home
-        </a>
-        <a routerLink="/shop" routerLinkActive="active" class="nav-link">Shop</a>
-        <a routerLink="/projects" routerLinkActive="active" class="nav-link">Projects</a>
-        <a routerLink="/about" routerLinkActive="active" class="nav-link">About</a>
-        <a routerLink="/contact" routerLinkActive="active" class="nav-link">Contact</a>
-      </nav>
-
-      <!-- Header Right Utilities & Account -->
+      <!-- Right: utilities & account -->
       <div class="header-actions">
-        <!-- Wishlist Link -->
         <a
           routerLink="/wishlist"
-          class="action-icon-link"
+          routerLinkActive="active"
+          ariaCurrentWhenActive="page"
+          class="action-icon-link hide-sm"
           aria-label="Wishlist"
           title="Wishlist"
         >
@@ -55,45 +83,44 @@
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
+            stroke-width="1.3"
             stroke-linejoin="round"
             aria-hidden="true"
           >
             <path
-              d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
+              d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.3a4.3 4.3 0 0 1 7.5 2.5C19.5 15.4 12 20 12 20Z"
             />
           </svg>
         </a>
 
-        <!-- Cart Link -->
         <a
           routerLink="/cart"
+          routerLinkActive="active"
+          ariaCurrentWhenActive="page"
           class="action-icon-link"
-          aria-label="Shopping Cart"
-          title="Shopping Cart"
+          aria-label="Shopping bag"
+          title="Shopping bag"
         >
           <svg
             class="action-icon"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+            stroke-width="1.3"
             aria-hidden="true"
           >
-            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
-            <path d="M3 6h18" />
-            <path d="M16 10a4 4 0 0 1-8 0" />
+            <rect x="3.5" y="7.5" width="17" height="13" rx="1.5" />
+            <path d="M8.5 7.5V6a3.5 3.5 0 0 1 7 0v1.5" />
           </svg>
         </a>
 
-        <!-- Auth Navigation & User State -->
         <div class="auth-wrapper">
           @if (authService.isAuthenticated()) {
             <div class="user-session-pill">
-              <span class="user-email-label" [title]="authService.currentUser()?.email || 'My Account'">
+              <span
+                class="user-email-label"
+                [title]="authService.currentUser()?.email || 'My account'"
+              >
                 {{ authService.currentUser()?.email }}
               </span>
               <button
@@ -102,21 +129,83 @@
                 (click)="logout()"
                 aria-label="Sign out of account"
               >
-                Sign Out
+                Sign out
               </button>
             </div>
           } @else {
             <div class="guest-auth-actions">
-              <a routerLink="/login" class="btn-auth-signin">Sign In</a>
-              <a routerLink="/register" class="btn-auth-join">Join</a>
+              <a routerLink="/login" routerLinkActive="active" class="btn-auth-signin">Sign in</a>
+              <a routerLink="/register" routerLinkActive="active" class="btn-auth-join">Join</a>
             </div>
           }
         </div>
       </div>
     </div>
+
+    <!-- ---------- Mega menus ---------- -->
+    @for (menu of menus; track menu.id) {
+      @if (menu.columns) {
+        <div
+          class="mega-panel"
+          [id]="'mega-' + menu.id"
+          [class.is-open]="openMegaMenu() === menu.id"
+          role="region"
+          [attr.aria-label]="menu.label"
+          (mouseenter)="keepMegaOpen()"
+          (mouseleave)="scheduleMegaClose()"
+        >
+          <div class="container mega-inner">
+            <div class="mega-intro" [style.--i]="0">
+              <p class="mega-intro-title">{{ menu.label }}</p>
+              @if (menu.intro) {
+                <p class="mega-intro-text">{{ menu.intro }}</p>
+              }
+              <a
+                class="mega-view-all"
+                [routerLink]="menu.link"
+                routerLinkActive="active"
+                [routerLinkActiveOptions]="exactMatch"
+                >{{ menu.viewAll || 'View all' }} <span aria-hidden="true">→</span></a
+              >
+            </div>
+            @for (col of menu.columns; track col.title; let i = $index) {
+              <div class="mega-column" [style.--i]="i + 1">
+                <p class="mega-title">{{ col.title }}</p>
+                <ul class="mega-list">
+                  @for (item of col.links; track item.label) {
+                    <li>
+                      <a
+                        class="mega-link"
+                        [routerLink]="item.link"
+                        [queryParams]="item.queryParams"
+                        routerLinkActive="active"
+                        [routerLinkActiveOptions]="exactMatch"
+                      >
+                        {{ item.label }}
+                        @if (item.badge) {
+                          <span class="mega-badge">{{ item.badge }}</span>
+                        }
+                      </a>
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    }
   </header>
 
-  <!-- Mobile Drawer Backdrop Overlay -->
+  <!-- dims the page while a mega menu is open -->
+  <div
+    class="mega-backdrop"
+    [class.is-open]="!!openMegaMenu()"
+    (click)="closeMegaMenu()"
+    aria-hidden="true"
+  ></div>
+
+  <!-- ============================ MOBILE DRAWER ============================ -->
   <div
     class="mobile-drawer-backdrop"
     [class.is-open]="isMobileMenuOpen()"
@@ -124,127 +213,116 @@
     [attr.aria-hidden]="!isMobileMenuOpen()"
   ></div>
 
-  <!-- Mobile Navigation Drawer -->
   <aside
     id="storefrontMobileNav"
     class="mobile-nav-drawer"
+    #mobileNavDrawer
     [class.is-open]="isMobileMenuOpen()"
+    [attr.aria-hidden]="!isMobileMenuOpen()"
     role="dialog"
     aria-modal="true"
-    aria-label="Mobile Navigation"
+    aria-label="Mobile navigation"
   >
     <div class="drawer-header">
-      <div class="drawer-brand">
-        <span class="brand-title">Khel-Akhel</span>
-        <span class="brand-tagline">Studio &amp; Living</span>
-      </div>
+      <img
+        class="brand-logo drawer-logo"
+        src="/logo.png"
+        alt="Khel Akhel"
+        width="2988"
+        height="948"
+      />
       <button
         type="button"
         class="drawer-close-btn"
         (click)="closeMobileMenu()"
         aria-label="Close navigation menu"
       >
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"
-        >
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
+        Close
       </button>
     </div>
 
     <nav class="drawer-nav" aria-label="Mobile primary navigation">
       <a
         routerLink="/"
+        class="drawer-nav-item"
         routerLinkActive="active"
+        ariaCurrentWhenActive="page"
         [routerLinkActiveOptions]="{ exact: true }"
-        class="drawer-nav-item"
         (click)="closeMobileMenu()"
+        >Home</a
       >
-        Home
-      </a>
-      <a
-        routerLink="/shop"
-        routerLinkActive="active"
-        class="drawer-nav-item"
-        (click)="closeMobileMenu()"
-      >
-        Shop
-      </a>
-      <a
-        routerLink="/projects"
-        routerLinkActive="active"
-        class="drawer-nav-item"
-        (click)="closeMobileMenu()"
-      >
-        Projects &amp; Portfolio
-      </a>
-      <a
-        routerLink="/about"
-        routerLinkActive="active"
-        class="drawer-nav-item"
-        (click)="closeMobileMenu()"
-      >
-        About Studio
-      </a>
-      <a
-        routerLink="/contact"
-        routerLinkActive="active"
-        class="drawer-nav-item"
-        (click)="closeMobileMenu()"
-      >
-        Contact &amp; Custom Works
-      </a>
+      @for (menu of menus; track menu.id) {
+        @if (menu.columns) {
+          <div class="drawer-group" routerLinkActive="is-current">
+            <button
+              type="button"
+              class="drawer-nav-item drawer-toggle"
+              [attr.aria-expanded]="openDrawerSection() === menu.id"
+              [attr.aria-controls]="'drawer-' + menu.id"
+              (click)="toggleDrawerSection(menu.id)"
+            >
+              {{ menu.label }}
+              <svg
+                class="drawer-plus"
+                viewBox="0 0 14 14"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.3"
+                aria-hidden="true"
+              >
+                <path d="M7 1v12M1 7h12" />
+              </svg>
+            </button>
+            <ul
+              class="drawer-sub"
+              [id]="'drawer-' + menu.id"
+              [class.is-open]="openDrawerSection() === menu.id"
+            >
+              <li>
+                <a
+                  class="drawer-view-all"
+                  [routerLink]="menu.link"
+                  routerLinkActive="active"
+                  [routerLinkActiveOptions]="exactMatch"
+                  (click)="closeMobileMenu()"
+                  >{{ menu.viewAll || 'View all' }}</a
+                >
+              </li>
+              @for (col of menu.columns; track col.title) {
+                @for (item of col.links; track item.label) {
+                  <li>
+                    <a
+                      [routerLink]="item.link"
+                      [queryParams]="item.queryParams"
+                      routerLinkActive="active"
+                      [routerLinkActiveOptions]="exactMatch"
+                      (click)="closeMobileMenu()"
+                      >{{ item.label }}</a
+                    >
+                  </li>
+                }
+              }
+            </ul>
+          </div>
+        } @else {
+          <a
+            [routerLink]="menu.link"
+            class="drawer-nav-item"
+            routerLinkActive="active"
+            ariaCurrentWhenActive="page"
+            (click)="closeMobileMenu()"
+            >{{ menu.label }}</a
+          >
+        }
+      }
       <a
         routerLink="/wishlist"
+        class="drawer-nav-item"
         routerLinkActive="active"
-        class="drawer-nav-item drawer-nav-item-iconic"
+        ariaCurrentWhenActive="page"
         (click)="closeMobileMenu()"
+        >Wishlist</a
       >
-        <svg
-          class="drawer-icon"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"
-        >
-          <path
-            d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
-          />
-        </svg>
-        Wishlist
-      </a>
-      <a
-        routerLink="/cart"
-        routerLinkActive="active"
-        class="drawer-nav-item drawer-nav-item-iconic"
-        (click)="closeMobileMenu()"
-      >
-        <svg
-          class="drawer-icon"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"
-        >
-          <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
-          <path d="M3 6h18" />
-          <path d="M16 10a4 4 0 0 1-8 0" />
-        </svg>
-        Shopping Cart
-      </a>
     </nav>
 
     <div class="drawer-footer">
@@ -252,88 +330,195 @@
         <div class="drawer-user-info">
           <p class="drawer-user-meta">Signed in as</p>
           <p class="drawer-user-email">{{ authService.currentUser()?.email }}</p>
-          <button type="button" class="btn-drawer-logout" (click)="logout()">
-            Sign Out
-          </button>
+          <button type="button" class="btn-drawer-logout" (click)="logout()">Sign out</button>
         </div>
       } @else {
         <div class="drawer-auth-grid">
-          <a routerLink="/login" class="btn-drawer-login" (click)="closeMobileMenu()">Sign In</a>
+          <a routerLink="/login" class="btn-drawer-login" (click)="closeMobileMenu()">Sign in</a>
           <a routerLink="/register" class="btn-drawer-register" (click)="closeMobileMenu()">Join</a>
         </div>
       }
-
-      <div class="drawer-daras-tag">
-        <p class="tag-title">In Association with DARAS</p>
-        <p class="tag-sub">Art &bull; Objects &bull; Contemporary Living</p>
-      </div>
+      <p class="drawer-daras-tag">A creative world by DARAS</p>
     </div>
   </aside>
 
-  <!-- Page Main Content Container -->
-  <main id="main-content" class="storefront-main" tabindex="-1">
+  <!-- Page Main Content -->
+  <main
+    id="main-content"
+    class="storefront-main"
+    [class.has-header-offset]="!isHomePage()"
+    tabindex="-1"
+  >
     <router-outlet></router-outlet>
   </main>
 
-  <!-- Storefront Footer -->
-  <footer class="storefront-footer" role="contentinfo">
-    <div class="container footer-content-grid">
-      <!-- Column 1: Brand & Studio Heritage -->
-      <div class="footer-col brand-col">
-        <h3 class="footer-brand-title">Khel-Akhel</h3>
-        <p class="footer-brand-tagline">Studio &bull; Objects &bull; Living</p>
-        <p class="footer-brand-desc">
-          A creative studio and lifestyle brand celebrating authentic craft, contemporary objects,
-          and curated living. Connected to DARAS.
-        </p>
-        <div class="footer-association-badge">
-          <span>Associated with DARAS</span>
+  <!-- =============================== FOOTER =============================== -->
+  <footer class="storefront-footer">
+    <div class="footer-sheet">
+
+      <!-- 1. Promise band -->
+      <div class="footer-promises-band">
+        <ul class="container footer-promises" aria-label="Our promise">
+          <li class="promise-item">
+            <span class="promise-icon">
+              <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M13 30c-2-3-4-7-4-11a3 3 0 0 1 6 0v4M15 19v-7a2.5 2.5 0 0 1 5 0v9M20 12V9a2.5 2.5 0 0 1 5 0v12M25 13a2.5 2.5 0 0 1 5 0v9c0 6-4 10-9 10h-2c-3 0-5-1-6-2"/></svg>
+            </span>
+            <p class="promise-title">Made by hand</p>
+            <p class="promise-text">Shaped in the studio, so no two pieces are alike.</p>
+          </li>
+          <li class="promise-item">
+            <span class="promise-icon">
+              <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M6 13l14-7 14 7v14l-14 7-14-7z"/><path d="M6 13l14 7 14-7M20 20v14M13 9.5l14 7"/></svg>
+            </span>
+            <p class="promise-title">Wrapped with care</p>
+            <p class="promise-text">Packed in reusable cloth, shipped across India.</p>
+          </li>
+          <li class="promise-item">
+            <span class="promise-icon">
+              <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><rect x="9" y="17" width="22" height="16" rx="2"/><path d="M14 17v-4a6 6 0 0 1 12 0v4M20 23v4"/></svg>
+            </span>
+            <p class="promise-title">Secure payment</p>
+            <p class="promise-text">UPI, cards and net banking.</p>
+          </li>
+          <li class="promise-item">
+            <span class="promise-icon">
+              <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M20 6l2.8 8.6H32l-7.4 5.4 2.8 8.6L20 23.2l-7.4 5.4 2.8-8.6L8 14.6h9.2z"/></svg>
+            </span>
+            <p class="promise-title">Made for you</p>
+            <p class="promise-text">Custom pieces and commissions on request.</p>
+          </li>
+        </ul>
+      </div>
+
+      <!-- 2. Commission invitation + contact -->
+      <section class="container footer-invite" aria-label="Work with us">
+        <!-- hand-drawn handpan, hangs from the promise band -->
+        <svg class="invite-motif" viewBox="0 0 96 76" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true">
+          <path d="M48 0v14" />
+          <ellipse cx="48" cy="44" rx="40" ry="22" fill="#ffffff" />
+          <ellipse cx="48" cy="38" rx="11" ry="5.5" />
+          <ellipse cx="48" cy="37" rx="4" ry="2" fill="#f2c230" stroke="none" />
+          <ellipse cx="25" cy="44" rx="6" ry="3.6" transform="rotate(-15 25 44)" />
+          <ellipse cx="71" cy="44" rx="6" ry="3.6" transform="rotate(15 71 44)" />
+          <ellipse cx="34" cy="55" rx="5.5" ry="3" transform="rotate(-8 34 55)" />
+          <ellipse cx="62" cy="55" rx="5.5" ry="3" transform="rotate(8 62 55)" />
+          <ellipse cx="48" cy="60" rx="5" ry="2.6" />
+          <path d="M8 46c4 10 20 18 40 18s36-8 40-18" stroke-dasharray="2 3" />
+        </svg>
+
+        <div class="invite-copy">
+          <p class="invite-eyebrow">Commissions</p>
+          <h2 class="invite-title">Have a space, a festival or a gift in&nbsp;mind?</h2>
+          <p class="invite-text">
+            We design festival sets, scenography, interiors, identities and one-off objects.
+            Tell us what you are imagining.
+          </p>
+          <a routerLink="/contact" class="invite-btn">
+            Start a conversation <span aria-hidden="true">→</span>
+          </a>
+        </div>
+
+        <div class="invite-contacts">
+          <a class="contact-card" href="mailto:logingrewal@gmail.com">
+            <span class="contact-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="1"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/></svg>
+            </span>
+            <span class="contact-text">
+              <span class="contact-label">Write to us</span>
+              <span class="contact-value">logingrewal&#64;gmail.com</span>
+            </span>
+          </a>
+          <a class="contact-card" href="tel:+919888744113">
+            <span class="contact-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M5 3.5h3.5l1.8 4.5-2.3 1.4a11 11 0 0 0 6.6 6.6l1.4-2.3 4.5 1.8V19a1.5 1.5 0 0 1-1.6 1.5A16.5 16.5 0 0 1 3.5 5.1 1.5 1.5 0 0 1 5 3.5Z"/></svg>
+            </span>
+            <span class="contact-text">
+              <span class="contact-label">Call the studio</span>
+              <span class="contact-value">+91 98887 44113</span>
+            </span>
+          </a>
+          <p class="contact-note">Replies within two working days</p>
+        </div>
+      </section>
+
+      <!-- 3. Running-stitch divider -->
+      <div class="container" aria-hidden="true">
+        <div class="footer-stitch">
+          <span class="stitch-line"></span>
+          <svg class="stitch-mark" viewBox="0 0 64 16" fill="none">
+            <path d="M8 8 14 2l6 6-6 6Z" stroke="#b8336a" stroke-width="1.2" />
+            <path d="M32 0l8 8-8 8-8-8Z" fill="#f2c230" />
+            <path d="M44 8l6-6 6 6-6 6Z" stroke="#b8336a" stroke-width="1.2" />
+          </svg>
+          <span class="stitch-line"></span>
         </div>
       </div>
 
-      <!-- Column 2: Studio & Shop -->
-      <div class="footer-col">
-        <h4 class="footer-heading">Studio &amp; Shop</h4>
-        <ul class="footer-links">
-          <li><a routerLink="/shop">All Collections</a></li>
-          <li><a routerLink="/projects">Projects &amp; Exhibitions</a></li>
-          <li><a routerLink="/about">About Khel-Akhel</a></li>
-          <li><a routerLink="/contact">Murals &amp; Commissions</a></li>
-        </ul>
+      <!-- 4. Brand + link columns -->
+      <div class="container footer-nav">
+        <div class="footer-brand">
+          <a routerLink="/" class="footer-logo-link" aria-label="Khel Akhel home">
+            <img class="footer-logo" src="/logo.png" alt="Khel Akhel" width="2988" height="948" loading="lazy" />
+          </a>
+          <p class="footer-owner">
+            Objects, art and gatherings shaped by craft and play.
+            <span>A creative world by DARAS · Darshan Singh Grewal</span>
+          </p>
+          <div class="footer-social">
+            <a href="https://www.instagram.com/daras.co.in/" target="_blank" rel="noopener" aria-label="Instagram">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r=".9" fill="currentColor" stroke="none"/></svg>
+            </a>
+            <a href="https://www.youtube.com/@daras.nature" target="_blank" rel="noopener" aria-label="YouTube">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="2.5" y="5.5" width="19" height="13" rx="4"/><path d="m10 9 5 3-5 3Z" fill="currentColor" stroke="none"/></svg>
+            </a>
+            <a href="mailto:logingrewal@gmail.com" aria-label="Email">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="1"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <nav class="links-group" aria-label="Shop">
+          <p class="links-label">Shop</p>
+          <ul class="links-list">
+            <li><a routerLink="/products" routerLinkActive="active" [routerLinkActiveOptions]="exactMatch">Shop all</a></li>
+            <li><a routerLink="/products" [queryParams]="{ category: 'lamps' }" routerLinkActive="active" [routerLinkActiveOptions]="exactMatch">Lamps &amp; lighting</a></li>
+            <li><a routerLink="/products" [queryParams]="{ category: 'pottery' }" routerLinkActive="active" [routerLinkActiveOptions]="exactMatch">Pottery</a></li>
+            <li><a routerLink="/wishlist" routerLinkActive="active">Wishlist</a></li>
+          </ul>
+        </nav>
+
+        <nav class="links-group" aria-label="Explore">
+          <p class="links-label">Explore</p>
+          <ul class="links-list">
+            <li><a routerLink="/projects" routerLinkActive="active">Projects</a></li>
+            <li><a routerLink="/about" routerLinkActive="active">About</a></li>
+            <li><a routerLink="/contact" routerLinkActive="active">Contact</a></li>
+          </ul>
+        </nav>
+
+        <nav class="links-group" aria-label="Help and account">
+          <p class="links-label">Help</p>
+          <ul class="links-list">
+            <li><a routerLink="/faq" routerLinkActive="active">FAQs</a></li>
+            <li><a routerLink="/cart" routerLinkActive="active">Your bag</a></li>
+            @if (authService.isAuthenticated()) {
+              <li><button type="button" class="links-button" (click)="logout()">Sign out</button></li>
+            } @else {
+              <li><a routerLink="/login" routerLinkActive="active">Sign in</a></li>
+              <li><a routerLink="/register" routerLinkActive="active">Join the community</a></li>
+            }
+          </ul>
+        </nav>
       </div>
 
-      <!-- Column 3: Customer Care -->
-      <div class="footer-col">
-        <h4 class="footer-heading">Customer Care</h4>
-        <ul class="footer-links">
-          <li><a routerLink="/orders">Orders &amp; Tracking</a></li>
-          <li><a routerLink="/faq">Frequently Asked Questions</a></li>
-          <li><a routerLink="/contact">Studio Assistance</a></li>
-          <li><a routerLink="/returns">Shipping &amp; Delivery</a></li>
-        </ul>
-      </div>
-
-      <!-- Column 4: Legal & Policies -->
-      <div class="footer-col">
-        <h4 class="footer-heading">Policies</h4>
-        <ul class="footer-links">
-          <li><a routerLink="/terms">Terms &amp; Conditions</a></li>
-          <li><a routerLink="/privacy">Privacy Policy</a></li>
-          <li><a routerLink="/returns">Returns &amp; Refund Policy</a></li>
-          <li><a routerLink="/cookie-policy">Cookie Policy</a></li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- Bottom Bar -->
-    <div class="footer-bottom-wrapper">
-      <div class="container footer-bottom-inner">
-        <p class="footer-copyright">
-          &copy; 2026 Khel-Akhel Studio. All rights reserved. In association with DARAS.
-        </p>
-        <p class="footer-disciplines">
-          Art Prints &bull; Photography &bull; Lighting &bull; Murals &bull; Sculptures &bull; Living
-        </p>
+      <!-- 5. Legal bar -->
+      <div class="footer-legal">
+        <div class="container footer-legal-inner">
+          <span>© {{ currentYear }} Khel Akhel. All rights reserved.</span>
+          <button type="button" class="legal-top" (click)="scrollToTop()">
+            Back to top <span aria-hidden="true">↑</span>
+          </button>
+        </div>
       </div>
     </div>
   </footer>

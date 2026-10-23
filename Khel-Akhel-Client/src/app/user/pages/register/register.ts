@@ -1,8 +1,8 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { ApiService } from '../../../common/services/api.service';
+import { AuthService } from '../../../common/services/auth.service';
 import { CustomValidators } from '../../../common/validators/custom.validators';
 import { REGEX_PATTERNS } from '../../../common/constants/regex.constants';
 
@@ -11,29 +11,116 @@ import { REGEX_PATTERNS } from '../../../common/constants/regex.constants';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './register.html',
-  styleUrl: './register.scss'
+  styleUrl: './register.scss',
 })
 export class UserRegisterComponent implements OnInit {
   private fb = inject(FormBuilder);
-  private api = inject(ApiService);
+  private authService = inject(AuthService);
   private router = inject(Router);
 
   registerForm!: FormGroup;
-  loading = false;
-  errorMessage: string | null = null;
+
+  readonly loading = signal<boolean>(false);
+  readonly errorMessage = signal<string | null>(null);
+  readonly successMessage = signal<string | null>(null);
+
+  readonly captchaId = signal<string | null>(null);
+  readonly captchaImage = signal<string | null>(null);
+  readonly captchaLoading = signal<boolean>(false);
+
+  showPassword = signal<boolean>(false);
+  showConfirmPassword = signal<boolean>(false);
 
   ngOnInit(): void {
-    this.registerForm = this.fb.group({
-      firstName: ['', [CustomValidators.requiredNonEmpty, CustomValidators.pattern(REGEX_PATTERNS.NAME, 'invalidName')]],
-      lastName: ['', [CustomValidators.requiredNonEmpty, CustomValidators.pattern(REGEX_PATTERNS.NAME, 'invalidName')]],
-      email: ['', [CustomValidators.requiredNonEmpty, CustomValidators.pattern(REGEX_PATTERNS.EMAIL, 'invalidEmail')]],
-      mobileNo: ['', [CustomValidators.requiredNonEmpty, CustomValidators.pattern(REGEX_PATTERNS.MOBILE, 'invalidMobile')]],
-      password: ['', [CustomValidators.requiredNonEmpty, CustomValidators.rawPattern(REGEX_PATTERNS.PASSWORD, 'invalidPassword')]]
-    });
+    this.registerForm = this.fb.group(
+      {
+        firstName: [
+          '',
+          [
+            CustomValidators.requiredNonEmpty,
+            CustomValidators.pattern(REGEX_PATTERNS.NAME, 'invalidName'),
+          ],
+        ],
+        lastName: [
+          '',
+          [
+            CustomValidators.requiredNonEmpty,
+            CustomValidators.pattern(REGEX_PATTERNS.NAME, 'invalidName'),
+          ],
+        ],
+        email: [
+          '',
+          [
+            CustomValidators.requiredNonEmpty,
+            CustomValidators.pattern(REGEX_PATTERNS.EMAIL, 'invalidEmail'),
+          ],
+        ],
+        mobileNo: [
+          '',
+          [
+            CustomValidators.requiredNonEmpty,
+            CustomValidators.pattern(REGEX_PATTERNS.MOBILE, 'invalidMobile'),
+          ],
+        ],
+        password: [
+          '',
+          [
+            CustomValidators.requiredNonEmpty,
+            CustomValidators.rawPattern(REGEX_PATTERNS.PASSWORD, 'invalidPassword'),
+          ],
+        ],
+        confirmPassword: ['', [CustomValidators.requiredNonEmpty]],
+        captcha: [
+          '',
+          [CustomValidators.requiredNonEmpty, Validators.minLength(5), Validators.maxLength(5)],
+        ],
+        website: [''], // Honeypot field
+      },
+      {
+        validators: [this.passwordsMatchValidator],
+      },
+    );
+
+    this.loadCaptcha();
+  }
+
+  passwordsMatchValidator(group: FormGroup) {
+    const password = group.get('password')?.value;
+    const confirmPassword = group.get('confirmPassword')?.value;
+    if (password && confirmPassword && password !== confirmPassword) {
+      return { passwordMismatch: true };
+    }
+    return null;
   }
 
   get f() {
     return this.registerForm.controls;
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword.update((v) => !v);
+  }
+
+  toggleConfirmPasswordVisibility(): void {
+    this.showConfirmPassword.update((v) => !v);
+  }
+
+  loadCaptcha(): void {
+    this.captchaLoading.set(true);
+    this.authService.getCaptcha().subscribe({
+      next: (res) => {
+        this.captchaLoading.set(false);
+        if (res.success && res.data) {
+          this.captchaId.set(res.data.captchaId);
+          this.captchaImage.set(res.data.captchaImage);
+          this.registerForm.patchValue({ captcha: '' });
+          this.registerForm.controls['captcha'].markAsUntouched();
+        }
+      },
+      error: () => {
+        this.captchaLoading.set(false);
+      },
+    });
   }
 
   onSubmit(): void {
@@ -42,30 +129,49 @@ export class UserRegisterComponent implements OnInit {
       return;
     }
 
-    this.loading = true;
-    this.errorMessage = null;
+    this.loading.set(true);
+    this.errorMessage.set(null);
+    this.successMessage.set(null);
 
     const payload = {
       firstName: this.registerForm.value.firstName.trim(),
       lastName: this.registerForm.value.lastName.trim(),
       email: this.registerForm.value.email.trim(),
       mobileNo: this.registerForm.value.mobileNo.trim(),
-      password: this.registerForm.value.password
+      password: this.registerForm.value.password,
+      captchaId: this.captchaId() || undefined,
+      captcha: this.registerForm.value.captcha.trim(),
+      website: this.registerForm.value.website?.trim() || undefined,
     };
 
-    this.api.post('customer/create', payload).subscribe({
+    this.authService.register(payload).subscribe({
       next: (res) => {
-        this.loading = false;
+        this.loading.set(false);
         if (res.success) {
-          this.router.navigate(['/login']);
+          this.successMessage.set(
+            'Account created successfully! You can now sign in with your credentials.',
+          );
+          this.registerForm.reset();
         } else {
-          this.errorMessage = res.message || 'Registration failed.';
+          this.errorMessage.set(res.message || 'Registration failed.');
+          this.loadCaptcha();
         }
       },
       error: (err) => {
-        this.loading = false;
-        this.errorMessage = err.error?.message || 'Registration failed. Please check details.';
-      }
+        this.loading.set(false);
+        this.loadCaptcha();
+        if (err.error?.message === 'INVALID_CAPTCHA') {
+          this.errorMessage.set('Invalid or expired CAPTCHA. Please try again.');
+        } else if (err.error?.message === 'CUSTOMER_ALREADY_EXISTS') {
+          this.errorMessage.set('An account with this email or mobile number already exists.');
+        } else if (err.error?.errors?.length) {
+          this.errorMessage.set(err.error.errors.join(' '));
+        } else {
+          this.errorMessage.set(
+            err.error?.message || 'An error occurred during registration. Please try again.',
+          );
+        }
+      },
     });
   }
 }

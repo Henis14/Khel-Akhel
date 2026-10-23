@@ -39,8 +39,14 @@ export class AdminProductService {
     return this.api.patch<ProductResponse>('product/update', request);
   }
 
-  toggleActive(encryptedProductId: string): Observable<ApiResponse<null>> {
-    return this.api.patch<null>(`product/toggle-active/${encryptedProductId}`);
+  toggleActive(
+    encryptedProductId: string,
+    isActive: boolean = true,
+  ): Observable<ApiResponse<ProductResponse>> {
+    return this.api.patch<ProductResponse>('product/update', {
+      encryptedProductId,
+      isActive,
+    });
   }
 
   delete(encryptedProductId: string): Observable<ApiResponse<null>> {

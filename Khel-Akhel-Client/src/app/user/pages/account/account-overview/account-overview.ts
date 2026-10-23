@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-account-overview',
+  standalone: true,
   imports: [],
   templateUrl: './account-overview.html',
   styleUrl: './account-overview.scss',

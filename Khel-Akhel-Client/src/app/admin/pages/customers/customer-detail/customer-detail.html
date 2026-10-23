@@ -13,6 +13,14 @@
         </div>
       </div>
       <div class="header-actions" *ngIf="customer">
+        <button
+          *ngIf="!customer.isAdmin"
+          type="button"
+          class="btn btn-outline-warning me-2"
+          (click)="openResetModal()"
+        >
+          <i class="bi bi-key me-1"></i> Generate Password Reset Link
+        </button>
         <button type="button" class="btn btn-primary" (click)="openEditModal()">
           <i class="bi bi-pencil-square me-1"></i> Edit Customer
         </button>
@@ -354,4 +362,120 @@
       </div>
     </div>
   </div>
+
+  <!-- Password Reset Modal -->
+  @if (showResetModal() && customer) {
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5); z-index: 1050;">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Generate Password Reset Link</h5>
+            <button type="button" class="btn-close" (click)="closeResetModal()"></button>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-info py-2 mb-3">
+              <strong>Customer:</strong> {{ customer.firstName }} {{ customer.lastName }} ({{ customer.email }})
+            </div>
+
+            @if (resetActionError()) {
+              <div class="alert alert-danger py-2 mb-3">
+                {{ resetActionError() }}
+              </div>
+            }
+
+            @if (!generatedResetLink()) {
+              <div class="p-3 mb-3 border rounded bg-light">
+                <h6 class="mb-2 text-primary">Identity Verification Checklist</h6>
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" id="chkCust1" #chk1 />
+                  <label class="form-check-label" for="chkCust1">
+                    Verified customer identity via confirmed phone call or in-person check
+                  </label>
+                </div>
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" id="chkCust2" #chk2 />
+                  <label class="form-check-label" for="chkCust2">
+                    Requester confirmed registered account number and details
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="chkCust3" #chk3 />
+                  <label class="form-check-label" for="chkCust3">
+                    Requester is authorized to receive this password reset link
+                  </label>
+                </div>
+              </div>
+
+              <form [formGroup]="resetForm" (ngSubmit)="submitResetLink()">
+                <div class="mb-3">
+                  <label class="form-label">Verification Notes <span class="text-danger">*</span></label>
+                  <textarea
+                    class="form-control"
+                    rows="3"
+                    formControlName="adminNotes"
+                    placeholder="e.g. Spoke with customer via verified phone +91 9876543210. Confirmed account details."
+                  ></textarea>
+                  @if (resetForm.get('adminNotes')?.touched && resetForm.get('adminNotes')?.invalid) {
+                    <div class="text-danger small mt-1">Admin verification notes are required (minimum 5 characters).</div>
+                  }
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                  <button type="button" class="btn btn-outline-secondary" [disabled]="resetActionLoading()" (click)="closeResetModal()">
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    class="btn btn-primary"
+                    [disabled]="resetActionLoading() || resetForm.invalid || !chk1.checked || !chk2.checked || !chk3.checked"
+                  >
+                    @if (resetActionLoading()) {
+                      <span>Issuing...</span>
+                    } @else {
+                      <span>Generate Single-Use Reset URL</span>
+                    }
+                  </button>
+                </div>
+              </form>
+            } @else {
+              <div>
+                <div class="alert alert-warning">
+                  <strong>IMPORTANT SECURITY NOTICE:</strong>
+                  <p class="mb-0 mt-1 small">
+                    This link is shown <strong>ONCE</strong>. It is single-use and expires in 24 hours.
+                    Send it to the customer via your verified channel.
+                    Do not store it in internal notes, logs, or support tickets.
+                  </p>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label font-monospace small">Single-Use Reset URL</label>
+                  <div class="input-group">
+                    <input type="text" readonly class="form-control font-monospace small" [value]="generatedResetLink()" />
+                    <button type="button" class="btn btn-primary" (click)="copyResetLink()">
+                      @if (resetCopySuccess()) {
+                        <span>Copied!</span>
+                      } @else {
+                        <span>Copy Link</span>
+                      }
+                    </button>
+                  </div>
+                  @if (generatedResetExpiry()) {
+                    <div class="text-muted small mt-1">Expires at: {{ generatedResetExpiry() }} UTC</div>
+                  }
+                </div>
+
+                <div class="d-flex justify-content-end">
+                  <button type="button" class="btn btn-secondary" (click)="closeResetModal()">
+                    Done & Close
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
 </div>

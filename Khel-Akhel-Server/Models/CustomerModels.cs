@@ -7,6 +7,9 @@ namespace Khel_Akhel_Server.Models
         public string Email { get; set; } = string.Empty;
         public string MobileNo { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
+        public string? CaptchaId { get; set; }
+        public string? Captcha { get; set; }
+        public string? Website { get; set; }
     }
 
     public class CustomerUpdateRequest
