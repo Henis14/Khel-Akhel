@@ -78,7 +78,9 @@ describe('UserHomeComponent', () => {
     // Verify static content is completely absent from hero
     expect(heroSection?.textContent).not.toContain('A creative world by DARAS');
     expect(heroSection?.textContent).not.toContain('A little roomfor wonder');
-    expect(heroSection?.textContent).not.toContain('Thoughtful objects, art and experiences shaped by culture');
+    expect(heroSection?.textContent).not.toContain(
+      'Thoughtful objects, art and experiences shaped by culture',
+    );
     expect(heroSection?.textContent).not.toContain('Explore the collection');
     expect(heroSection?.textContent).not.toContain('Art · Objects · Gatherings · Play');
 

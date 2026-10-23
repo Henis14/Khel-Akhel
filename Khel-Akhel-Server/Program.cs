@@ -20,23 +20,30 @@ if (args.Length > 0 && string.Equals(args[0], "set-password", StringComparison.O
 }
 
 // Add services to the container.
-builder.Services.AddControllers()
+builder
+    .Services.AddControllers()
     .ConfigureApiBehaviorOptions(options =>
     {
         options.InvalidModelStateResponseFactory = context =>
         {
-            var errors = context.ModelState.Values
-                .SelectMany(v => v.Errors)
-                .Select(e => string.IsNullOrWhiteSpace(e.ErrorMessage) ? e.Exception?.Message ?? "Validation error" : e.ErrorMessage)
+            var errors = context
+                .ModelState.Values.SelectMany(v => v.Errors)
+                .Select(e =>
+                    string.IsNullOrWhiteSpace(e.ErrorMessage)
+                        ? e.Exception?.Message ?? "Validation error"
+                        : e.ErrorMessage
+                )
                 .ToList();
 
             bool isPayloadTooLarge = errors.Any(e =>
-                e.Contains("limit", StringComparison.OrdinalIgnoreCase) ||
-                e.Contains("large", StringComparison.OrdinalIgnoreCase) ||
-                e.Contains("length", StringComparison.OrdinalIgnoreCase)
+                e.Contains("limit", StringComparison.OrdinalIgnoreCase)
+                || e.Contains("large", StringComparison.OrdinalIgnoreCase)
+                || e.Contains("length", StringComparison.OrdinalIgnoreCase)
             );
 
-            int statusCode = isPayloadTooLarge ? StatusCodes.Status413PayloadTooLarge : StatusCodes.Status400BadRequest;
+            int statusCode = isPayloadTooLarge
+                ? StatusCodes.Status413PayloadTooLarge
+                : StatusCodes.Status400BadRequest;
             string message = isPayloadTooLarge ? "PAYLOAD_TOO_LARGE" : "VALIDATION_FAILED";
 
             var response = new ApiResponse

@@ -1,6 +1,10 @@
-:host { display: block; }
+:host {
+  display: block;
+}
 
-.user-home-page { color: #fcfbf8; }
+.user-home-page {
+  color: #fcfbf8;
+}
 
 .home-hero {
   position: relative;
@@ -116,10 +120,6 @@
     }
   }
 }
-
-
-
-
 
 @media (max-width: 700px) {
   .home-hero {

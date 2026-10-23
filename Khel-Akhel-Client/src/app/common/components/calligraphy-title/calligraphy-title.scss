@@ -1,0 +1,104 @@
+:host {
+  display: block;
+}
+
+.ct {
+  position: relative;
+  isolation: isolate; /* keeps the word behind the heading but above the card */
+}
+
+.ct-content {
+  position: relative;
+  z-index: 1;
+}
+
+.ct-word,
+.ct-art {
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  left: -0.04em;
+  pointer-events: none;
+  user-select: none;
+  transform: translateY(-58%) rotate(-4deg);
+  transform-origin: left center;
+  /* ink appears from left to right, like a brush stroke */
+  animation: ct-ink 1.6s cubic-bezier(0.22, 0.61, 0.36, 1) 0.15s backwards;
+}
+
+.ct-word {
+  color: var(--user-sepia, #8a5a35);
+  font-family: var(--user-font-calligraphy, 'Amita', 'Kalam', serif);
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  opacity: 0.16;
+}
+
+.ct-art {
+  width: auto;
+  max-width: none;
+  opacity: 0.2;
+}
+
+/* sizes */
+.ct--sm .ct-word {
+  font-size: clamp(3.2rem, 9vw, 4.6rem);
+}
+.ct--md .ct-word {
+  font-size: clamp(4.2rem, 11vw, 7rem);
+}
+.ct--lg .ct-word {
+  font-size: clamp(5rem, 14vw, 10rem);
+}
+
+.ct--sm .ct-art {
+  height: clamp(3.4rem, 9vw, 4.8rem);
+}
+.ct--md .ct-art {
+  height: clamp(4.4rem, 11vw, 7.2rem);
+}
+.ct--lg .ct-art {
+  height: clamp(5.2rem, 14vw, 10rem);
+}
+
+/* centred variant */
+.ct--center {
+  .ct-word,
+  .ct-art {
+    left: 50%;
+    transform: translate(-50%, -58%) rotate(-4deg);
+    transform-origin: center;
+  }
+}
+
+@media (max-width: 760px) {
+  .ct--auto {
+    .ct-word,
+    .ct-art {
+      left: 50%;
+      transform: translate(-50%, -58%) rotate(-4deg);
+      transform-origin: center;
+    }
+  }
+}
+
+@keyframes ct-ink {
+  from {
+    clip-path: inset(0 100% 0 0);
+    opacity: 0;
+  }
+  40% {
+    opacity: 0.16;
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ct-word,
+  .ct-art {
+    animation: none;
+  }
+}

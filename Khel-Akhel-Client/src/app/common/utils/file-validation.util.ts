@@ -13,7 +13,7 @@ export interface FileValidationResult {
  */
 export function validateImageFile(
   file: File,
-  maxFileSizeBytes: number = MAX_IMAGE_FILE_SIZE_BYTES
+  maxFileSizeBytes: number = MAX_IMAGE_FILE_SIZE_BYTES,
 ): FileValidationResult {
   if (!file || file.size === 0) {
     return {

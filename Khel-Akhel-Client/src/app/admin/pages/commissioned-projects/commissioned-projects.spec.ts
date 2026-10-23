@@ -78,36 +78,13 @@ describe('CommissionedProjectsComponent', () => {
     expect(component.totalRecords).toBe(1);
   });
 
-  it('should correctly evaluate date range validation', () => {
-    // Valid case: empty dates
-    component.startDate = '';
-    component.endDate = '';
-    expect(component.validateDateRange()).toBe(true);
-    expect(component.dateRangeError).toBeNull();
-
-    // Valid case: startDate <= endDate
-    component.startDate = '2026-10-01';
-    component.endDate = '2026-10-15';
-    expect(component.validateDateRange()).toBe(true);
-    expect(component.dateRangeError).toBeNull();
-
-    // Invalid case: startDate > endDate
-    component.startDate = '2026-10-20';
-    component.endDate = '2026-10-10';
-    expect(component.validateDateRange()).toBe(false);
-    expect(component.dateRangeError).toBe('From date cannot be later than To date.');
-  });
-
-  it('should not call loadRequests when date range is invalid in onDateFilter or applyFilters', () => {
+  it('should reload the list when applyFilters is called', () => {
     mockCommissionService.getList.mockClear();
-    component.startDate = '2026-10-20';
-    component.endDate = '2026-10-10';
-
-    component.onDateFilter();
-    expect(mockCommissionService.getList).not.toHaveBeenCalled();
+    component.pageIndex = 3;
 
     component.applyFilters();
-    expect(mockCommissionService.getList).not.toHaveBeenCalled();
+    expect(component.pageIndex).toBe(1);
+    expect(mockCommissionService.getList).toHaveBeenCalled();
   });
 
   it('should identify active filters accurately', () => {
@@ -125,14 +102,6 @@ describe('CommissionedProjectsComponent', () => {
     expect(component.hasActiveFilters).toBe(true);
     component.selectedStatus = '';
 
-    component.startDate = '2026-10-01';
-    expect(component.hasActiveFilters).toBe(true);
-    component.startDate = '';
-
-    component.endDate = '2026-10-15';
-    expect(component.hasActiveFilters).toBe(true);
-    component.endDate = '';
-
     component.sortBy = 'oldest';
     expect(component.hasActiveFilters).toBe(true);
     component.sortBy = 'newest';
@@ -143,10 +112,7 @@ describe('CommissionedProjectsComponent', () => {
     component.searchQuery = 'mural';
     component.selectedCategory = 'cat-1';
     component.selectedStatus = 'New';
-    component.startDate = '2026-10-01';
-    component.endDate = '2026-10-15';
     component.sortBy = 'oldest';
-    component.dateRangeError = 'Some error';
     component.pageIndex = 3;
 
     mockCommissionService.getList.mockClear();
@@ -155,10 +121,7 @@ describe('CommissionedProjectsComponent', () => {
     expect(component.searchQuery).toBe('');
     expect(component.selectedCategory).toBe('');
     expect(component.selectedStatus).toBe('');
-    expect(component.startDate).toBe('');
-    expect(component.endDate).toBe('');
     expect(component.sortBy).toBe('newest');
-    expect(component.dateRangeError).toBeNull();
     expect(component.pageIndex).toBe(1);
     expect(mockCommissionService.getList).toHaveBeenCalled();
   });

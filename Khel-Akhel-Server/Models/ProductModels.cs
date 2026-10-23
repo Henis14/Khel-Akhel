@@ -3,6 +3,7 @@ namespace Khel_Akhel_Server.Models
     public class ProductCreateRequest
     {
         public string EncryptedCategoryId { get; set; } = string.Empty;
+        public string? EncryptedSubCategoryId { get; set; }
         public string ProductName { get; set; } = string.Empty;
         public string? ProductCode { get; set; }
         public string SKU { get; set; } = string.Empty;
@@ -21,6 +22,7 @@ namespace Khel_Akhel_Server.Models
     {
         public string EncryptedProductId { get; set; } = string.Empty;
         public string? EncryptedCategoryId { get; set; }
+        public string? EncryptedSubCategoryId { get; set; }
         public string? ProductName { get; set; }
         public string? ProductCode { get; set; }
         public string? SKU { get; set; }
@@ -41,6 +43,8 @@ namespace Khel_Akhel_Server.Models
         public string EncryptedProductId { get; set; } = string.Empty;
         public string EncryptedCategoryId { get; set; } = string.Empty;
         public string CategoryName { get; set; } = string.Empty;
+        public string? EncryptedSubCategoryId { get; set; }
+        public string? SubCategoryName { get; set; }
         public string ProductName { get; set; } = string.Empty;
         public string ProductCode { get; set; } = string.Empty;
         public string SKU { get; set; } = string.Empty;
@@ -64,6 +68,7 @@ namespace Khel_Akhel_Server.Models
         public int PageIndex { get; set; } = 1;
         public int PageSize { get; set; } = 10;
         public string? EncryptedCategoryId { get; set; }
+        public string? EncryptedSubCategoryId { get; set; }
         public decimal? MinPrice { get; set; }
         public decimal? MaxPrice { get; set; }
         public bool? IsFeatured { get; set; }
@@ -82,5 +87,6 @@ namespace Khel_Akhel_Server.Models
         public int TotalRecords { get; set; }
         public int PageIndex { get; set; }
         public int PageSize { get; set; }
+        public int TotalPages { get; set; }
     }
 }

@@ -1,0 +1,10 @@
+<div class="ct" [class]="'ct ct--' + align() + ' ct--' + size()">
+  @if (image(); as src) {
+    <img class="ct-art" [src]="src" alt="" aria-hidden="true" />
+  } @else if (word()) {
+    <span class="ct-word" [attr.lang]="lang()" aria-hidden="true">{{ word() }}</span>
+  }
+  <div class="ct-content">
+    <ng-content />
+  </div>
+</div>

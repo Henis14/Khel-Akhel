@@ -1,8 +1,71 @@
 <div class="register-page-container">
+  <div class="register-panel">
+    <!-- ===== illustration: a cloth jhola with a heart stitched on it ===== -->
+    <aside class="auth-art" aria-hidden="true">
+      <svg class="auth-art-svg" viewBox="0 0 360 380" fill="none" aria-hidden="true">
+  <defs>
+    <linearGradient id="drTeal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2f6f6a"/><stop offset="1" stop-color="#7a8a3a"/>
+    </linearGradient>
+    <clipPath id="drTileClip"><path d="M56 170l70-12 10 70-70 12z"/></clipPath>
+  </defs>
+
+  <!-- wall -->
+    <circle class="dr-halo" cx="180" cy="190" r="140"/>
+
+  <!-- one continuous wire threading through every piece, like the daras wire murals -->
+  <path class="dr-wire dr-draw" pathLength="1" d="M24 304H96V230H176V128H262V262H292V196H304V156"/>
+  <circle class="dr-dot" cx="24" cy="304" r="3.2"/><circle class="dr-dot" cx="96" cy="304" r="3.2"/><circle class="dr-dot" cx="262" cy="128" r="3.2"/><circle class="dr-dot" cx="262" cy="262" r="3.2"/><circle class="dr-dot" cx="292" cy="196" r="3.2"/><circle class="dr-dot" cx="304" cy="196" r="3.2"/>
+
+  <!-- tile cluster (teal / olive / sand), like the geometric murals -->
+  <g class="dr-tiles">
+    <path class="dr-tile-sand" d="M56 170l70-12 10 70-70 12z"/>
+    <g clip-path="url(#drTileClip)"><path d="M56 214c26-20 48 4 84-20v60H56z" fill="url(#drTeal)"/><circle cx="82.0" cy="180.0" r="1.5" class="dr-speck"/><circle cx="64.9" cy="205.4" r="1.2" class="dr-speck"/><circle cx="63.9" cy="203.5" r="0.8" class="dr-speck"/><circle cx="89.5" cy="174.6" r="0.9" class="dr-speck"/><circle cx="88.9" cy="224.6" r="0.9" class="dr-speck"/><circle cx="75.2" cy="211.4" r="1.7" class="dr-speck"/><circle cx="99.2" cy="196.2" r="1.8" class="dr-speck"/><circle cx="63.2" cy="226.7" r="1.1" class="dr-speck"/><circle cx="69.8" cy="177.8" r="1.1" class="dr-speck"/><circle cx="115.5" cy="181.9" r="1.4" class="dr-speck"/><circle cx="103.4" cy="194.6" r="1.3" class="dr-speck"/><circle cx="64.3" cy="173.9" r="1.0" class="dr-speck"/><circle cx="106.3" cy="198.2" r="1.1" class="dr-speck"/><circle cx="99.8" cy="199.9" r="1.1" class="dr-speck"/><circle cx="114.0" cy="216.1" r="1.0" class="dr-speck"/><circle cx="99.1" cy="204.7" r="1.7" class="dr-speck"/><circle cx="109.6" cy="189.0" r="1.8" class="dr-speck"/><circle cx="68.0" cy="197.6" r="1.6" class="dr-speck"/><circle cx="70.3" cy="202.3" r="0.8" class="dr-speck"/><circle cx="105.4" cy="220.5" r="1.4" class="dr-speck"/><circle cx="119.5" cy="190.7" r="1.5" class="dr-speck"/><circle cx="100.4" cy="208.3" r="1.3" class="dr-speck"/><circle cx="117.1" cy="232.3" r="1.3" class="dr-speck"/><circle cx="105.2" cy="174.0" r="1.5" class="dr-speck"/><circle cx="104.0" cy="235.5" r="1.6" class="dr-speck"/><circle cx="79.4" cy="195.5" r="1.5" class="dr-speck"/><circle cx="61.5" cy="200.5" r="1.0" class="dr-speck"/><circle cx="68.0" cy="173.9" r="1.6" class="dr-speck"/></g>
+    <path class="dr-tile-edge" d="M56 170l70-12 10 70-70 12z"/>
+    <path class="dr-tile-teal" d="M120 130l44 10-10 44-44-10z"/>
+    <path class="dr-tile-olive" d="M44 128l30-6 6 30-30 6z"/>
+  </g>
+
+  <!-- wood slice with white dots -->
+  <path class="dr-slice" d="M186 92c14-10 34-8 44 4 12-2 22 8 18 20 10 8 6 24-6 26-2 14-18 20-30 12-12 8-30 2-32-12-14-2-20-18-10-28-6-12 4-24 16-22z"/>
+  <path class="dr-slice-ring" d="M200 108c10-6 24-4 28 6 6 6 2 18-8 18-6 8-20 6-24-2-8-4-6-16 4-22z"/>
+  <circle class="dr-white" cx="198" cy="100" r="2.4"/><circle class="dr-white" cx="232" cy="104" r="2.4"/><circle class="dr-white" cx="242" cy="126" r="2.4"/><circle class="dr-white" cx="214" cy="146" r="2.4"/><circle class="dr-white" cx="190" cy="132" r="2.4"/>
+
+  <!-- clay disc with rope coil -->
+    <circle class="dr-disc" cx="292" cy="262" r="26"/>
+  <path class="dr-coil" d="M292 262m-4 0a4 4 0 1 1 8 0a9 9 0 1 1-17 0a14 14 0 1 1 27 0a19 19 0 1 1-37 0"/>
+
+  <!-- kite tied to the end of the line (Pind da Landmark kites) -->
+  <path class="dr-kite" d="M304 154l-22-34 22-40 22 40z"/>
+  <path class="dr-kite-line" d="M304 80v74M282 120h44"/>
+  <path class="dr-tail" d="M304 154c-6 10 6 16 0 26"/>
+  <path class="dr-bow" d="M298 166l6 4-6 4zM310 166l-6 4 6 4z"/>
+
+  <!-- the empty, stitched tile: a place waiting for you -->
+  <g class="dr-yours">
+    <rect class="dr-yours-box" x="150" y="196" width="52" height="52" rx="3"/>
+    <path class="dr-plus" d="M176 210v24M164 222h24"/>
+  </g>
+
+  <!-- ✦ -->
+  <path class="dr-star" d="M44 62C45.8 70.2 45.8 70.2 54 72C45.8 73.8 45.8 73.8 44 82C42.2 73.8 42.2 73.8 34 72C42.2 70.2 42.2 70.2 44 62z"/>
+  <path class="dr-star dr-star--rani" d="M330 199C331.26 204.74 331.26 204.74 337 206C331.26 207.26 331.26 207.26 330 213C328.74 207.26 328.74 207.26 323 206C328.74 204.74 328.74 204.74 330 199z"/>
+  <path class="dr-star dr-star--olive" d="M150 56C151.08 60.92 151.08 60.92 156 62C151.08 63.08 151.08 63.08 150 68C148.92 63.08 148.92 63.08 144 62C148.92 60.92 148.92 60.92 150 56z"/>
+</svg>
+      <div class="auth-art-copy">
+        <p class="auth-art-title">Join the community</p>
+        <ul class="auth-art-list">
+          <li>Save the pieces you love</li>
+          <li>Track your orders</li>
+          <li>Commission something of your own</li>
+        </ul>
+      </div>
+    </aside>
+
   <div class="register-card">
     <div class="register-header">
-      <h2>Create an Account</h2>
-      <p class="subtitle">Join Khel-Akhel to explore curated art and manage your orders</p>
+      <h1 class="register-title">Create an account</h1>
+      <p class="subtitle">A Khel Akhel account keeps your orders, wishlist and commissions in one place.</p>
     </div>
 
     @if (successMessage()) {
@@ -210,5 +273,6 @@
         </div>
       </form>
     }
+  </div>
   </div>
 </div>

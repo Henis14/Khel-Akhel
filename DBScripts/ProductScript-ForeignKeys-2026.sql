@@ -201,3 +201,45 @@ BEGIN
         REFERENCES drs_customer_mst (ID);
 END;
 GO
+
+-- SubCategory Foreign Keys
+IF NOT EXISTS (
+    SELECT 1 FROM sys.foreign_keys
+    WHERE name = 'FK_drs_product_subcategory_mst_product_category_id'
+      AND parent_object_id = OBJECT_ID('drs_product_subcategory_mst')
+)
+BEGIN
+    ALTER TABLE drs_product_subcategory_mst WITH CHECK
+        ADD CONSTRAINT FK_drs_product_subcategory_mst_product_category_id
+        FOREIGN KEY (product_category_id) REFERENCES drs_product_category_mst (ID);
+
+    ALTER TABLE drs_product_subcategory_mst
+        CHECK CONSTRAINT FK_drs_product_subcategory_mst_product_category_id;
+END
+GO
+
+-- Ensure product_subcategory_id column exists on drs_product_mst before adding foreign key
+IF NOT EXISTS (
+    SELECT 1 FROM sys.columns
+    WHERE object_id = OBJECT_ID('drs_product_mst')
+      AND name = 'product_subcategory_id'
+)
+BEGIN
+    ALTER TABLE drs_product_mst ADD product_subcategory_id BIGINT NULL;
+END
+GO
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.foreign_keys
+    WHERE name = 'FK_drs_product_mst_product_subcategory_id'
+      AND parent_object_id = OBJECT_ID('drs_product_mst')
+)
+BEGIN
+    ALTER TABLE drs_product_mst WITH CHECK
+        ADD CONSTRAINT FK_drs_product_mst_product_subcategory_id
+        FOREIGN KEY (product_subcategory_id) REFERENCES drs_product_subcategory_mst (ID);
+
+    ALTER TABLE drs_product_mst
+        CHECK CONSTRAINT FK_drs_product_mst_product_subcategory_id;
+END
+GO

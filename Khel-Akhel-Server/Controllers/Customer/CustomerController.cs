@@ -91,7 +91,9 @@ namespace Khel_Akhel_Server.Controllers.Customer
                 if (!string.IsNullOrWhiteSpace(request.Website))
                 {
                     sw.Stop();
-                    Logs.Warning($"Honeypot triggered for CustomerCreate from IP {GetClientIpAddress()}");
+                    Logs.Warning(
+                        $"Honeypot triggered for CustomerCreate from IP {GetClientIpAddress()}"
+                    );
                     return Ok(
                         new ApiResponse
                         {
@@ -116,19 +118,26 @@ namespace Khel_Akhel_Server.Controllers.Customer
                 // Captcha validation for anonymous requests (exempt for authenticated Admin users)
                 if (!IsCurrentUserAdmin())
                 {
-                    if (string.IsNullOrWhiteSpace(request.CaptchaId)
+                    if (
+                        string.IsNullOrWhiteSpace(request.CaptchaId)
                         || string.IsNullOrWhiteSpace(request.Captcha)
-                        || !_captchaService.ValidateCaptcha(request.CaptchaId, request.Captcha))
+                        || !_captchaService.ValidateCaptcha(request.CaptchaId, request.Captcha)
+                    )
                     {
                         sw.Stop();
-                        Logs.Warning($"CustomerCreate rejected | Reason: Invalid or missing CAPTCHA from IP {GetClientIpAddress()}");
+                        Logs.Warning(
+                            $"CustomerCreate rejected | Reason: Invalid or missing CAPTCHA from IP {GetClientIpAddress()}"
+                        );
                         return BadRequest(
                             new ApiResponse
                             {
                                 Success = false,
                                 StatusCode = 400,
                                 Message = "INVALID_CAPTCHA",
-                                Errors = new List<string> { "Invalid or expired CAPTCHA. Please solve the security verification again." },
+                                Errors = new List<string>
+                                {
+                                    "Invalid or expired CAPTCHA. Please solve the security verification again.",
+                                },
                             }
                         );
                     }

@@ -190,6 +190,21 @@ namespace Khel_Akhel_Server.BL.Common
             return desc.Trim().Length <= 500;
         }
 
+        public static bool IsValidSubCategoryName(string? subCategoryName)
+        {
+            if (string.IsNullOrWhiteSpace(subCategoryName))
+                return false;
+            string trimmed = subCategoryName.Trim();
+            return trimmed.Length >= 2 && trimmed.Length <= 100;
+        }
+
+        public static bool IsValidSubCategoryDescription(string? desc)
+        {
+            if (string.IsNullOrEmpty(desc))
+                return true;
+            return desc.Trim().Length <= 500;
+        }
+
         public static bool IsValidPincode(string? pincode)
         {
             if (string.IsNullOrWhiteSpace(pincode))

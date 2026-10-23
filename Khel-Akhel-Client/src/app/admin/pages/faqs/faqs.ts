@@ -32,10 +32,7 @@ import { ConfirmationDialogComponent } from '../../../common/components/confirma
   styleUrl: './faqs.scss',
 })
 export class FaqsComponent implements OnInit, OnDestroy {
-  breadcrumbs: BreadcrumbItem[] = [
-    { label: 'Home', url: '/admin/dashboard' },
-    { label: 'FAQs' },
-  ];
+  breadcrumbs: BreadcrumbItem[] = [{ label: 'Home', url: '/admin/dashboard' }, { label: 'FAQs' }];
 
   private faqService = inject(AdminFaqService);
   private fb = inject(FormBuilder);
@@ -50,9 +47,8 @@ export class FaqsComponent implements OnInit, OnDestroy {
   // Filter toolbar
   searchQuery: string = '';
   selectedCategory: string = '';
-  statusFilter: string = 'all'; // 'all', 'active', 'inactive'
-  publishFilter: string = 'all'; // 'all', 'published', 'unpublished'
-  locationFilter: string = 'all'; // 'all', 'home', 'faq', 'checkout', 'contact', 'footer'
+  /** 'all' | 'live' (active + published) | 'draft' (not published) | 'inactive' */
+  statusFilter: string = 'all';
 
   // Search debounce
   private searchSubject = new Subject<string>();
@@ -140,15 +136,13 @@ export class FaqsComponent implements OnInit, OnDestroy {
     if (this.searchQuery && this.searchQuery.trim().length > 0) {
       filter.search = this.searchQuery.trim();
     }
-    if (this.statusFilter === 'active') {
+    if (this.statusFilter === 'live') {
       filter.isActive = true;
+      filter.isPublished = true;
+    } else if (this.statusFilter === 'draft') {
+      filter.isPublished = false;
     } else if (this.statusFilter === 'inactive') {
       filter.isActive = false;
-    }
-    if (this.publishFilter === 'published') {
-      filter.isPublished = true;
-    } else if (this.publishFilter === 'unpublished') {
-      filter.isPublished = false;
     }
 
     this.faqService.getAdminList(filter).subscribe({
@@ -198,26 +192,6 @@ export class FaqsComponent implements OnInit, OnDestroy {
       );
     }
 
-    // Filter by Location Placement
-    if (this.locationFilter !== 'all') {
-      switch (this.locationFilter) {
-        case 'home':
-          result = result.filter((f) => f.displayOnHomePage);
-          break;
-        case 'faq':
-          result = result.filter((f) => f.displayOnFaqPage);
-          break;
-        case 'checkout':
-          result = result.filter((f) => f.displayOnCheckoutPage);
-          break;
-        case 'contact':
-          result = result.filter((f) => f.displayOnContactPage);
-          break;
-        case 'footer':
-          result = result.filter((f) => f.displayOnFooter);
-          break;
-      }
-    }
 
     this.filteredFaqs = result;
     this.totalRecords = result.length;
@@ -257,8 +231,6 @@ export class FaqsComponent implements OnInit, OnDestroy {
     this.searchQuery = '';
     this.selectedCategory = '';
     this.statusFilter = 'all';
-    this.publishFilter = 'all';
-    this.locationFilter = 'all';
     this.pageIndex = 1;
     this.loadFaqs();
   }
@@ -272,9 +244,7 @@ export class FaqsComponent implements OnInit, OnDestroy {
 
     // Suggest next display order
     const nextOrder =
-      this.allFaqs.length > 0
-        ? Math.max(...this.allFaqs.map((f) => f.displayOrder || 0)) + 1
-        : 1;
+      this.allFaqs.length > 0 ? Math.max(...this.allFaqs.map((f) => f.displayOrder || 0)) + 1 : 1;
 
     this.faqForm.reset({
       question: '',

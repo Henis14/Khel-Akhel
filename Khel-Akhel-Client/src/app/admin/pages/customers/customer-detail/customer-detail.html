@@ -365,7 +365,11 @@
 
   <!-- Password Reset Modal -->
   @if (showResetModal() && customer) {
-    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5); z-index: 1050;">
+    <div
+      class="modal fade show d-block"
+      tabindex="-1"
+      style="background: rgba(0, 0, 0, 0.5); z-index: 1050"
+    >
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
@@ -374,7 +378,9 @@
           </div>
           <div class="modal-body">
             <div class="alert alert-info py-2 mb-3">
-              <strong>Customer:</strong> {{ customer.firstName }} {{ customer.lastName }} ({{ customer.email }})
+              <strong>Customer:</strong> {{ customer.firstName }} {{ customer.lastName }} ({{
+                customer.email
+              }})
             </div>
 
             @if (resetActionError()) {
@@ -408,26 +414,43 @@
 
               <form [formGroup]="resetForm" (ngSubmit)="submitResetLink()">
                 <div class="mb-3">
-                  <label class="form-label">Verification Notes <span class="text-danger">*</span></label>
+                  <label class="form-label"
+                    >Verification Notes <span class="text-danger">*</span></label
+                  >
                   <textarea
                     class="form-control"
                     rows="3"
                     formControlName="adminNotes"
                     placeholder="e.g. Spoke with customer via verified phone +91 9876543210. Confirmed account details."
                   ></textarea>
-                  @if (resetForm.get('adminNotes')?.touched && resetForm.get('adminNotes')?.invalid) {
-                    <div class="text-danger small mt-1">Admin verification notes are required (minimum 5 characters).</div>
+                  @if (
+                    resetForm.get('adminNotes')?.touched && resetForm.get('adminNotes')?.invalid
+                  ) {
+                    <div class="text-danger small mt-1">
+                      Admin verification notes are required (minimum 5 characters).
+                    </div>
                   }
                 </div>
 
                 <div class="d-flex justify-content-end gap-2">
-                  <button type="button" class="btn btn-outline-secondary" [disabled]="resetActionLoading()" (click)="closeResetModal()">
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary"
+                    [disabled]="resetActionLoading()"
+                    (click)="closeResetModal()"
+                  >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     class="btn btn-primary"
-                    [disabled]="resetActionLoading() || resetForm.invalid || !chk1.checked || !chk2.checked || !chk3.checked"
+                    [disabled]="
+                      resetActionLoading() ||
+                      resetForm.invalid ||
+                      !chk1.checked ||
+                      !chk2.checked ||
+                      !chk3.checked
+                    "
                   >
                     @if (resetActionLoading()) {
                       <span>Issuing...</span>
@@ -442,16 +465,21 @@
                 <div class="alert alert-warning">
                   <strong>IMPORTANT SECURITY NOTICE:</strong>
                   <p class="mb-0 mt-1 small">
-                    This link is shown <strong>ONCE</strong>. It is single-use and expires in 24 hours.
-                    Send it to the customer via your verified channel.
-                    Do not store it in internal notes, logs, or support tickets.
+                    This link is shown <strong>ONCE</strong>. It is single-use and expires in 24
+                    hours. Send it to the customer via your verified channel. Do not store it in
+                    internal notes, logs, or support tickets.
                   </p>
                 </div>
 
                 <div class="mb-3">
                   <label class="form-label font-monospace small">Single-Use Reset URL</label>
                   <div class="input-group">
-                    <input type="text" readonly class="form-control font-monospace small" [value]="generatedResetLink()" />
+                    <input
+                      type="text"
+                      readonly
+                      class="form-control font-monospace small"
+                      [value]="generatedResetLink()"
+                    />
                     <button type="button" class="btn btn-primary" (click)="copyResetLink()">
                       @if (resetCopySuccess()) {
                         <span>Copied!</span>
@@ -461,7 +489,9 @@
                     </button>
                   </div>
                   @if (generatedResetExpiry()) {
-                    <div class="text-muted small mt-1">Expires at: {{ generatedResetExpiry() }} UTC</div>
+                    <div class="text-muted small mt-1">
+                      Expires at: {{ generatedResetExpiry() }} UTC
+                    </div>
                   }
                 </div>
 
@@ -477,5 +507,4 @@
       </div>
     </div>
   }
-
 </div>

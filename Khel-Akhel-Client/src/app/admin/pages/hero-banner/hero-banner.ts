@@ -11,12 +11,7 @@ import { environment } from '../../../../environments/environment';
 @Component({
   selector: 'app-hero-banner',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    BreadcrumbComponent,
-    ConfirmationDialogComponent,
-  ],
+  imports: [CommonModule, FormsModule, BreadcrumbComponent, ConfirmationDialogComponent],
   templateUrl: './hero-banner.html',
   styleUrl: './hero-banner.scss',
 })
@@ -83,9 +78,7 @@ export class HeroBannerComponent implements OnInit {
       },
       error: (err) => {
         this.isLoading.set(false);
-        this.errorMessage.set(
-          err.error?.message || 'Failed to load hero section banners.',
-        );
+        this.errorMessage.set(err.error?.message || 'Failed to load hero section banners.');
       },
     });
   }
@@ -199,7 +192,8 @@ export class HeroBannerComponent implements OnInit {
     const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
 
     if (ext !== '.mp4') {
-      this.uploadValidationError = 'Only MP4 videos are allowed. MOV, AVI, WebM, and MKV are strictly prohibited.';
+      this.uploadValidationError =
+        'Only MP4 videos are allowed. MOV, AVI, WebM, and MKV are strictly prohibited.';
       input.value = '';
       return;
     }
@@ -235,31 +229,19 @@ export class HeroBannerComponent implements OnInit {
     const current = this.currentConfigurationType;
 
     // Check if mode conflicts with existing configuration
-    if (
-      this.uploadMode === 'images' &&
-      current === 'video' &&
-      !this.uploadReplaceExisting
-    ) {
+    if (this.uploadMode === 'images' && current === 'video' && !this.uploadReplaceExisting) {
       this.uploadValidationError =
         'A video configuration is currently active. You must check "Replace existing configuration" to switch to images.';
       return;
     }
 
-    if (
-      this.uploadMode === 'video' &&
-      current === 'images' &&
-      !this.uploadReplaceExisting
-    ) {
+    if (this.uploadMode === 'video' && current === 'images' && !this.uploadReplaceExisting) {
       this.uploadValidationError =
         'Image banners are currently active. You must check "Replace existing configuration" to switch to video.';
       return;
     }
 
-    if (
-      this.uploadMode === 'video' &&
-      current === 'video' &&
-      !this.uploadReplaceExisting
-    ) {
+    if (this.uploadMode === 'video' && current === 'video' && !this.uploadReplaceExisting) {
       this.uploadValidationError =
         'A hero video already exists. You must check "Replace existing configuration" to replace it.';
       return;
@@ -289,9 +271,7 @@ export class HeroBannerComponent implements OnInit {
           error: (err) => {
             this.isSubmitting.set(false);
             const msg =
-              err.error?.errors?.join(' ') ||
-              err.error?.message ||
-              'Failed to upload hero images.';
+              err.error?.errors?.join(' ') || err.error?.message || 'Failed to upload hero images.';
             this.uploadValidationError = msg;
           },
         });
@@ -319,9 +299,7 @@ export class HeroBannerComponent implements OnInit {
           error: (err) => {
             this.isSubmitting.set(false);
             const msg =
-              err.error?.errors?.join(' ') ||
-              err.error?.message ||
-              'Failed to upload hero video.';
+              err.error?.errors?.join(' ') || err.error?.message || 'Failed to upload hero video.';
             this.uploadValidationError = msg;
           },
         });
@@ -370,7 +348,8 @@ export class HeroBannerComponent implements OnInit {
       }
     } else {
       if (ext !== '.mp4') {
-        this.editValidationError = 'Only MP4 videos are allowed. MOV, AVI, WebM, and MKV are prohibited.';
+        this.editValidationError =
+          'Only MP4 videos are allowed. MOV, AVI, WebM, and MKV are prohibited.';
         input.value = '';
         return;
       }
@@ -417,9 +396,7 @@ export class HeroBannerComponent implements OnInit {
         error: (err) => {
           this.isSubmitting.set(false);
           this.editValidationError =
-            err.error?.errors?.join(' ') ||
-            err.error?.message ||
-            'Failed to update hero banner.';
+            err.error?.errors?.join(' ') || err.error?.message || 'Failed to update hero banner.';
         },
       });
   }
@@ -432,14 +409,10 @@ export class HeroBannerComponent implements OnInit {
     this.heroBannerService.toggleStatus(bannerId, newStatus).subscribe({
       next: () => {
         item.isActive = newStatus;
-        this.setSuccess(
-          `Hero banner ${newStatus ? 'activated' : 'deactivated'} successfully.`,
-        );
+        this.setSuccess(`Hero banner ${newStatus ? 'activated' : 'deactivated'} successfully.`);
       },
       error: (err) => {
-        this.errorMessage.set(
-          err.error?.message || 'Failed to update hero banner status.',
-        );
+        this.errorMessage.set(err.error?.message || 'Failed to update hero banner status.');
       },
     });
   }
@@ -453,8 +426,7 @@ export class HeroBannerComponent implements OnInit {
   onDeleteConfirmed(): void {
     if (!this.itemToDelete) return;
 
-    const bannerId =
-      this.itemToDelete.encryptedId || this.itemToDelete.id.toString();
+    const bannerId = this.itemToDelete.encryptedId || this.itemToDelete.id.toString();
     this.isSubmitting.set(true);
 
     this.heroBannerService.delete(bannerId).subscribe({
@@ -468,9 +440,7 @@ export class HeroBannerComponent implements OnInit {
       error: (err) => {
         this.isSubmitting.set(false);
         this.showDeleteDialog = false;
-        this.errorMessage.set(
-          err.error?.message || 'Failed to delete hero banner.',
-        );
+        this.errorMessage.set(err.error?.message || 'Failed to delete hero banner.');
       },
     });
   }

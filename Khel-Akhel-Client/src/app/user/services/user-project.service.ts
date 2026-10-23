@@ -23,7 +23,11 @@ export class UserProjectService {
    */
   getImageUrl(relativePath: string | null | undefined): string {
     if (!relativePath) return '';
-    if (relativePath.startsWith('http://') || relativePath.startsWith('https://') || relativePath.startsWith('data:')) {
+    if (
+      relativePath.startsWith('http://') ||
+      relativePath.startsWith('https://') ||
+      relativePath.startsWith('data:')
+    ) {
       return relativePath;
     }
     const serverHost = environment.apiBaseUrl.replace(/\/api\/?$/i, '');

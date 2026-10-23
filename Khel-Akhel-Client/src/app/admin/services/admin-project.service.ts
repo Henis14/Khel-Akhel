@@ -24,12 +24,17 @@ export class AdminProjectService {
    */
   getList(filter: ProjectListFilter): Observable<ApiResponse<ProjectListResponse>> {
     const params: Record<string, any> = {};
-    if (filter.pageIndex !== undefined && filter.pageIndex !== null) params['pageIndex'] = filter.pageIndex;
-    if (filter.pageSize !== undefined && filter.pageSize !== null) params['pageSize'] = filter.pageSize;
+    if (filter.pageIndex !== undefined && filter.pageIndex !== null)
+      params['pageIndex'] = filter.pageIndex;
+    if (filter.pageSize !== undefined && filter.pageSize !== null)
+      params['pageSize'] = filter.pageSize;
     if (filter.search && filter.search.trim()) params['search'] = filter.search.trim();
-    if (filter.contentType && filter.contentType.trim()) params['contentType'] = filter.contentType.trim();
-    if (filter.isPublished !== undefined && filter.isPublished !== null) params['isPublished'] = filter.isPublished;
-    if (filter.isActive !== undefined && filter.isActive !== null) params['isActive'] = filter.isActive;
+    if (filter.contentType && filter.contentType.trim())
+      params['contentType'] = filter.contentType.trim();
+    if (filter.isPublished !== undefined && filter.isPublished !== null)
+      params['isPublished'] = filter.isPublished;
+    if (filter.isActive !== undefined && filter.isActive !== null)
+      params['isActive'] = filter.isActive;
     if (filter.sortBy && filter.sortBy.trim()) params['sortBy'] = filter.sortBy.trim();
 
     return this.api.get<ProjectListResponse>('projects/list', params);
@@ -50,10 +55,13 @@ export class AdminProjectService {
     formData.append('Heading', payload.heading.trim());
     if (payload.subheading?.trim()) formData.append('Subheading', payload.subheading.trim());
     if (payload.contentType?.trim()) formData.append('ContentType', payload.contentType.trim());
-    if (payload.projectOrEventTitle?.trim()) formData.append('ProjectOrEventTitle', payload.projectOrEventTitle.trim());
+    if (payload.projectOrEventTitle?.trim())
+      formData.append('ProjectOrEventTitle', payload.projectOrEventTitle.trim());
     if (payload.displayYear?.trim()) formData.append('DisplayYear', payload.displayYear.trim());
-    if (payload.shortDescription?.trim()) formData.append('ShortDescription', payload.shortDescription.trim());
-    if (payload.detailedDescription?.trim()) formData.append('DetailedDescription', payload.detailedDescription.trim());
+    if (payload.shortDescription?.trim())
+      formData.append('ShortDescription', payload.shortDescription.trim());
+    if (payload.detailedDescription?.trim())
+      formData.append('DetailedDescription', payload.detailedDescription.trim());
     if (payload.credits?.trim()) formData.append('Credits', payload.credits.trim());
     if (payload.location?.trim()) formData.append('Location', payload.location.trim());
     if (payload.externalUrl?.trim()) formData.append('ExternalUrl', payload.externalUrl.trim());
@@ -129,8 +137,14 @@ export class AdminProjectService {
 
     if (payload.imageOrders && payload.imageOrders.length > 0) {
       for (let i = 0; i < payload.imageOrders.length; i++) {
-        formData.append(`ImageOrders[${i}].EncryptedImageId`, payload.imageOrders[i].encryptedImageId);
-        formData.append(`ImageOrders[${i}].DisplayOrder`, payload.imageOrders[i].displayOrder.toString());
+        formData.append(
+          `ImageOrders[${i}].EncryptedImageId`,
+          payload.imageOrders[i].encryptedImageId,
+        );
+        formData.append(
+          `ImageOrders[${i}].DisplayOrder`,
+          payload.imageOrders[i].displayOrder.toString(),
+        );
       }
     }
 
@@ -142,10 +156,10 @@ export class AdminProjectService {
    * Toggle publication status for a Project section.
    */
   togglePublish(encryptedProjectId: string, isPublished: boolean): Observable<ApiResponse<any>> {
-    return this.api.patch<any>(
-      `projects/${encodeURIComponent(encryptedProjectId)}/publish`,
-      { encryptedProjectId, isPublished }
-    );
+    return this.api.patch<any>(`projects/${encodeURIComponent(encryptedProjectId)}/publish`, {
+      encryptedProjectId,
+      isPublished,
+    });
   }
 
   /**
@@ -177,7 +191,10 @@ export class AdminProjectService {
   /**
    * Reorder images for a Project section.
    */
-  reorderImages(encryptedProjectId: string, imageOrders: ProjectImageOrderDto[]): Observable<ApiResponse<any>> {
+  reorderImages(
+    encryptedProjectId: string,
+    imageOrders: ProjectImageOrderDto[],
+  ): Observable<ApiResponse<any>> {
     return this.api.put<any>('projects/images/reorder', {
       encryptedProjectId,
       imageOrders,
@@ -189,7 +206,11 @@ export class AdminProjectService {
    */
   getImageUrl(relativePath: string | null | undefined): string {
     if (!relativePath) return '';
-    if (relativePath.startsWith('http://') || relativePath.startsWith('https://') || relativePath.startsWith('data:')) {
+    if (
+      relativePath.startsWith('http://') ||
+      relativePath.startsWith('https://') ||
+      relativePath.startsWith('data:')
+    ) {
       return relativePath;
     }
     const serverHost = environment.apiBaseUrl.replace(/\/api\/?$/i, '');

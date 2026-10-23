@@ -1,412 +1,145 @@
 <div class="admin-wrapper" [class.sidebar-collapsed]="!sidebarOpen">
-  <!-- Sidebar -->
-  <aside class="sidebar">
+  <!-- backdrop for the mobile drawer -->
+  <div class="sidebar-backdrop" (click)="closeSidebar()" aria-hidden="true"></div>
+
+  <!-- ============================== Sidebar ============================== -->
+  <aside class="sidebar" aria-label="Admin navigation">
     <div class="sidebar-brand">
-      <span class="brand-title">Khel Akhel</span>
+      <a routerLink="/admin/dashboard" class="brand-link" aria-label="Khel Akhel admin home">
+        <span class="brand-mark" aria-hidden="true">KA</span>
+        <span class="brand-text">
+          <span class="brand-title">Khel Akhel</span>
+          <span class="brand-sub">Admin console</span>
+        </span>
+      </a>
+      <button type="button" class="collapse-btn" (click)="toggleSidebar()" [attr.aria-label]="sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M9 3v18" /><path d="m16 15-3-3 3-3" /></svg>
+      </button>
     </div>
 
     <nav class="sidebar-nav">
-      <!-- Dashboard -->
-      <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-item">
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <rect x="3" y="3" width="7" height="7"></rect>
-          <rect x="14" y="3" width="7" height="7"></rect>
-          <rect x="14" y="14" width="7" height="7"></rect>
-          <rect x="3" y="14" width="7" height="7"></rect>
-        </svg>
-        <span>Dashboard</span>
-      </a>
-
-      <!-- Customers Group -->
-      <div class="nav-group" [class.open]="customersMenuOpen">
-        <button class="nav-item group-header" (click)="toggleMenu('customers')">
-          <div class="group-title">
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
-            <span>Customers</span>
-          </div>
-          <svg
-            class="chevron-icon"
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        </button>
-        @if (customersMenuOpen) {
-          <div class="sub-nav">
-            <a routerLink="/admin/customers/add" routerLinkActive="active" class="sub-nav-item">
-              <span class="dot"></span>
-              <span>Add Customer</span>
-            </a>
-            <a
-              routerLink="/admin/customers"
-              [routerLinkActiveOptions]="{ exact: true }"
-              routerLinkActive="active"
-              class="sub-nav-item"
-            >
-              <span class="dot"></span>
-              <span>All Customers</span>
-            </a>
-          </div>
-        }
+      <div class="nav-section">
+        <p class="nav-section-label">Overview</p>
+        <a routerLink="/admin/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-item" data-label="Dashboard">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5" /><rect x="14" y="3" width="7" height="5" rx="1.5" /><rect x="14" y="12" width="7" height="9" rx="1.5" /><rect x="3" y="16" width="7" height="5" rx="1.5" /></svg>
+          <span class="nav-label">Dashboard</span>
+        </a>
+        <a routerLink="/admin/dashboard" class="nav-item" data-label="Orders">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" /><path d="M3 6h18" /><path d="M16 10a4 4 0 0 1-8 0" /></svg>
+          <span class="nav-label">Orders</span>
+          <span class="nav-tag">Soon</span>
+        </a>
       </div>
 
-      <!-- Password Resets -->
-      <a routerLink="/admin/password-reset-requests" routerLinkActive="active" class="nav-item">
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-        </svg>
-        <span>Password Resets</span>
-        @if (pendingResetCount() > 0) {
-          <span style="margin-left: auto; background: #ef4444; color: #fff; font-size: 0.75rem; padding: 0.15rem 0.5rem; border-radius: 9999px;">{{ pendingResetCount() }}</span>
-        }
-      </a>
-
-      <!-- Products Group -->
-      <div class="nav-group" [class.open]="productsMenuOpen">
-        <button class="nav-item group-header" (click)="toggleMenu('products')">
-          <div class="group-title">
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path
-                d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"
-              ></path>
-              <line x1="7" y1="7" x2="7.01" y2="7"></line>
-            </svg>
-            <span>Products</span>
+      <div class="nav-section">
+        <p class="nav-section-label">Catalogue</p>
+        <div class="nav-group" [class.open]="productsMenuOpen" [class.has-active]="isGroupActive('/admin/products')">
+          <button type="button" class="nav-item group-header" data-label="Products" (click)="toggleMenu('products')" [attr.aria-expanded]="productsMenuOpen">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" /><circle cx="7" cy="7" r="1.5" /></svg>
+            <span class="nav-label">Products</span>
+            <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+          </button>
+          <div class="sub-nav-wrap">
+            <div class="sub-nav">
+              <a routerLink="/admin/products/add" routerLinkActive="active" class="sub-nav-item">Add product</a>
+              <a routerLink="/admin/products" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="sub-nav-item">All products</a>
+            </div>
           </div>
-          <svg
-            class="chevron-icon"
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        </button>
-        @if (productsMenuOpen) {
-          <div class="sub-nav">
-            <a routerLink="/admin/products/add" routerLinkActive="active" class="sub-nav-item">
-              <span class="dot"></span>
-              <span>Add Product</span>
-            </a>
-            <a
-              routerLink="/admin/products"
-              [routerLinkActiveOptions]="{ exact: true }"
-              routerLinkActive="active"
-              class="sub-nav-item"
-            >
-              <span class="dot"></span>
-              <span>All Products</span>
-            </a>
+        </div>
+        <div class="nav-group" [class.open]="categoriesMenuOpen" [class.has-active]="isGroupActive('/admin/product-categories')">
+          <button type="button" class="nav-item group-header" data-label="Categories" (click)="toggleMenu('categories')" [attr.aria-expanded]="categoriesMenuOpen">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /></svg>
+            <span class="nav-label">Categories</span>
+            <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+          </button>
+          <div class="sub-nav-wrap">
+            <div class="sub-nav">
+              <a routerLink="/admin/product-categories/add" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="sub-nav-item">Add category</a>
+              <a routerLink="/admin/product-categories/add-subcategory" routerLinkActive="active" class="sub-nav-item">Add subcategory</a>
+              <a routerLink="/admin/product-categories" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="sub-nav-item">All categories</a>
+            </div>
           </div>
-        }
+        </div>
+        <div class="nav-group" [class.open]="stockMenuOpen" [class.has-active]="isGroupActive('/admin/product-stock')">
+          <button type="button" class="nav-item group-header" data-label="Stock" (click)="toggleMenu('stock')" [attr.aria-expanded]="stockMenuOpen">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /><path d="M3.3 7 12 12l8.7-5M12 22V12" /></svg>
+            <span class="nav-label">Stock</span>
+            <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+          </button>
+          <div class="sub-nav-wrap">
+            <div class="sub-nav">
+              <a routerLink="/admin/product-stock/update" routerLinkActive="active" class="sub-nav-item">Add stock</a>
+              <a routerLink="/admin/product-stock" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="sub-nav-item">Stock list</a>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <!-- Product Categories Group -->
-      <div class="nav-group" [class.open]="categoriesMenuOpen">
-        <button class="nav-item group-header" (click)="toggleMenu('categories')">
-          <div class="group-title">
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <line x1="8" y1="6" x2="21" y2="6"></line>
-              <line x1="8" y1="12" x2="21" y2="12"></line>
-              <line x1="8" y1="18" x2="21" y2="18"></line>
-              <line x1="3" y1="6" x2="3.01" y2="6"></line>
-              <line x1="3" y1="12" x2="3.01" y2="12"></line>
-              <line x1="3" y1="18" x2="3.01" y2="18"></line>
-            </svg>
-            <span>Product Categories</span>
+      <div class="nav-section">
+        <p class="nav-section-label">Customers</p>
+        <div class="nav-group" [class.open]="customersMenuOpen" [class.has-active]="isGroupActive('/admin/customers')">
+          <button type="button" class="nav-item group-header" data-label="Customers" (click)="toggleMenu('customers')" [attr.aria-expanded]="customersMenuOpen">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+            <span class="nav-label">Customers</span>
+            <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+          </button>
+          <div class="sub-nav-wrap">
+            <div class="sub-nav">
+              <a routerLink="/admin/customers/add" routerLinkActive="active" class="sub-nav-item">Add customer</a>
+              <a routerLink="/admin/customers" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="sub-nav-item">All customers</a>
+            </div>
           </div>
-          <svg
-            class="chevron-icon"
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        </button>
-        @if (categoriesMenuOpen) {
-          <div class="sub-nav">
-            <a
-              routerLink="/admin/product-categories/add"
-              routerLinkActive="active"
-              class="sub-nav-item"
-            >
-              <span class="dot"></span>
-              <span>Add Category</span>
-            </a>
-            <a
-              routerLink="/admin/product-categories"
-              [routerLinkActiveOptions]="{ exact: true }"
-              routerLinkActive="active"
-              class="sub-nav-item"
-            >
-              <span class="dot"></span>
-              <span>All Categories</span>
-            </a>
-          </div>
-        }
+        </div>
+        <a routerLink="/admin/password-reset-requests" routerLinkActive="active" class="nav-item" data-label="Password resets">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 9.9-1" /></svg>
+          <span class="nav-label">Password resets</span>
+          @if (pendingResetCount() > 0) {
+            <span class="nav-badge" [attr.aria-label]="pendingResetCount() + ' pending'">{{ pendingResetCount() }}</span>
+          }
+        </a>
       </div>
 
-      <!-- Product Stock Group -->
-      <div class="nav-group" [class.open]="stockMenuOpen">
-        <button class="nav-item group-header" (click)="toggleMenu('stock')">
-          <div class="group-title">
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path
-                d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
-              ></path>
-              <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-              <line x1="12" y1="22.08" x2="12" y2="12"></line>
-            </svg>
-            <span>Product Stock</span>
-          </div>
-          <svg
-            class="chevron-icon"
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        </button>
-        @if (stockMenuOpen) {
-          <div class="sub-nav">
-            <a
-              routerLink="/admin/product-stock/update"
-              routerLinkActive="active"
-              class="sub-nav-item"
-            >
-              <span class="dot"></span>
-              <span>Add Stock</span>
-            </a>
-            <a
-              routerLink="/admin/product-stock"
-              [routerLinkActiveOptions]="{ exact: true }"
-              routerLinkActive="active"
-              class="sub-nav-item"
-            >
-              <span class="dot"></span>
-              <span>Stock List</span>
-            </a>
-          </div>
-        }
+      <div class="nav-section">
+        <p class="nav-section-label">Studio &amp; content</p>
+        <a routerLink="/admin/commissioned-projects" routerLinkActive="active" class="nav-item" data-label="Commissions">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z" /></svg>
+          <span class="nav-label">Commissions</span>
+        </a>
+        <a routerLink="/admin/projects" routerLinkActive="active" class="nav-item" data-label="Projects">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="m21 15-5-5L5 21" /></svg>
+          <span class="nav-label">Projects</span>
+        </a>
+        <a routerLink="/admin/hero-banner" routerLinkActive="active" class="nav-item" data-label="Hero section">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2" /><path d="M8 21h8M12 17v4" /><path d="m10 8 5 2-5 2z" /></svg>
+          <span class="nav-label">Hero section</span>
+        </a>
+        <a routerLink="/admin/faqs" routerLinkActive="active" class="nav-item" data-label="FAQs">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" /></svg>
+          <span class="nav-label">FAQs</span>
+        </a>
       </div>
 
-      <!-- Orders -->
-      <a routerLink="/admin/dashboard" class="nav-item">
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-          <line x1="3" y1="6" x2="21" y2="6"></line>
-          <path d="M16 10a4 4 0 0 1-8 0"></path>
-        </svg>
-        <span>Orders</span>
-      </a>
-
-      <!-- Commissioned Projects -->
-      <a routerLink="/admin/commissioned-projects" routerLinkActive="active" class="nav-item">
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-          <polyline points="2 17 12 22 22 17"></polyline>
-          <polyline points="2 12 12 17 22 12"></polyline>
-        </svg>
-        <span>Commissioned Projects</span>
-      </a>
-
-      <!-- Projects & Studio Portfolios -->
-      <a routerLink="/admin/projects" routerLinkActive="active" class="nav-item">
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-          <circle cx="8.5" cy="8.5" r="1.5"></circle>
-          <polyline points="21 15 16 10 5 21"></polyline>
-        </svg>
-        <span>Projects</span>
-      </a>
-
-      <!-- Hero Section -->
-      <a routerLink="/admin/hero-banner" routerLinkActive="active" class="nav-item">
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-          <line x1="8" y1="21" x2="16" y2="21"></line>
-          <line x1="12" y1="17" x2="12" y2="21"></line>
-          <polygon points="10 8 15 10 10 12"></polygon>
-        </svg>
-        <span>Hero Section</span>
-      </a>
-
-      <!-- Reports Group -->
-      <div class="nav-group" [class.open]="reportsMenuOpen">
-        <button class="nav-item group-header" (click)="toggleMenu('reports')">
-          <div class="group-title">
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <line x1="18" y1="20" x2="18" y2="10"></line>
-              <line x1="12" y1="20" x2="12" y2="4"></line>
-              <line x1="6" y1="20" x2="6" y2="14"></line>
-            </svg>
-            <span>Reports</span>
-          </div>
-          <svg
-            class="chevron-icon"
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        </button>
+      <div class="nav-section">
+        <p class="nav-section-label">Insights</p>
+        <span class="nav-item is-disabled" data-label="Reports" aria-disabled="true">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18" /><path d="M18 17V9M13 17V5M8 17v-3" /></svg>
+          <span class="nav-label">Reports</span>
+          <span class="nav-tag">Soon</span>
+        </span>
       </div>
-
-      <!-- Settings Group (Temporarily hidden from visible sidebar navigation per requirements) -->
-      <!--
-      <div class="nav-group" [class.open]="settingsMenuOpen">
-        <button class="nav-item group-header" (click)="toggleMenu('settings')">
-          <div class="group-title">
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <circle cx="12" cy="12" r="3"></circle>
-              <path
-                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
-              ></path>
-            </svg>
-            <span>Settings</span>
-          </div>
-          <svg
-            class="chevron-icon"
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        </button>
-      </div>
-      -->
     </nav>
 
     <div class="sidebar-footer">
-      <button class="logout-btn" (click)="logout()">
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-          <polyline points="16 17 21 12 16 7"></polyline>
-          <line x1="21" y1="12" x2="9" y2="12"></line>
-        </svg>
-        <span>Logout</span>
-      </button>
+      <div class="user-card">
+        <span class="user-avatar" aria-hidden="true">{{ userInitial() }}</span>
+        <span class="user-meta">
+          <span class="user-email" [title]="userEmail()">{{ userEmail() }}</span>
+          <span class="user-role">Administrator</span>
+        </span>
+        <button type="button" class="logout-btn" (click)="logout()" aria-label="Log out" data-label="Log out">
+          <svg class="logout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="m16 17 5-5-5-5M21 12H9" /></svg>
+        </button>
+      </div>
     </div>
   </aside>
 
@@ -416,29 +149,14 @@
     <header class="topbar">
       <div class="topbar-left">
         <button class="toggle-btn" (click)="toggleSidebar()" title="Toggle Sidebar">
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="3" y1="12" x2="21" y2="12"></line>
             <line x1="3" y1="6" x2="21" y2="6"></line>
             <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
         </button>
         <div class="global-search">
-          <svg
-            class="search-icon"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
@@ -448,9 +166,9 @@
 
       <div class="topbar-right">
         <div class="user-profile">
-          <div class="avatar">{{ (currentUser()?.email || 'A')[0].toUpperCase() }}</div>
+          <div class="avatar">{{ userInitial() }}</div>
           <div class="profile-info">
-            <span class="user-name">{{ currentUser()?.email || 'Administrator' }}</span>
+            <span class="user-name">{{ userEmail() }}</span>
           </div>
         </div>
       </div>

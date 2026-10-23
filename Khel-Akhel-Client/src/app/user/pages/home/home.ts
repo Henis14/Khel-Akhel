@@ -1,11 +1,4 @@
-import {
-  Component,
-  OnInit,
-  OnDestroy,
-  inject,
-  signal,
-  computed,
-} from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../../common/services/api.service';
 import { HeroBannerItem } from '../../../admin/models/hero-banner.model';
@@ -83,9 +76,7 @@ export class UserHomeComponent implements OnInit, OnDestroy {
         this.isLoading.set(false);
         if (res.success && res.data && res.data.length > 0) {
           // Sort by display order ascending
-          const sorted = [...res.data].sort(
-            (a, b) => a.displayOrder - b.displayOrder,
-          );
+          const sorted = [...res.data].sort((a, b) => a.displayOrder - b.displayOrder);
           this.heroMedia.set(sorted);
 
           // If multiple images, start carousel auto-play
@@ -137,9 +128,7 @@ export class UserHomeComponent implements OnInit, OnDestroy {
     this.stopAutoSlide();
     this.autoSlideTimer = setInterval(() => {
       if (this.imageBanners().length > 1) {
-        this.activeSlideIndex.update(
-          (curr) => (curr + 1) % this.imageBanners().length,
-        );
+        this.activeSlideIndex.update((curr) => (curr + 1) % this.imageBanners().length);
       }
     }, 5500);
   }

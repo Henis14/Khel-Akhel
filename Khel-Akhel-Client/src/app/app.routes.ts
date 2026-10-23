@@ -67,6 +67,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'product-categories/add-subcategory',
+        loadComponent: () =>
+          import('./admin/pages/product-categories/add-subcategory/add-subcategory').then(
+            (m) => m.AddSubCategoryComponent,
+          ),
+      },
+      {
         path: 'products',
         loadComponent: () =>
           import('./admin/pages/products/products').then((m) => m.ProductsComponent),
@@ -144,9 +151,7 @@ export const routes: Routes = [
       {
         path: 'hero-banner',
         loadComponent: () =>
-          import('./admin/pages/hero-banner/hero-banner').then(
-            (m) => m.HeroBannerComponent,
-          ),
+          import('./admin/pages/hero-banner/hero-banner').then((m) => m.HeroBannerComponent),
       },
       // Backward compatibility redirects for legacy /admin/about URLs
       {
@@ -215,6 +220,34 @@ export const routes: Routes = [
       {
         path: 'faq',
         loadComponent: () => import('./user/pages/faq/faq').then((m) => m.Faq),
+      },
+      {
+        path: 'commissions',
+        loadComponent: () =>
+          import('./user/pages/commissions/commissions').then((m) => m.CommissionsComponent),
+      },
+      {
+        path: 'contact',
+        loadComponent: () => import('./user/pages/contact/contact').then((m) => m.Contact),
+      },
+      {
+        path: 'track-order',
+        loadComponent: () =>
+          import('./user/pages/account/track-order/track-order').then((m) => m.TrackOrder),
+      },
+      {
+        path: 'terms-conditions',
+        loadComponent: () =>
+          import('./user/pages/policies/terms-conditions/terms-conditions').then(
+            (m) => m.TermsConditions,
+          ),
+      },
+      {
+        path: 'privacy-policy',
+        loadComponent: () =>
+          import('./user/pages/policies/privacy-policy/privacy-policy').then(
+            (m) => m.PrivacyPolicy,
+          ),
       },
       {
         path: 'forgot-password',

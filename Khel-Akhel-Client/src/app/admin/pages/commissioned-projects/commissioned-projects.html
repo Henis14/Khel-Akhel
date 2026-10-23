@@ -125,32 +125,8 @@
         </div>
       </div>
 
-      <!-- Row 2: From Date, To Date, Sort By, Apply & Reset Buttons -->
+      <!-- Row 2: Sort By, Apply & Reset Buttons -->
       <div class="filter-row filter-row-secondary">
-        <!-- From Date -->
-        <div class="filter-item date-item">
-          <label class="filter-label" for="start-date-input">From Date</label>
-          <input
-            id="start-date-input"
-            type="date"
-            class="form-control"
-            [(ngModel)]="startDate"
-            (change)="onDateFilter()"
-          />
-        </div>
-
-        <!-- To Date -->
-        <div class="filter-item date-item">
-          <label class="filter-label" for="end-date-input">To Date</label>
-          <input
-            id="end-date-input"
-            type="date"
-            class="form-control"
-            [(ngModel)]="endDate"
-            (change)="onDateFilter()"
-          />
-        </div>
-
         <!-- Sort By Dropdown -->
         <div class="filter-item sort-item">
           <label class="filter-label" for="sort-select">Sort By</label>
@@ -214,23 +190,6 @@
       </div>
 
       <!-- Date Range Validation Warning -->
-      @if (dateRangeError) {
-        <div class="date-validation-warning">
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="8" x2="12" y2="12"></line>
-            <line x1="12" y1="16" x2="12.01" y2="16"></line>
-          </svg>
-          <span>{{ dateRangeError }}</span>
-        </div>
-      }
     </div>
   </div>
 

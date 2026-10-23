@@ -1,160 +1,210 @@
-<div class="faq-container">
-  <!-- Hero Section -->
-  <section class="faq-hero">
-    <div class="faq-hero-content">
-      <span class="faq-tag">Help Center</span>
-      <h1 class="faq-title">Frequently Asked Questions</h1>
-      <p class="faq-subtitle">
-        Have questions about our studio works, commissioned projects, shipping, or returns?
-        Find answers to our most common inquiries below.
-      </p>
-
-      <!-- Search Input -->
-      <div class="faq-search-wrapper">
-        <svg
-          class="search-icon"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
-        <input
-          type="text"
-          class="faq-search-input"
-          placeholder="Search by keywords (e.g. shipping, returns, custom art)..."
-          [(ngModel)]="searchQuery"
-          (input)="onSearch()"
-        />
-        @if (searchQuery) {
-          <button class="clear-search" (click)="searchQuery = ''; onSearch()">✕</button>
-        }
-      </div>
-    </div>
-  </section>
-
-  <!-- Categories Filter -->
-  @if (categories.length > 1) {
-    <div class="categories-bar">
-      <div class="categories-scroll">
-        @for (cat of categories; track cat) {
-          <button
-            type="button"
-            class="category-pill"
-            [class.active]="selectedCategory === cat"
-            (click)="selectCategory(cat)"
-          >
-            {{ cat }}
-          </button>
-        }
-      </div>
-    </div>
-  }
-
-  <!-- Error Feedback -->
-  @if (errorMessage) {
-    <div class="faq-alert alert-error">
-      <span>{{ errorMessage }}</span>
-      <button class="btn-retry" (click)="loadFaqs()">Retry</button>
-    </div>
-  }
-
-  <!-- Loading State -->
-  @if (loading) {
-    <div class="faq-loader">
-      <div class="spinner"></div>
-      <p>Loading questions...</p>
-    </div>
-  } @else {
-    <!-- Accordion List -->
-    <div class="faq-accordion-section">
-      @if (filteredFaqs.length > 0) {
-        <div class="accordion-list">
-          @for (faq of filteredFaqs; track faq.encryptedFaqId; let idx = $index) {
-            <div
-              class="accordion-item"
-              [class.open]="isExpanded(idx)"
-              (click)="toggleAccordion(idx)"
-            >
-              <div class="accordion-header">
-                <div class="header-left">
-                  @if (faq.category) {
-                    <span class="faq-category-label">{{ faq.category }}</span>
-                  }
-                  <h3 class="question-text">{{ faq.question }}</h3>
-                </div>
-                <div class="chevron-wrapper" [class.rotated]="isExpanded(idx)">
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <polyline points="6 9 12 15 18 9"></polyline>
-                  </svg>
-                </div>
-              </div>
-
-              @if (isExpanded(idx)) {
-                <div class="accordion-body" (click)="$event.stopPropagation()">
-                  <p class="answer-text">{{ faq.answer }}</p>
-                </div>
-              }
-            </div>
-          }
-        </div>
-      } @else {
-        <!-- Empty State -->
-        <div class="faq-empty-state">
-          <svg
-            class="empty-icon"
-            width="48"
-            height="48"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-          >
-            <circle cx="12" cy="12" r="10"></circle>
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-          </svg>
-          <h3>No Questions Found</h3>
-          <p>
-            @if (searchQuery || selectedCategory !== 'All') {
-              We couldn't find any questions matching your filter. Try adjusting your search keywords.
-            } @else {
-              No FAQs have been published yet. Please check back soon or get in touch with our team.
-            }
-          </p>
-          @if (searchQuery || selectedCategory !== 'All') {
-            <button
-              class="btn-reset-filter"
-              (click)="searchQuery = ''; selectedCategory = 'All'; filterFaqs()"
-            >
-              Reset Filters
-            </button>
-          }
-        </div>
+<!-- line-art topic icons, reused for topics and group headings -->
+<ng-template #topicIcon let-kind>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    @switch (kind) {
+      @case ('all') {
+        <path d="M12 3l3 3-3 3-3-3zM6 9l3 3-3 3-3-3zM18 9l3 3-3 3-3-3zM12 15l3 3-3 3-3-3z" />
       }
-    </div>
-  }
+      @case ('parcel') {
+        <path d="M3.5 7.5 12 3l8.5 4.5v9L12 21l-8.5-4.5z" /><path d="M3.5 7.5 12 12l8.5-4.5M12 12v9M7.8 5.3l8.4 4.5" />
+      }
+      @case ('return') {
+        <path d="M4 11a8 8 0 0 1 14.3-4.9L20 8" /><path d="M20 3.5V8h-4.5" /><path d="M20 13a8 8 0 0 1-14.3 4.9L4 16" /><path d="M4 20.5V16h4.5" />
+      }
+      @case ('pay') {
+        <rect x="3" y="5.5" width="18" height="13" rx="2" /><path d="M3 10h18M7 15h3" />
+      }
+      @case ('pencil') {
+        <path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19z" /><path d="M14.5 6.5l3 3M4 20h6" />
+      }
+      @case ('hand') {
+        <path d="M8 20c-1.5-2-3-4.5-3-7a1.8 1.8 0 0 1 3.6 0v1.5M8.6 13V7.5a1.6 1.6 0 0 1 3.2 0V12M11.8 8V6a1.6 1.6 0 0 1 3.2 0v6.5M15 8.5a1.6 1.6 0 0 1 3.2 0V14c0 3.8-2.6 6.5-6 6.5h-1" />
+      }
+      @case ('user') {
+        <circle cx="12" cy="8" r="4" /><path d="M4.5 20.5c1.2-3.6 4-5.5 7.5-5.5s6.3 1.9 7.5 5.5" />
+      }
+      @default {
+        <path d="M12 3.5l1.9 5.2 5.6.3-4.4 3.5 1.5 5.4L12 14.8l-4.6 3.1 1.5-5.4-4.4-3.5 5.6-.3z" />
+      }
+    }
+  </svg>
+</ng-template>
 
-  <!-- Contact CTA Box -->
-  <section class="faq-contact-cta">
-    <div class="cta-card">
-      <div class="cta-content">
-        <h3>Still have questions?</h3>
-        <p>Can't find the answer you're looking for? Reach out to our studio team directly.</p>
+<div class="faq">
+  <!-- =============================== Intro =============================== -->
+  <header class="faq-intro container">
+    <div class="faq-intro-copy">
+      <p class="faq-eyebrow">Help</p>
+      <h1 class="faq-title">Questions, <em>answered</em></h1>
+      <p class="faq-lede">
+        Orders, delivery, care for handmade pieces and commissions. If something is not here,
+        the studio is a message away.
+      </p>
+    </div>
+
+    <!-- illustration: a question, answered in stitches -->
+    <svg class="faq-art" viewBox="0 0 340 260" fill="none" aria-hidden="true">
+      <!-- soft sun behind -->
+      <circle cx="252" cy="70" r="44" class="art-sun" />
+
+      <!-- question bubble -->
+      <path class="art-bubble-q" d="M40 40h132a18 18 0 0 1 18 18v74a18 18 0 0 1-18 18H96l-30 26 6-26H40a18 18 0 0 1-18-18V58a18 18 0 0 1 18-18z" />
+      <path class="art-ink" pathLength="1" d="M40 40h132a18 18 0 0 1 18 18v74a18 18 0 0 1-18 18H96l-30 26 6-26H40a18 18 0 0 1-18-18V58a18 18 0 0 1 18-18z" />
+      <text x="106" y="128" text-anchor="middle" class="art-qmark">?</text>
+
+      <!-- answer bubble, written in kantha stitches -->
+      <path class="art-bubble-a" d="M168 116h132a18 18 0 0 1 18 18v66a18 18 0 0 1-18 18h-30l6 24-28-24h-80a18 18 0 0 1-18-18v-66a18 18 0 0 1 18-18z" />
+      <path class="art-ink" pathLength="1" d="M168 116h132a18 18 0 0 1 18 18v66a18 18 0 0 1-18 18h-30l6 24-28-24h-80a18 18 0 0 1-18-18v-66a18 18 0 0 1 18-18z" />
+      <path class="art-diamond" d="M184 140l6 6-6 6-6-6z" />
+      <path class="art-stitch-line" d="M200 146h96M170 168h126M170 190h82" />
+
+      <!-- needle pulling the thread out of the last stitch -->
+      <path class="art-ink art-thread" pathLength="1" d="M252 190c14 0 18 14 32 16s22-10 30-26" />
+      <path class="art-needle" d="M314 180l18-30" />
+      <circle cx="330" cy="153" r="2.4" class="art-eye" />
+
+      <!-- scattered diamonds -->
+      <path class="art-diamond" d="M206 26l6 6-6 6-6-6z" />
+      <path class="art-diamond art-diamond--rani" d="M14 196l5 5-5 5-5-5z" />
+      <path class="art-diamond art-diamond--rani" d="M318 34l4 4-4 4-4-4z" />
+      <path class="art-stitch" d="M20 246c90 8 200 8 300 0" />
+    </svg>
+  </header>
+
+  <!-- =============================== Body =============================== -->
+  <div class="container faq-body">
+    @if (loading()) {
+      <div class="faq-list" aria-busy="true" aria-label="Loading questions">
+        @for (s of skeleton; track s) {
+          <div class="faq-skeleton"><span></span></div>
+        }
       </div>
-      <div class="cta-action">
-        <a routerLink="/about" class="cta-button">Contact Us</a>
+    } @else if (error()) {
+      <div class="faq-message">
+        <h2>We couldn't load the questions</h2>
+        <p>Please check your connection and try again.</p>
+        <button type="button" class="faq-btn" (click)="load()">Try again</button>
+      </div>
+    } @else if (faqs().length === 0) {
+      <div class="faq-message">
+        <h2>Questions are on their way</h2>
+        <p>Until then, write to the studio and we will answer personally.</p>
+        <a routerLink="/contact" class="faq-btn">Contact us</a>
+      </div>
+    } @else {
+      <!-- topics -->
+      @if (categories().length > 1) {
+        <nav class="faq-topics" aria-label="Question topics">
+          <p class="faq-topics-label">Topics</p>
+          <ul role="list">
+            <li>
+              <button
+                type="button"
+                [class.is-active]="activeCategory() === 'All'"
+                [attr.aria-pressed]="activeCategory() === 'All'"
+                (click)="selectCategory('All')"
+              >
+                <span class="topic-icon"><ng-container *ngTemplateOutlet="topicIcon; context: { $implicit: 'all' }" /></span>
+                <span class="topic-name">All questions</span>
+                <span class="topic-count">{{ faqs().length }}</span>
+              </button>
+            </li>
+            @for (c of categories(); track c.name) {
+              <li>
+                <button
+                  type="button"
+                  [class.is-active]="activeCategory() === c.name"
+                  [attr.aria-pressed]="activeCategory() === c.name"
+                  (click)="selectCategory(c.name)"
+                >
+                  <span class="topic-icon"><ng-container *ngTemplateOutlet="topicIcon; context: { $implicit: c.icon }" /></span>
+                  <span class="topic-name">{{ c.name }}</span>
+                  <span class="topic-count">{{ counts().get(c.name) }}</span>
+                </button>
+              </li>
+            }
+          </ul>
+        </nav>
+      }
+
+      <!-- questions -->
+      <div class="faq-list" [class.faq-list--full]="categories().length <= 1">
+
+        @for (g of groups(); track g.name; let gi = $index) {
+          <section class="faq-group" [attr.aria-label]="g.name">
+            @if (gi > 0) {
+              <div class="faq-stitch" aria-hidden="true">
+                <span></span>
+                <svg viewBox="0 0 64 16" fill="none"><path d="M8 8 14 2l6 6-6 6Z" stroke="#b8336a" stroke-width="1.2" /><path d="M32 0l8 8-8 8-8-8Z" fill="#f2c230" /><path d="M44 8l6-6 6 6-6 6Z" stroke="#b8336a" stroke-width="1.2" /></svg>
+                <span></span>
+              </div>
+            }
+            @if (categories().length > 1) {
+              <div class="faq-group-head">
+                <span class="group-icon"><ng-container *ngTemplateOutlet="topicIcon; context: { $implicit: g.icon }" /></span>
+                <h2 class="faq-group-title">{{ g.name }}</h2>
+                <span class="group-count">{{ g.items.length }}</span>
+              </div>
+            }
+            <ul class="faq-items" role="list">
+              @for (f of g.items; track f.encryptedFaqId) {
+                <li class="faq-item" [class.is-open]="openId() === f.encryptedFaqId">
+                  <h3 class="faq-q">
+                    <button
+                      type="button"
+                      [id]="'q-' + f.encryptedFaqId"
+                      [attr.aria-expanded]="openId() === f.encryptedFaqId"
+                      [attr.aria-controls]="'a-' + f.encryptedFaqId"
+                      (click)="toggle(f.encryptedFaqId)"
+                    >
+                      <span class="faq-no" aria-hidden="true">{{ numbers().get(f.encryptedFaqId) }}</span>
+                      <span class="faq-q-text">{{ f.question }}</span>
+                      <span class="faq-icon" aria-hidden="true"></span>
+                    </button>
+                  </h3>
+                  <div
+                    class="faq-a"
+                    [id]="'a-' + f.encryptedFaqId"
+                    role="region"
+                    [attr.aria-labelledby]="'q-' + f.encryptedFaqId"
+                    [attr.aria-hidden]="openId() !== f.encryptedFaqId"
+                  >
+                    <div class="faq-a-inner">
+                      <p>{{ f.answer }}</p>
+                    </div>
+                  </div>
+                </li>
+              }
+            </ul>
+          </section>
+        } @empty {
+          <div class="faq-message faq-message--inline">
+            <h2>No answers here yet</h2>
+            <p>Try another topic, or ask the studio directly.</p>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- ============================ Still curious ============================ -->
+  <section class="container faq-help" aria-labelledby="faqHelpTitle">
+    <div class="faq-help-card">
+      <!-- a letter flying like a kite -->
+      <svg class="faq-help-art" viewBox="0 0 200 150" fill="none" aria-hidden="true">
+        <path class="art-ink" pathLength="1" d="M118 18l52 14-14 52-52-14z" />
+        <path class="art-ink art-thin" pathLength="1" d="M118 18l20 34 32-20" />
+        <path class="art-dot" d="M137 47l6 6-6 6-6-6z" />
+        <path class="art-ink art-thin art-string" d="M104 70c-14 18-6 34-28 40s-30 2-48 22" />
+        <path class="art-rani" d="M90 92l6-3-1 7zM60 112l7-1-3 6z" />
+      </svg>
+      <div class="faq-help-copy">
+        <h2 id="faqHelpTitle" class="faq-help-title">Still curious?</h2>
+        <p>Write to the studio. We reply within two working days, usually sooner.</p>
+      </div>
+      <div class="faq-help-actions">
+        <a routerLink="/contact" class="faq-btn">Contact us</a>
+        <a href="tel:+919888744113" class="faq-btn faq-btn--ghost">+91 98887 44113</a>
       </div>
     </div>
   </section>

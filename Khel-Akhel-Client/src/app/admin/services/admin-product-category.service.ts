@@ -6,6 +6,9 @@ import {
   ProductCategoryCreateRequest,
   ProductCategoryResponse,
   ProductCategoryUpdateRequest,
+  ProductSubCategoryCreateRequest,
+  ProductSubCategoryResponse,
+  ProductSubCategoryUpdateRequest,
 } from '../models/product-category.model';
 
 @Injectable({
@@ -14,6 +17,7 @@ import {
 export class AdminProductCategoryService {
   constructor(private api: ApiService) {}
 
+  // #region Category
   getList(): Observable<ApiResponse<ProductCategoryResponse[]>> {
     return this.api.get<ProductCategoryResponse[]>('product-category/list');
   }
@@ -30,17 +34,50 @@ export class AdminProductCategoryService {
     return this.api.patch<ProductCategoryResponse>('product-category/update', request);
   }
 
-  toggleActive(
-    encryptedCategoryId: string,
-    isActive: boolean = true,
-  ): Observable<ApiResponse<ProductCategoryResponse>> {
-    return this.api.patch<ProductCategoryResponse>('product-category/update', {
-      encryptedCategoryId,
-      isActive,
-    });
-  }
-
   delete(encryptedCategoryId: string): Observable<ApiResponse<null>> {
     return this.api.delete<null>(`product-category/delete/${encryptedCategoryId}`);
   }
+  // #endregion
+
+  // #region SubCategory
+  getSubCategories(
+    encryptedCategoryId?: string,
+  ): Observable<ApiResponse<ProductSubCategoryResponse[]>> {
+    const params: any = {};
+    if (encryptedCategoryId) {
+      params.encryptedCategoryId = encryptedCategoryId;
+    }
+    return this.api.get<ProductSubCategoryResponse[]>('product-category/subcategory/list', params);
+  }
+
+  getSubCategoryById(
+    encryptedSubCategoryId: string,
+  ): Observable<ApiResponse<ProductSubCategoryResponse>> {
+    return this.api.get<ProductSubCategoryResponse>(
+      `product-category/subcategory/${encryptedSubCategoryId}`,
+    );
+  }
+
+  createSubCategory(
+    request: ProductSubCategoryCreateRequest,
+  ): Observable<ApiResponse<ProductSubCategoryResponse>> {
+    return this.api.post<ProductSubCategoryResponse>(
+      'product-category/subcategory/create',
+      request,
+    );
+  }
+
+  updateSubCategory(
+    request: ProductSubCategoryUpdateRequest,
+  ): Observable<ApiResponse<ProductSubCategoryResponse>> {
+    return this.api.patch<ProductSubCategoryResponse>(
+      'product-category/subcategory/update',
+      request,
+    );
+  }
+
+  deleteSubCategory(encryptedSubCategoryId: string): Observable<ApiResponse<null>> {
+    return this.api.delete<null>(`product-category/subcategory/delete/${encryptedSubCategoryId}`);
+  }
+  // #endregion
 }

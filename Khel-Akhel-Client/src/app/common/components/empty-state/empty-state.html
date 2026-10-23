@@ -1,0 +1,139 @@
+<section class="es">
+  <div class="es-art" aria-hidden="true">
+    @if (image(); as src) {
+      <img [src]="src" alt="" />
+    } @else {
+      @switch (art()) {
+        @case ('bag') {
+          <!-- Jhola: cloth bag with kantha stitches and a sprig -->
+          <svg viewBox="0 0 240 180" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <circle class="fill-haldi" cx="52" cy="42" r="10" />
+            <path
+              class="ink thin"
+              pathLength="1"
+              d="M52 22v-6M52 68v-6M32 42h-6M78 42h-6M38 28l-4-4M70 60l-4-4M38 56l-4 4M70 24l-4 4"
+            />
+            <path
+              class="ink"
+              pathLength="1"
+              d="M66 72c-3 26-3 52 4 74 30 8 70 8 100 0 7-22 7-48 4-74"
+            />
+            <path class="ink" pathLength="1" d="M64 72c36 6 76 6 112 0" />
+            <path class="ink" pathLength="1" d="M88 74c-6-30 8-46 20-46s24 14 18 46" />
+            <path class="ink" pathLength="1" d="M118 74c-4-24 10-38 22-38 13 0 23 14 17 38" />
+            <path class="ink stitch" d="M76 132c28 6 60 6 88 0" />
+            <path class="fill-haldi" d="M120 94l11 11-11 11-11-11z" />
+            <path class="ink thin" pathLength="1" d="M120 99l6 6-6 6-6-6z" />
+            <path class="ink" pathLength="1" d="M160 72c2-14 8-24 18-30" />
+            <path
+              class="ink"
+              pathLength="1"
+              d="M170 50c6-6 14-6 18-2-6 6-14 6-18 2zM164 60c-4-8-2-14 4-18 2 8 0 14-4 18z"
+            />
+            <path class="ink thin" pathLength="1" d="M34 160c56 6 116 6 172 0" />
+          </svg>
+        }
+        @case ('heart') {
+          <!-- Needle and thread stitching a heart -->
+          <svg viewBox="0 0 240 180" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path
+              class="ink"
+              pathLength="1"
+              d="M116 146C70 116 50 84 64 62c12-18 36-16 50 6 14-22 38-24 50-6 14 22-6 54-48 84"
+            />
+            <path
+              class="ink stitch"
+              d="M116 132C80 108 66 84 76 68c9-13 26-11 40 8 14-19 31-21 40-8 10 16-4 40-40 64"
+            />
+            <path class="ink" pathLength="1" d="M116 146c10 14 34 18 52 4" />
+            <path class="ink" pathLength="1" d="M168 150l34-36" />
+            <ellipse
+              class="ink thin"
+              cx="199"
+              cy="117"
+              rx="3"
+              ry="6"
+              transform="rotate(43 199 117)"
+            />
+            <path
+              class="fill-haldi"
+              d="M60 30l6 6-6 6-6-6zM186 46l5 5-5 5-5-5zM42 120l4 4-4 4-4-4z"
+            />
+            <path class="ink thin" pathLength="1" d="M34 164c58 5 114 5 172 0" />
+          </svg>
+        }
+        @case ('kite') {
+          <!-- A kite drifting away, string loose: "lost page" -->
+          <svg viewBox="0 0 240 180" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path class="fill-haldi-soft" d="M150 20l30 38-30 46-30-46z" />
+            <path class="ink" pathLength="1" d="M150 20l30 38-30 46-30-46z" />
+            <path class="ink thin" pathLength="1" d="M150 20v84M120 58h60" />
+            <path
+              class="ink"
+              pathLength="1"
+              d="M150 104c-8 16 10 22 0 34-12 14-36 2-50 14-14 12-30 10-46 2"
+            />
+            <path class="fill-rani" d="M146 118l8-4-2 8zM138 138l9-2-4 8zM112 150l8 1-6 6z" />
+            <path class="ink thin" pathLength="1" d="M54 164c-6-4-10-10-8-16" />
+            <path
+              class="ink thin"
+              pathLength="1"
+              d="M28 44c10-8 24-8 32 0 8-6 18-4 22 4M188 116c8-6 18-6 24 0"
+            />
+            <path class="ink thin" pathLength="1" d="M30 168c60 5 120 5 180 0" />
+          </svg>
+        }
+        @case ('pot') {
+          <!-- An empty matka with a zig-zag band -->
+          <svg viewBox="0 0 240 180" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <ellipse class="ink" cx="120" cy="58" rx="28" ry="7" />
+            <path
+              class="ink"
+              pathLength="1"
+              d="M96 62c-2 6-6 10-14 16-26 22-22 62 10 74 18 6 38 6 56 0 32-12 36-52 10-74-8-6-12-10-14-16"
+            />
+            <path class="ink" pathLength="1" d="M74 100l9-7 9 7 9-7 9 7 9-7 9 7 9-7 9 7 9-7 9 7" />
+            <path class="fill-haldi" d="M120 114l8 8-8 8-8-8z" />
+            <path
+              class="ink thin"
+              pathLength="1"
+              d="M112 40c-4-8 4-12 0-20M128 40c-4-8 4-12 0-20"
+            />
+            <path class="ink thin" pathLength="1" d="M40 164c54 5 106 5 160 0" />
+          </svg>
+        }
+      }
+    }
+  </div>
+
+  <app-calligraphy-title [word]="word()" [lang]="wordLang()" align="center" size="md">
+    @if (headingLevel() === 1) {
+      <h1 class="es-title">{{ title() }}</h1>
+    } @else {
+      <h2 class="es-title">{{ title() }}</h2>
+    }
+  </app-calligraphy-title>
+
+  @if (message()) {
+    <p class="es-message">{{ message() }}</p>
+  }
+
+  @if (primaryLabel() || secondaryLabel()) {
+    <div class="es-actions">
+      @if (primaryLabel()) {
+        <a class="es-btn es-btn--primary" [routerLink]="primaryLink()">
+          {{ primaryLabel() }} <span aria-hidden="true">→</span>
+        </a>
+      }
+      @if (secondaryLabel()) {
+        @if (secondaryLink(); as link) {
+          <a class="es-btn es-btn--ghost" [routerLink]="link">{{ secondaryLabel() }}</a>
+        } @else {
+          <button type="button" class="es-btn es-btn--ghost" (click)="secondaryClick.emit()">
+            {{ secondaryLabel() }}
+          </button>
+        }
+      }
+    </div>
+  }
+</section>

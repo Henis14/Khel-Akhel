@@ -22,6 +22,7 @@ export class AdminProductService {
     if (req.pageIndex) params.pageIndex = req.pageIndex;
     if (req.pageSize) params.pageSize = req.pageSize;
     if (req.encryptedCategoryId) params.encryptedCategoryId = req.encryptedCategoryId;
+    if (req.encryptedSubCategoryId) params.encryptedSubCategoryId = req.encryptedSubCategoryId;
     if (req.search) params.search = req.search;
     if (req.isActive !== undefined && req.isActive !== null) params.isActive = req.isActive;
     return this.api.get<ProductListResponse>('product/list', params);

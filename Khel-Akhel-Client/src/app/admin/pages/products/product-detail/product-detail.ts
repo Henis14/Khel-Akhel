@@ -6,7 +6,10 @@ import { AdminProductService } from '../../../services/admin-product.service';
 import { AdminProductCategoryService } from '../../../services/admin-product-category.service';
 import { AdminProductImageService } from '../../../services/admin-product-image.service';
 import { ProductResponse, ProductUpdateRequest } from '../../../models/product.model';
-import { ProductCategoryResponse } from '../../../models/product-category.model';
+import {
+  ProductCategoryResponse,
+  ProductSubCategoryResponse,
+} from '../../../models/product-category.model';
 import { ProductImage } from '../../../models/product-image.model';
 import { CustomValidators } from '../../../../common/validators/custom.validators';
 import { REGEX_PATTERNS } from '../../../../common/constants/regex.constants';
@@ -40,11 +43,13 @@ export class ProductDetailComponent implements OnInit {
   encryptedProductId: string | null = null;
   product: ProductResponse | null = null;
   categories: ProductCategoryResponse[] = [];
+  subCategories: ProductSubCategoryResponse[] = [];
   productImages: ProductImage[] = [];
 
   loading = true;
   imagesLoading = false;
   uploadingNewImages = false;
+  loadingSubCategories = false;
   errorMessage: string | null = null;
   successMessage: string | null = null;
 
@@ -98,6 +103,7 @@ export class ProductDetailComponent implements OnInit {
     this.editForm = this.fb.group(
       {
         encryptedCategoryId: ['', [CustomValidators.requiredNonEmpty]],
+        encryptedSubCategoryId: [''],
         productName: ['', [CustomValidators.requiredNonEmpty]],
         sku: [
           '',
@@ -140,11 +146,35 @@ export class ProductDetailComponent implements OnInit {
     this.categoryService.getList().subscribe({
       next: (res) => {
         if (res.success) {
-          this.categories = res.data || [];
+          this.categories = (res.data || []).filter((c) => c.isActive);
         }
         this.cdr.markForCheck();
       },
       error: () => {
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  onEditCategoryChange(categoryId: string): void {
+    this.editForm.patchValue({
+      encryptedSubCategoryId: '',
+    });
+    this.subCategories = [];
+
+    if (!categoryId) return;
+
+    this.loadingSubCategories = true;
+    this.categoryService.getSubCategories(categoryId).subscribe({
+      next: (res) => {
+        this.loadingSubCategories = false;
+        if (res.success && res.data) {
+          this.subCategories = res.data.filter((sc) => sc.isActive);
+        }
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.loadingSubCategories = false;
         this.cdr.markForCheck();
       },
     });
@@ -303,6 +333,7 @@ export class ProductDetailComponent implements OnInit {
 
     this.editForm.patchValue({
       encryptedCategoryId: this.product.encryptedCategoryId,
+      encryptedSubCategoryId: '',
       productName: this.product.productName,
       sku: this.product.sku,
       shortDescription: this.product.shortDescription,
@@ -315,6 +346,31 @@ export class ProductDetailComponent implements OnInit {
       isTrending: this.product.isTrending,
       isCustomerFavourite: this.product.isCustomerFavourite,
     });
+
+    this.subCategories = [];
+
+    // Load SubCategories for saved Category
+    if (this.product.encryptedCategoryId) {
+      this.loadingSubCategories = true;
+      this.categoryService.getSubCategories(this.product.encryptedCategoryId).subscribe({
+        next: (subRes) => {
+          this.loadingSubCategories = false;
+          if (subRes.success && subRes.data) {
+            this.subCategories = subRes.data.filter((sc) => sc.isActive);
+            if (this.product?.encryptedSubCategoryId) {
+              this.editForm.patchValue({
+                encryptedSubCategoryId: this.product.encryptedSubCategoryId,
+              });
+            }
+          }
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.loadingSubCategories = false;
+          this.cdr.markForCheck();
+        },
+      });
+    }
 
     this.isEditModalOpen = true;
   }
@@ -343,6 +399,7 @@ export class ProductDetailComponent implements OnInit {
     const payload: ProductUpdateRequest = {
       encryptedProductId: this.encryptedProductId,
       encryptedCategoryId: this.editForm.value.encryptedCategoryId,
+      encryptedSubCategoryId: this.editForm.value.encryptedSubCategoryId || null,
       productName: this.editForm.value.productName.trim(),
       sku: this.editForm.value.sku.trim(),
       shortDescription: this.editForm.value.shortDescription?.trim() || '',

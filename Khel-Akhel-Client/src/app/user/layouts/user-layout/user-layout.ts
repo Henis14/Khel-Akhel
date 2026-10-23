@@ -73,55 +73,37 @@ export class UserLayoutComponent {
   /**
    * Primary navigation. Menus with `columns` open a mega panel on desktop and an
    * accordion in the mobile drawer.
-   * TODO: bind the Shop columns to product categories from the API.
    */
   readonly menus: NavMenu[] = [
     {
       id: 'shop',
       label: 'Shop',
       link: '/products',
-      intro: 'Objects, art and wearables, made by hand in the studio.',
+      intro: 'Art, objects and wearables, made by hand in the studio.',
       viewAll: 'Shop all',
       columns: [
         {
-          title: 'Objects & forms',
+          title: 'Art for walls',
           links: [
-            {
-              label: 'Lamps & lighting',
-              link: '/products',
-              queryParams: { category: 'lamps' },
-              badge: 'New',
-            },
-            { label: 'Pottery', link: '/products', queryParams: { category: 'pottery' } },
-            { label: 'Furniture', link: '/products', queryParams: { category: 'furniture' } },
-            {
-              label: 'Functional art',
-              link: '/products',
-              queryParams: { category: 'functional-art' },
-            },
+            { label: 'Art prints', link: '/products', queryParams: { category: 'art-prints' } },
+            { label: 'Photographs', link: '/products', queryParams: { category: 'photographs' } },
+            { label: 'Murals', link: '/products', queryParams: { category: 'murals' } },
           ],
         },
         {
-          title: 'Wearable art',
+          title: 'Objects & forms',
+          links: [
+            { label: 'Lamps', link: '/products', queryParams: { category: 'lamps' } },
+            { label: 'Sculptures', link: '/products', queryParams: { category: 'sculptures' } },
+            { label: 'Furniture', link: '/products', queryParams: { category: 'furniture' } },
+          ],
+        },
+        {
+          title: 'Wear & gift',
           links: [
             { label: 'Clothing', link: '/products', queryParams: { category: 'clothing' } },
             { label: 'Bags', link: '/products', queryParams: { category: 'bags' } },
-            {
-              label: 'One of a kind',
-              link: '/products',
-              queryParams: { category: 'one-of-a-kind' },
-            },
-          ],
-        },
-        {
-          title: 'On paper',
-          links: [
-            {
-              label: 'Prints & photographs',
-              link: '/products',
-              queryParams: { category: 'prints' },
-            },
-            { label: 'Calligraphy', link: '/products', queryParams: { category: 'calligraphy' } },
+            { label: 'Gifts', link: '/products', queryParams: { category: 'gifts' } },
           ],
         },
       ],
@@ -130,30 +112,64 @@ export class UserLayoutComponent {
       id: 'projects',
       label: 'Projects',
       link: '/projects',
-      intro: 'Festivals, installations, images and gatherings.',
+      intro: 'Festivals, installations, images, sound and gatherings.',
       viewAll: 'All projects',
       columns: [
         {
-          title: 'Spaces',
+          title: 'Spaces & play',
           links: [
-            { label: 'Festivals & sets', link: '/projects', queryParams: { type: 'festivals' } },
-            { label: 'Interactive art', link: '/projects', queryParams: { type: 'interactive' } },
-            { label: 'Installations', link: '/projects', queryParams: { type: 'installations' } },
+            {
+              label: 'Festivals & sets',
+              link: '/projects',
+              queryParams: { type: 'festivals-and-sets' },
+            },
+            {
+              label: 'Interactive art',
+              link: '/projects',
+              queryParams: { type: 'interactive-art' },
+            },
+            {
+              label: 'Objects & forms',
+              link: '/projects',
+              queryParams: { type: 'objects-and-forms' },
+            },
+            { label: 'Wearable art', link: '/projects', queryParams: { type: 'wearable-art' } },
+            { label: 'Architecture', link: '/projects', queryParams: { type: 'architecture' } },
           ],
         },
         {
-          title: 'Image & story',
+          title: 'Image & sound',
           links: [
-            { label: 'Visual art', link: '/projects', queryParams: { type: 'visual-art' } },
-            { label: 'Photography', link: '/projects', queryParams: { type: 'photography' } },
-            { label: 'Film', link: '/projects', queryParams: { type: 'film' } },
+            {
+              label: 'Visual art works',
+              link: '/projects',
+              queryParams: { type: 'visual-art-works' },
+            },
+            {
+              label: 'Photo art works',
+              link: '/projects',
+              queryParams: { type: 'photo-art-works' },
+            },
+            { label: 'Film art works', link: '/projects', queryParams: { type: 'film-art-works' } },
+            { label: 'Soundscapes', link: '/projects', queryParams: { type: 'soundscapes' } },
           ],
         },
         {
-          title: 'Learn & play',
+          title: 'Circles & learning',
           links: [
-            { label: 'Shilp Khel', link: '/projects', queryParams: { type: 'workshops' } },
-            { label: 'Sawal-e-Safar circles', link: '/projects', queryParams: { type: 'circles' } },
+            {
+              label: 'Circle: Sawal-e-Safar',
+              link: '/projects',
+              queryParams: { type: 'circle-sawal-e-safar' },
+            },
+            {
+              label: 'E7: LTA workshop',
+              link: '/projects',
+              queryParams: { type: 'e7-lta-workshop' },
+            },
+            { label: 'Shilp Khel', link: '/projects', queryParams: { type: 'shilp-khel' } },
+            { label: 'Exhibitions', link: '/projects', queryParams: { type: 'exhibitions' } },
+            { label: 'Publications', link: '/projects', queryParams: { type: 'publications' } },
           ],
         },
       ],

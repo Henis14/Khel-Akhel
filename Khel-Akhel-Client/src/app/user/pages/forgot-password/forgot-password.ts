@@ -32,11 +32,7 @@ export class ForgotPasswordComponent implements OnInit {
       userName: ['', [CustomValidators.requiredNonEmpty]],
       captcha: [
         '',
-        [
-          CustomValidators.requiredNonEmpty,
-          Validators.minLength(5),
-          Validators.maxLength(5),
-        ],
+        [CustomValidators.requiredNonEmpty, Validators.minLength(5), Validators.maxLength(5)],
       ],
     });
 

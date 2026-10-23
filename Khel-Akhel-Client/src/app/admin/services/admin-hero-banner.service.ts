@@ -2,10 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from '../../common/services/api.service';
 import { ApiResponse } from '../../common/models/api-response.model';
-import {
-  HeroBannerItem,
-  HeroBannerUpdateRequest,
-} from '../models/hero-banner.model';
+import { HeroBannerItem, HeroBannerUpdateRequest } from '../models/hero-banner.model';
 
 @Injectable({
   providedIn: 'root',

@@ -1,5 +1,74 @@
 <section class="login-page" aria-labelledby="login-title">
   <div class="login-panel">
+      <!-- ===== illustration: the studio door, a toran above and a diya at the step ===== -->
+      <aside class="auth-art" aria-hidden="true">
+        <svg class="auth-art-svg" viewBox="0 0 360 380" fill="none" aria-hidden="true">
+  <defs>
+    <radialGradient id="drGlow" cx="50%" cy="38%" r="55%">
+      <stop offset="0" stop-color="#ffd98a" stop-opacity=".95"/>
+      <stop offset=".45" stop-color="#f2c230" stop-opacity=".35"/>
+      <stop offset="1" stop-color="#f2c230" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="drBeam" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffd98a" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#ffd98a" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- wall arch + glow -->
+  <path class="dr-wall" d="M40 344V170C40 92 103 34 180 34s140 58 140 136v174z"/>
+  <clipPath id="drArch"><path d="M40 344V170C40 92 103 34 180 34s140 58 140 136v174z"/></clipPath>
+  <g clip-path="url(#drArch)"><circle class="dr-glow" cx="180" cy="128" r="150" fill="url(#drGlow)"/>
+  <path class="dr-beam" d="M146 150L92 344h176l-54-194z" fill="url(#drBeam)"/></g>
+  <path class="dr-arch-line" d="M40 344V170C40 92 103 34 180 34s140 58 140 136v174"/>
+
+  <!-- wire line running along the wall, like the daras wire murals -->
+  <path class="dr-wire dr-draw" pathLength="1" d="M24 344h44v-22h30v22h34M228 344h34v-14h26v14h48"/>
+  <circle class="dr-dot" cx="68" cy="344" r="3.2"/><circle class="dr-dot" cx="68" cy="322" r="3.2"/><circle class="dr-dot" cx="98" cy="322" r="3.2"/><circle class="dr-dot" cx="98" cy="344" r="3.2"/><circle class="dr-dot" cx="262" cy="344" r="3.2"/><circle class="dr-dot" cx="262" cy="330" r="3.2"/><circle class="dr-dot" cx="288" cy="330" r="3.2"/><circle class="dr-dot" cx="288" cy="344" r="3.2"/>
+
+  <!-- wooden slice base -->
+  <ellipse class="dr-wood" cx="180" cy="336" rx="56" ry="11"/>
+  <ellipse class="dr-wood-ring" cx="180" cy="334" rx="40" ry="6.5"/>
+  <ellipse class="dr-wood-ring" cx="180" cy="333" rx="22" ry="3.5"/>
+
+  <!-- wire stand -->
+  <path class="dr-wire dr-draw" pathLength="1" d="M180 330V156M180 264h-46v-20M180 230h44v-18"/>
+  <circle class="dr-dot" cx="180" cy="264" r="3.2"/><circle class="dr-dot" cx="180" cy="230" r="3.2"/><circle class="dr-dot" cx="134" cy="264" r="3.2"/><circle class="dr-dot" cx="224" cy="230" r="3.2"/>
+
+  <!-- little clay pots with plants -->
+  <path class="dr-pot" d="M120 244h28l-4 20h-20z"/>
+  <path class="dr-leaf" d="M134 244c-12-4-16-16-12-26 10 4 14 14 12 26z"/>
+  <path class="dr-leaf dr-leaf--b" d="M134 244c8-6 20-6 26 2-8 6-18 6-26-2z"/>
+  <path class="dr-pot dr-pot--olive" d="M212 212h26l-4 18h-18z"/>
+  <path class="dr-leaf" d="M225 212c4-12 14-18 24-14-2 10-12 16-24 14z"/>
+  <path class="dr-leaf dr-leaf--b" d="M225 212c-6-8-6-18 2-24 6 8 6 16-2 24z"/>
+
+  <!-- faceted amber glass shade -->
+  <g class="dr-shade">
+    <path class="dr-glass-a" d="M124 92l56-22 56 22-22 64h-68z"/>
+    <path class="dr-glass-b" d="M124 92l56-22v86h-34z"/>
+    <path class="dr-glass-c" d="M180 70l56 22-22 64h-34z"/>
+    <path class="dr-glass-d" d="M146 156l34-48 34 48z"/>
+    <path class="dr-frame" d="M124 92l56-22 56 22-22 64h-68zM180 70v38M146 156l34-48 34 48M124 92l56 16 56-16"/>
+    <circle class="dr-bulb" cx="180" cy="140" r="9"/>
+  </g>
+  <!-- plant growing out of the top of the lamp -->
+  <path class="dr-stem" d="M180 70c0-14 4-24 12-32"/>
+  <path class="dr-leaf" d="M192 38c-2-14 8-24 22-22 0 14-10 22-22 22z"/>
+  <path class="dr-leaf dr-leaf--b" d="M184 52c-14 2-24-6-24-18 14-2 22 6 24 18z"/>
+
+  <!-- ✦ stars, as in the daras.co.in name -->
+  <path class="dr-star" d="M64 87C65.98 96.02 65.98 96.02 75 98C65.98 99.98 65.98 99.98 64 109C62.02 99.98 62.02 99.98 53 98C62.02 96.02 62.02 96.02 64 87z"/>
+  <path class="dr-star dr-star--rani" d="M300 74C301.44 80.56 301.44 80.56 308 82C301.44 83.44 301.44 83.44 300 90C298.56 83.44 298.56 83.44 292 82C298.56 80.56 298.56 80.56 300 74z"/>
+  <path class="dr-star dr-star--olive" d="M292 220C293.08 224.92 293.08 224.92 298 226C293.08 227.08 293.08 227.08 292 232C290.92 227.08 290.92 227.08 286 226C290.92 224.92 290.92 224.92 292 220z"/>
+  <path class="dr-star dr-star--olive" d="M70 227C70.9 231.1 70.9 231.1 75 232C70.9 232.9 70.9 232.9 70 237C69.1 232.9 69.1 232.9 65 232C69.1 231.1 69.1 231.1 70 227z"/>
+</svg>
+        <div class="auth-art-copy">
+          <p class="auth-art-title">Welcome back</p>
+          <p class="auth-art-text">Sign in to see your orders, the pieces you have saved and your commissions.</p>
+        </div>
+      </aside>
+
     <div class="login-card">
       <header class="login-header">
         <h1 id="login-title" class="login-title">Sign in</h1>

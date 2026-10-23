@@ -1,11 +1,13 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { AdminProductCategoryService } from '../../services/admin-product-category.service';
 import {
   ProductCategoryCreateRequest,
   ProductCategoryResponse,
   ProductCategoryUpdateRequest,
+  ProductSubCategoryResponse,
 } from '../../models/product-category.model';
 import { CustomValidators } from '../../../common/validators/custom.validators';
 import { ConfirmationDialogComponent } from '../../../common/components/confirmation-dialog/confirmation-dialog';
@@ -19,6 +21,7 @@ import { AppLoaderComponent } from '../../../common/components/app-loader/app-lo
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    RouterLink,
     ConfirmationDialogComponent,
     BreadcrumbComponent,
     AppLoaderComponent,
@@ -36,6 +39,7 @@ export class ProductCategoriesComponent implements OnInit {
   private cdr = inject(ChangeDetectorRef);
 
   categories: ProductCategoryResponse[] = [];
+  subCategoriesMap: { [catId: string]: ProductSubCategoryResponse[] } = {};
   loading = false;
   errorMessage: string | null = null;
   successMessage: string | null = null;
@@ -80,6 +84,7 @@ export class ProductCategoriesComponent implements OnInit {
         this.loading = false;
         if (res.success) {
           this.categories = res.data || [];
+          this.loadSubCategories();
         }
         this.cdr.markForCheck();
       },
@@ -87,6 +92,27 @@ export class ProductCategoriesComponent implements OnInit {
         this.loading = false;
         this.errorMessage = err.error?.message || 'Failed to load categories.';
         this.cdr.markForCheck();
+      },
+    });
+  }
+
+  loadSubCategories(): void {
+    this.categoryService.getSubCategories().subscribe({
+      next: (res) => {
+        if (res.success && res.data) {
+          const map: { [key: string]: ProductSubCategoryResponse[] } = {};
+          for (const sub of res.data) {
+            if (!map[sub.encryptedCategoryId]) {
+              map[sub.encryptedCategoryId] = [];
+            }
+            map[sub.encryptedCategoryId].push(sub);
+          }
+          this.subCategoriesMap = map;
+          this.cdr.markForCheck();
+        }
+      },
+      error: () => {
+        // Non-blocking: categories still render
       },
     });
   }
@@ -190,7 +216,11 @@ export class ProductCategoriesComponent implements OnInit {
         },
         error: (err) => {
           this.isActionSubmitting = false;
-          this.errorMessage = err.error?.message || 'Failed to delete category.';
+          const msg =
+            err.error?.errors && err.error.errors.length > 0
+              ? err.error.errors.join('; ')
+              : err.error?.message || 'Failed to delete category.';
+          this.errorMessage = msg;
         },
       });
     };

@@ -272,9 +272,7 @@ export class CustomerAddressesComponent implements OnInit {
     this.errorMessage = null;
 
     const formValues = this.addressForm.getRawValue();
-    const selectedCountry = this.countries.find(
-      (c) => c.id === Number(formValues.countryId),
-    );
+    const selectedCountry = this.countries.find((c) => c.id === Number(formValues.countryId));
     const selectedState = this.states.find((s) => s.id === Number(formValues.stateId));
 
     if (this.isEditMode && this.selectedAddress) {

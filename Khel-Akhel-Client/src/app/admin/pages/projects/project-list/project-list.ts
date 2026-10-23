@@ -52,7 +52,6 @@ export class ProjectListComponent implements OnInit, OnDestroy {
   totalRecords = 0;
 
   searchQuery = '';
-  selectedContentType = '';
   selectedPublished = '';
   sortBy = 'orderAsc';
 
@@ -112,7 +111,6 @@ export class ProjectListComponent implements OnInit, OnDestroy {
       pageIndex: this.pageIndex,
       pageSize: this.pageSize,
       search: this.searchQuery,
-      contentType: this.selectedContentType || undefined,
       sortBy: this.sortBy,
     };
 

@@ -118,18 +118,6 @@
         }
       </div>
 
-      <!-- Content Type Filter -->
-      <div class="filter-group">
-        <label class="filter-label">Discipline / Category:</label>
-        <input
-          type="text"
-          class="form-control"
-          placeholder="Filter by discipline..."
-          [(ngModel)]="selectedContentType"
-          (ngModelChange)="onFilterChange()"
-        />
-      </div>
-
       <!-- Publication Filter -->
       <div class="filter-group">
         <label class="filter-label">Status:</label>
@@ -335,7 +323,7 @@
         </div>
         <h3 class="empty-state-title">No Projects Found</h3>
         <p class="empty-state-description">
-          @if (searchQuery || selectedContentType || selectedPublished) {
+          @if (searchQuery || selectedPublished) {
             No sections match the current filters. Try resetting search or filter criteria.
           } @else {
             Begin building the DARAS studio experience by creating your first editorial narrative or

@@ -68,11 +68,38 @@ CREATE TABLE drs_product_category_mst (
     CreatedDate  DATETIME       DEFAULT GETDATE() NOT NULL,
     ModifiedDate DATETIME       NULL
 );
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'drs_product_subcategory_mst')
+BEGIN
+    CREATE TABLE drs_product_subcategory_mst (
+        ID                  BIGINT         IDENTITY (1, 1) NOT NULL PRIMARY KEY,
+        product_category_id BIGINT         NOT NULL,
+        SubCategoryName     NVARCHAR (100) NOT NULL,
+        Description         NVARCHAR (500) NULL,
+        DisplayOrder        INT            DEFAULT 0 NOT NULL,
+        IsActive            BIT            DEFAULT 1 NOT NULL,
+        IsDeleted           BIT            DEFAULT 0 NOT NULL,
+        CreatedDate         DATETIME       DEFAULT GETDATE() NOT NULL,
+        ModifiedDate        DATETIME       NULL
+    );
+END
+GO
+
+-- Ensure product_subcategory_id column exists on drs_product_mst if table was created previously
+IF NOT EXISTS (
+    SELECT 1 FROM sys.columns
+    WHERE object_id = OBJECT_ID('drs_product_mst')
+      AND name = 'product_subcategory_id'
+)
+BEGIN
+    ALTER TABLE drs_product_mst ADD product_subcategory_id BIGINT NULL;
+END
 
 GO
 CREATE TABLE drs_product_mst (
     ID                  BIGINT          IDENTITY (1, 1) NOT NULL PRIMARY KEY,
-    product_category_id BIGINT          NOT NULL,
+    product_category_id       BIGINT          NOT NULL,
+    product_subcategory_id    BIGINT          NULL,
     ProductName         NVARCHAR (200)  NOT NULL,
     ProductCode         VARCHAR (50)    NOT NULL,
     SKU                 VARCHAR (50)    NOT NULL,
@@ -438,4 +465,6 @@ CREATE TABLE drs_password_reset_request_mst
             DEFAULT (GETDATE()),
         ModifiedDate DATETIME NULL
     );
+
+
 

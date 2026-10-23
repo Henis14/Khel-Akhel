@@ -21,6 +21,7 @@ export class AddCategoryComponent implements OnInit {
     { label: 'Product Categories', url: '/admin/product-categories' },
     { label: 'Add Category' },
   ];
+
   private fb = inject(FormBuilder);
   private categoryService = inject(AdminProductCategoryService);
   private router = inject(Router);

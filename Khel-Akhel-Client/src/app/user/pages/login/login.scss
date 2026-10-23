@@ -1,7 +1,6 @@
-/* ==========================================================================
-   Customer sign-in: a plain, centred form using the storefront tokens
-   ========================================================================== */
-:host { display: block; }
+:host {
+  display: block;
+}
 
 %caps {
   font-family: var(--user-font-sans);
@@ -20,14 +19,23 @@
   background: var(--user-limewash, #f7f4ee);
 }
 
-.login-panel { width: 100%; }
+/* illustration + form, side by side */
+.login-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 26rem);
+  width: 100%;
+  max-width: 58rem;
+  margin-inline: auto;
+}
 
 .login-card {
+  display: flex;
   width: 100%;
-  max-width: 26rem;
-  margin-inline: auto;
-  padding: clamp(1.75rem, 5vw, 2.5rem);
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(1.75rem, 5vw, 2.75rem);
   border: 1px solid var(--user-hairline, #eae3d8);
+  border-left: 0;
   background: #fff;
 }
 
@@ -98,10 +106,16 @@ form {
     color: var(--user-text-primary, #25251f);
     background: #fff;
     font: 400 1rem var(--user-font-sans);
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
 
-    &::placeholder { color: var(--user-ink-mist, #8a817d); }
-    &:hover { border-color: rgba(69, 18, 10, 0.35); }
+    &::placeholder {
+      color: var(--user-ink-mist, #8a817d);
+    }
+    &:hover {
+      border-color: rgba(69, 18, 10, 0.35);
+    }
 
     &:focus {
       outline: none;
@@ -110,7 +124,9 @@ form {
     }
   }
 
-  &.has-error input { border-color: var(--user-rani, #b8336a); }
+  &.has-error input {
+    border-color: var(--user-rani, #b8336a);
+  }
 }
 
 .field-label-row {
@@ -126,7 +142,9 @@ form {
   text-decoration: underline;
   text-underline-offset: 3px;
 
-  &:hover { color: var(--user-maroon, #45120a); }
+  &:hover {
+    color: var(--user-maroon, #45120a);
+  }
 }
 
 .field-error {
@@ -138,7 +156,9 @@ form {
 .password-wrap {
   position: relative;
 
-  input { padding-right: 3rem; }
+  input {
+    padding-right: 3rem;
+  }
 }
 
 .password-toggle {
@@ -155,7 +175,9 @@ form {
   background: none;
   cursor: pointer;
 
-  &:hover { color: var(--user-maroon, #45120a); }
+  &:hover {
+    color: var(--user-maroon, #45120a);
+  }
 
   svg {
     width: 20px;
@@ -178,7 +200,9 @@ form {
   border: 1px solid var(--user-hairline, #eae3d8);
   background: #fff;
 
-  &.is-loading { opacity: 0.5; }
+  &.is-loading {
+    opacity: 0.5;
+  }
 
   img {
     display: block;
@@ -203,15 +227,21 @@ form {
   background: #fff;
   cursor: pointer;
 
-  &:hover:not(:disabled) { background: var(--user-limewash, #f7f4ee); }
-  &:disabled { cursor: progress; }
+  &:hover:not(:disabled) {
+    background: var(--user-limewash, #f7f4ee);
+  }
+  &:disabled {
+    cursor: progress;
+  }
 
   svg {
     width: 20px;
     height: 20px;
   }
 
-  .is-spinning { animation: login-spin 0.9s linear infinite; }
+  .is-spinning {
+    animation: login-spin 0.9s linear infinite;
+  }
 }
 
 .field .captcha-input {
@@ -241,7 +271,9 @@ form {
   font-size: 0.8rem;
   transition: background-color 0.2s ease;
 
-  &:hover:not(:disabled) { background: #2e0c06; }
+  &:hover:not(:disabled) {
+    background: #2e0c06;
+  }
 
   &:disabled {
     cursor: progress;
@@ -259,7 +291,9 @@ form {
 }
 
 @keyframes login-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .login-register {
@@ -286,6 +320,32 @@ form {
   }
 }
 
+/* tablet / phone: illustration becomes a short band above the form */
+@media (max-width: 860px) {
+  .login-panel {
+    grid-template-columns: 1fr;
+    max-width: 30rem;
+  }
+
+  .login-card {
+    border-top: 0;
+    border-left: 1px solid var(--user-hairline, #eae3d8);
+  }
+
+  .login-panel .auth-art {
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    justify-items: start;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    text-align: left;
+  }
+
+  .login-panel .auth-art-svg { width: clamp(96px, 30vw, 140px); }
+  .login-panel .auth-art-title { font-size: 1.6rem; }
+  .login-panel .auth-art-text { font-size: 0.875rem; }
+}
+
 @media (max-width: 480px) {
   .login-page {
     place-items: start center;
@@ -295,5 +355,137 @@ form {
 
 @media (prefers-reduced-motion: reduce) {
   .spinner,
-  .captcha-refresh .is-spinning { animation: none; }
+  .captcha-refresh .is-spinning {
+    animation: none;
+  }
+}
+
+/* ==========================================================================
+   Illustration panel (shared look with the Contact and FAQ line art)
+   ========================================================================== */
+$art-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+.auth-art {
+  position: relative;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 1.25rem;
+  padding: clamp(1.75rem, 4vw, 3rem);
+  overflow: hidden;
+  border: 1px solid var(--user-hairline, #eae3d8);
+  background-color: var(--user-cream, #f3ebdd);
+  /* faint phulkari motif in the corner */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke-width='1.4' opacity='.6'%3E%3Cpath d='M90 30 L114 60 L90 90 L66 60 Z' stroke='%23F2C230'/%3E%3Cpath d='M90 46 L101 60 L90 74 L79 60 Z' stroke='%23B8336A'/%3E%3C/g%3E%3C/svg%3E");
+  background-position: right -6px top -14px;
+  background-repeat: no-repeat;
+  text-align: center;
+}
+
+.auth-art-svg {
+  width: min(100%, 340px);
+  height: auto;
+}
+
+.auth-art-copy { max-width: 22rem; }
+
+.auth-art-title {
+  margin: 0;
+  color: var(--user-maroon, #45120a);
+  font-family: var(--user-font-serif);
+  font-size: clamp(1.8rem, 2.6vw, 2.2rem);
+  font-style: italic;
+  line-height: 1.1;
+}
+
+.auth-art-text {
+  margin: 0.6rem 0 0;
+  color: var(--user-ink-slate, #574e4b);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+.auth-art-list {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0.9rem 0 0;
+  padding: 0;
+  color: var(--user-ink-slate, #574e4b);
+  font-size: 0.9375rem;
+  list-style: none;
+  text-align: left;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+
+    &::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      flex: none;
+      background: var(--user-haldi, #f2c230);
+      transform: rotate(45deg);
+    }
+  }
+}
+
+/* line art */
+// ---- illustration (drawn from daras.co.in: wire murals, planter lamp, tiles, kites, the ✦ mark) ----
+.auth-art-svg { animation: art-rise 0.9s $art-ease 0.1s backwards; }
+
+.dr-wall { fill: #efe4d1; }
+.dr-halo { fill: rgba(242, 194, 48, 0.14); }
+.dr-glow { mix-blend-mode: normal; }
+.dr-wire { stroke: #2b2522; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.dr-dot { fill: #2b2522; }
+.dr-wood { fill: #9a5a2e; }
+.dr-wood-ring { stroke: #e9c79a; stroke-width: 1.2; opacity: .8; }
+.dr-pot { fill: #b5582f; }
+.dr-pot--olive { fill: #7a7536; }
+.dr-leaf { fill: #7a7536; }
+.dr-leaf--b { fill: #9aa24a; }
+.dr-stem { stroke: #7a7536; stroke-width: 2.2; stroke-linecap: round; }
+.dr-glass-a { fill: #e3a33b; }
+.dr-glass-b { fill: #f2c230; opacity: .9; }
+.dr-glass-c { fill: #d48a2a; opacity: .9; }
+.dr-glass-d { fill: #ffe39a; opacity: .85; }
+.dr-frame { stroke: #2b2522; stroke-width: 2; stroke-linejoin: round; }
+.dr-bulb { fill: #fff6d6; filter: drop-shadow(0 0 6px #ffd98a); animation: dr-glow 3.2s ease-in-out infinite; }
+.dr-star { fill: #f2c230; transform-box: fill-box; transform-origin: center; animation: dr-twinkle 3.4s ease-in-out infinite; }
+.dr-star--rani { fill: #b8336a; animation-delay: -1.2s; }
+.dr-star--olive { fill: #7a7536; animation-delay: -2.2s; }
+.dr-tile-sand { fill: #f6efe2; }
+.dr-tile-edge { stroke: #2b2522; stroke-width: 1.6; stroke-linejoin: round; }
+.dr-tile-teal { fill: #2f6f6a; stroke: #2b2522; stroke-width: 1.6; stroke-linejoin: round; }
+.dr-tile-olive { fill: #7a7536; stroke: #2b2522; stroke-width: 1.6; stroke-linejoin: round; }
+.dr-speck { fill: #f6efe2; opacity: .85; }
+.dr-slice { fill: #b5582f; stroke: #2b2522; stroke-width: 1.6; stroke-linejoin: round; }
+.dr-slice-ring { stroke: #e9a77a; stroke-width: 1.4; }
+.dr-white { fill: #fff; }
+.dr-disc { fill: #e9dcc3; stroke: #2b2522; stroke-width: 1.6; }
+.dr-coil { stroke: #9a5a2e; stroke-width: 2.4; stroke-linecap: round; }
+.dr-kite { fill: #f2c230; stroke: #2b2522; stroke-width: 1.8; stroke-linejoin: round; transform-box: fill-box; transform-origin: 50% 100%; animation: dr-sway 4s ease-in-out infinite; }
+.dr-kite-line { stroke: #2b2522; stroke-width: 1; opacity: .45; }
+.dr-tail { stroke: #b8336a; stroke-width: 1.6; stroke-linecap: round; }
+.dr-bow { fill: #b8336a; }
+.dr-yours-box { fill: #fbf6ec; stroke: #b8336a; stroke-width: 1.8; stroke-dasharray: 5 5; }
+.dr-plus { stroke: #b8336a; stroke-width: 2.4; stroke-linecap: round; }
+.dr-yours { transform-box: fill-box; transform-origin: center; animation: dr-pulse 2.8s ease-in-out infinite; }
+.dr-draw { stroke-dasharray: 1; animation: dr-draw 2.2s cubic-bezier(0.22, 0.61, 0.36, 1) 0.15s backwards; }
+@keyframes dr-draw { from { stroke-dashoffset: 1; } }
+@keyframes dr-twinkle { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .45; transform: scale(.78); } }
+@keyframes dr-glow { 0%, 100% { opacity: 1; } 50% { opacity: .75; } }
+@keyframes dr-sway { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+@keyframes dr-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
+.dr-arch-line { stroke: #2b2522; stroke-width: 1.4; opacity: .18; }
+
+@keyframes art-rise {
+  from { opacity: 0; transform: translateY(14px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-art-svg,
+  .dr-draw, .dr-star, .dr-bulb, .dr-kite, .dr-yours { animation: none; }
 }

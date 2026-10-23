@@ -85,6 +85,7 @@
         />
       </div>
 
+      <!-- Category Filter -->
       <div class="filter-select">
         <select
           class="form-control"
@@ -99,6 +100,12 @@
           }
         </select>
       </div>
+
+      @if (searchQuery || selectedCategoryFilter) {
+        <button type="button" class="btn btn-secondary btn-clear-filters" (click)="clearFilters()">
+          Clear
+        </button>
+      }
     </div>
   </div>
 
@@ -114,6 +121,7 @@
               <th class="col-code">Product Code</th>
               <th class="col-product-name">Product Name</th>
               <th class="col-category">Category</th>
+              <th class="col-subcategory">SubCategory</th>
               <th class="col-sku">SKU</th>
               <th class="col-price text-right">MRP</th>
               <th class="col-price text-right">Selling Price</th>
@@ -134,7 +142,10 @@
                   </a>
                 </td>
                 <td class="col-category">
-                  <span class="category-pill">{{ p.categoryName || 'General' }}</span>
+                  <span class="category-pill">{{ p.categoryName || '—' }}</span>
+                </td>
+                <td class="col-subcategory">
+                  <span class="category-pill">{{ p.subCategoryName || '—' }}</span>
                 </td>
                 <td class="col-sku">
                   <code class="code-badge secondary">{{ p.sku }}</code>
@@ -168,7 +179,7 @@
             }
             @if (products.length === 0) {
               <tr>
-                <td colspan="9">
+                <td colspan="11">
                   <div class="empty-state">
                     <div class="empty-icon">
                       <svg
@@ -179,25 +190,12 @@
                         stroke="currentColor"
                         stroke-width="2"
                       >
-                        <path
-                          d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"
-                        ></path>
-                        <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="8" y1="12" x2="16" y2="12"></line>
                       </svg>
                     </div>
-                    <h3 class="empty-title">No products found</h3>
-                    <p class="empty-subtitle">
-                      {{
-                        searchQuery || selectedCategoryFilter
-                          ? 'No products match your search or filter criteria.'
-                          : 'Add your first product to start populating your catalog.'
-                      }}
-                    </p>
-                    @if (!searchQuery && !selectedCategoryFilter) {
-                      <a class="btn btn-primary btn-sm" [routerLink]="['/admin/products/add']"
-                        >+ Add Product</a
-                      >
-                    }
+                    <h4>No products found</h4>
+                    <p>Try refining your search terms or filters.</p>
                   </div>
                 </td>
               </tr>
@@ -206,14 +204,14 @@
         </table>
       </div>
 
-      @if (totalRecords > 0) {
-        <app-pagination
-          [pageIndex]="pageIndex"
-          [pageSize]="pageSize"
-          [totalRecords]="totalRecords"
-          (pageChange)="onPageChange($event)"
-        ></app-pagination>
-      }
+      <!-- Pagination -->
+      <app-pagination
+        [totalRecords]="totalRecords"
+        [pageIndex]="pageIndex"
+        [pageSize]="pageSize"
+        (pageChange)="onPageChange($event)"
+      >
+      </app-pagination>
     }
   </div>
 
@@ -231,7 +229,7 @@
             <div class="form-row">
               <div class="form-group col">
                 <label>Category <span class="required-star">*</span></label>
-                <select class="form-control" formControlName="encryptedCategoryId">
+                <select class="form-control" formControlName="encryptedCategoryId" (change)="onModalCategoryChange($any($event.target).value)">
                   <option value="">Select Category</option>
                   @for (cat of categories; track cat.encryptedCategoryId) {
                     <option [value]="cat.encryptedCategoryId">
@@ -247,7 +245,21 @@
                 }
               </div>
 
-              <div class="form-group col">
+                            <div class="form-group col">
+                <label>SubCategory <span class="optional-hint" style="font-size: 0.75rem; color: #64748b; font-weight: normal;">(Optional)</span></label>
+                <select class="form-control" formControlName="encryptedSubCategoryId" [disabled]="modalSubCategories.length === 0">
+                  <option value="">{{ modalSubCategories.length === 0 ? '-- No SubCategories Available --' : '-- Optional: Select SubCategory --' }}</option>
+                  @for (sub of modalSubCategories; track sub.encryptedSubCategoryId) {
+                    <option [value]="sub.encryptedSubCategoryId">
+                      {{ sub.subCategoryName }}
+                    </option>
+                  }
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group col-12">
                 <label>Product Name <span class="required-star">*</span></label>
                 <input
                   type="text"
@@ -319,39 +331,18 @@
                 type="text"
                 class="form-control"
                 formControlName="shortDescription"
-                placeholder="Brief summary for listings..."
+                placeholder="Brief summary..."
               />
             </div>
 
             <div class="form-group">
-              <label>Detailed Description</label>
+              <label>Full Description</label>
               <textarea
                 class="form-control"
                 formControlName="description"
                 rows="3"
-                placeholder="Full product details..."
+                placeholder="Detailed information..."
               ></textarea>
-            </div>
-
-            <div class="form-group">
-              <label>Badges & Visibility</label>
-              <div class="badge-checkboxes">
-                <label class="checkbox-badge"
-                  ><input type="checkbox" formControlName="isFeatured" /> Featured</label
-                >
-                <label class="checkbox-badge"
-                  ><input type="checkbox" formControlName="isNewArrival" /> New Arrival</label
-                >
-                <label class="checkbox-badge"
-                  ><input type="checkbox" formControlName="isBestSeller" /> Best Seller</label
-                >
-                <label class="checkbox-badge"
-                  ><input type="checkbox" formControlName="isTrending" /> Trending</label
-                >
-                <label class="checkbox-badge"
-                  ><input type="checkbox" formControlName="isCustomerFavourite" /> Favourite</label
-                >
-              </div>
             </div>
           </div>
 
@@ -359,8 +350,8 @@
             <button
               type="button"
               class="btn btn-secondary"
-              [disabled]="formSubmitting"
               (click)="closeModal()"
+              [disabled]="formSubmitting"
             >
               Cancel
             </button>
@@ -369,12 +360,7 @@
               class="btn btn-primary"
               [disabled]="formSubmitting || productForm.invalid"
             >
-              @if (formSubmitting) {
-                <span class="btn-spinner"></span>
-                <span>Saving...</span>
-              } @else {
-                <span>Save Product</span>
-              }
+              {{ formSubmitting ? 'Saving...' : 'Save Product' }}
             </button>
           </div>
         </form>
@@ -382,13 +368,16 @@
     </div>
   }
 
+  <!-- Delete Confirmation Modal -->
   <app-confirmation-dialog
     [isOpen]="isConfirmOpen"
     [title]="confirmTitle"
     [message]="confirmMessage"
+    confirmText="Delete"
     [isDanger]="true"
     [isSubmitting]="isActionSubmitting"
     (confirm)="onConfirmAction()"
     (cancel)="onCancelAction()"
-  ></app-confirmation-dialog>
+  >
+  </app-confirmation-dialog>
 </div>

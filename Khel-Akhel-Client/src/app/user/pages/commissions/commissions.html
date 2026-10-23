@@ -1,0 +1,327 @@
+<section class="cm">
+  <div class="container cm-grid">
+    <!-- ============================ Intro ============================ -->
+    <aside class="cm-intro">
+      <p class="cm-eyebrow">Commissions</p>
+      <h1 class="cm-title">Let's make something <em>together</em></h1>
+      <p class="cm-lede">
+        Festival sets, installations, interiors, murals and one-off pieces, shaped with you in the
+        DARAS studio. Share your idea and we will take it from there.
+      </p>
+
+      <ol class="cm-steps">
+        <li>
+          <span class="cm-step-no">01</span>
+          <div>
+            <p class="cm-step-title">Share your idea</p>
+            <p class="cm-step-text">A few lines, a place and a date. Sketches help.</p>
+          </div>
+        </li>
+        <li>
+          <span class="cm-step-no">02</span>
+          <div>
+            <p class="cm-step-title">We get in touch</p>
+            <p class="cm-step-text">Usually within two working days, to talk it through.</p>
+          </div>
+        </li>
+        <li>
+          <span class="cm-step-no">03</span>
+          <div>
+            <p class="cm-step-title">Design and make</p>
+            <p class="cm-step-text">From first drawing to the finished piece, step by step.</p>
+          </div>
+        </li>
+      </ol>
+
+      <div class="cm-reach">
+        <p>Prefer to talk?</p>
+        <a href="tel:+919888744113">+91 98887 44113</a>
+        <a href="mailto:logingrewal@gmail.com">logingrewal&#64;gmail.com</a>
+      </div>
+    </aside>
+
+    <!-- ============================ Form ============================ -->
+    <div class="cm-card">
+      @if (created(); as done) {
+        <div class="cm-done" role="status">
+          <span class="cm-done-mark" aria-hidden="true"></span>
+          <h2 class="cm-done-title">Thank you, {{ done.fullName }}</h2>
+          <p>
+            Your request has reached the studio. Your reference number is
+            <strong>{{ done.requestNo }}</strong
+            >. We will be in touch soon.
+          </p>
+          <div class="cm-done-actions">
+            <a routerLink="/projects" class="cm-btn">See our projects</a>
+            <button type="button" class="cm-btn cm-btn--ghost" (click)="startAnother()">
+              Send another request
+            </button>
+          </div>
+        </div>
+      } @else {
+        <h2 class="cm-form-title">Tell us about your project</h2>
+        <p class="cm-form-note">
+          Fields marked <span aria-hidden="true">*</span
+          ><span class="sr-only">with an asterisk</span> are required.
+        </p>
+
+        @if (errorMessages().length) {
+          <div class="cm-alert" role="alert">
+            @for (m of errorMessages(); track $index) {
+              <p>{{ m }}</p>
+            }
+          </div>
+        }
+
+        <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+          <fieldset class="cm-set">
+            <legend>About you</legend>
+
+            <div class="field" [class.has-error]="invalid('fullName')">
+              <label for="cmName">Full name *</label>
+              <input
+                id="cmName"
+                type="text"
+                formControlName="fullName"
+                autocomplete="name"
+                maxlength="150"
+              />
+              @if (invalid('fullName')) {
+                <p class="field-error">Please enter your name (at least 2 letters).</p>
+              }
+            </div>
+
+            <div class="field-row">
+              <div class="field" [class.has-error]="invalid('mobileNo')">
+                <label for="cmMobile">Mobile number *</label>
+                <input
+                  id="cmMobile"
+                  type="tel"
+                  formControlName="mobileNo"
+                  autocomplete="tel-national"
+                  inputmode="numeric"
+                  maxlength="10"
+                />
+                @if (invalid('mobileNo')) {
+                  <p class="field-error">Enter a 10-digit mobile number.</p>
+                }
+              </div>
+              <div class="field" [class.has-error]="invalid('email')">
+                <label for="cmEmail">Email *</label>
+                <input id="cmEmail" type="email" formControlName="email" autocomplete="email" />
+                @if (invalid('email')) {
+                  <p class="field-error">Enter a valid email address.</p>
+                }
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="cm-set">
+            <legend>Your project</legend>
+
+            <div class="field" [class.has-error]="invalid('category')">
+              <label for="cmCategory">What would you like us to make? *</label>
+              <select id="cmCategory" formControlName="category">
+                <option value="" disabled>Choose a type of project</option>
+                @for (c of categories(); track c.encryptedCategoryId) {
+                  <option [value]="c.encryptedCategoryId">{{ c.categoryName }}</option>
+                }
+              </select>
+              @if (invalid('category')) {
+                <p class="field-error">Please choose a project type.</p>
+              }
+            </div>
+
+            @if (isOther()) {
+              <div class="field" [class.has-error]="invalid('otherCategoryDescription')">
+                <label for="cmOther">Tell us the type of project *</label>
+                <input
+                  id="cmOther"
+                  type="text"
+                  formControlName="otherCategoryDescription"
+                  maxlength="255"
+                />
+                @if (invalid('otherCategoryDescription')) {
+                  <p class="field-error">Please describe the type of project.</p>
+                }
+              </div>
+            }
+
+            <div class="field-row">
+              <div class="field" [class.has-error]="invalid('expectedTimeline')">
+                <label for="cmDate">When do you need it? *</label>
+                <input id="cmDate" type="date" formControlName="expectedTimeline" [min]="today" />
+                @if (invalid('expectedTimeline')) {
+                  <p class="field-error">Choose a date from today onwards.</p>
+                }
+              </div>
+              <div class="field" [class.has-error]="invalid('projectLocation')">
+                <label for="cmPlace">Where is it? *</label>
+                <input
+                  id="cmPlace"
+                  type="text"
+                  formControlName="projectLocation"
+                  placeholder="City or venue"
+                  maxlength="255"
+                />
+                @if (invalid('projectLocation')) {
+                  <p class="field-error">Please tell us the location.</p>
+                }
+              </div>
+            </div>
+
+            <div class="field" [class.has-error]="invalid('projectDescription')">
+              <div class="field-label-row">
+                <label for="cmDesc">Describe your idea *</label>
+                <span class="field-count" [class.is-over]="wordCount() > maxWords"
+                  >{{ wordCount() }} / {{ maxWords }} words</span
+                >
+              </div>
+              <textarea
+                id="cmDesc"
+                rows="6"
+                formControlName="projectDescription"
+                placeholder="The space, the mood, the people it is for…"
+              ></textarea>
+              @if (invalid('projectDescription')) {
+                <p class="field-error">
+                  @if (form.controls.projectDescription.errors?.['maxWords']) {
+                    Please keep it under {{ maxWords }} words.
+                  } @else {
+                    Please describe your idea.
+                  }
+                </p>
+              }
+            </div>
+
+            <div class="field">
+              <label for="cmKeywords">Keywords <span class="field-hint">(optional)</span></label>
+              <input
+                id="cmKeywords"
+                type="text"
+                formControlName="keywords"
+                placeholder="e.g. festival, clay, warm light"
+                maxlength="500"
+              />
+            </div>
+
+            <div class="field">
+              <span class="field-label"
+                >Reference images or sketches
+                <span class="field-hint">(optional, up to {{ maxImages }})</span></span
+              >
+              <div class="cm-uploads">
+                @for (img of images(); track img.url; let i = $index) {
+                  <figure class="cm-thumb">
+                    <img [src]="img.url" [alt]="img.file.name" />
+                    <button
+                      type="button"
+                      class="cm-thumb-remove"
+                      (click)="removeImage(i)"
+                      [attr.aria-label]="'Remove ' + img.file.name"
+                    >
+                      ×
+                    </button>
+                  </figure>
+                }
+                @if (images().length < maxImages) {
+                  <label class="cm-drop">
+                    <input
+                      type="file"
+                      accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+                      multiple
+                      (change)="onFiles($event)"
+                    />
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.3"
+                      aria-hidden="true"
+                    >
+                      <path d="M12 16V4M7 9l5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" />
+                    </svg>
+                    <span>Add images</span>
+                    <small>JPG or PNG, 5 MB each</small>
+                  </label>
+                }
+              </div>
+              @if (imageError()) {
+                <p class="field-error">{{ imageError() }}</p>
+              }
+            </div>
+          </fieldset>
+
+          <!-- honeypot: hidden from people, bots fill it -->
+          <div class="cm-hp" aria-hidden="true">
+            <label for="cmWebsite">Website</label>
+            <input
+              id="cmWebsite"
+              type="text"
+              formControlName="website"
+              tabindex="-1"
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="field" [class.has-error]="invalid('captcha')">
+            <label for="cmCaptcha">Security code *</label>
+            <div class="captcha-row">
+              <div class="captcha-image" [class.is-loading]="captchaLoading()">
+                @if (captchaImage(); as src) {
+                  <img [src]="src" alt="Security code to type" />
+                } @else {
+                  <span class="captcha-fallback">{{
+                    captchaLoading() ? 'Loading…' : 'Could not load'
+                  }}</span>
+                }
+              </div>
+              <button
+                type="button"
+                class="captcha-refresh"
+                (click)="loadCaptcha()"
+                [disabled]="captchaLoading()"
+                aria-label="Load a new security code"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M20 12a8 8 0 1 1-2.3-5.7M20 4v4.5h-4.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
+              <input
+                id="cmCaptcha"
+                type="text"
+                class="captcha-input"
+                formControlName="captcha"
+                maxlength="5"
+                autocomplete="off"
+                autocapitalize="characters"
+                spellcheck="false"
+              />
+            </div>
+            @if (invalid('captcha')) {
+              <p class="field-error">Type the 5 characters shown in the image.</p>
+            }
+          </div>
+
+          <button type="submit" class="cm-btn cm-submit" [disabled]="submitting()">
+            @if (submitting()) {
+              Sending…
+            } @else {
+              Send request <span aria-hidden="true">→</span>
+            }
+          </button>
+        </form>
+      }
+    </div>
+  </div>
+</section>

@@ -42,7 +42,9 @@
   overflow: hidden;
   border-radius: 6px;
   background-color: #ede9e0;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+  transition:
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.25s ease;
 
   &.interactive {
     cursor: pointer;
@@ -399,7 +401,9 @@
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    transition: background 0.2s ease, transform 0.2s ease;
+    transition:
+      background 0.2s ease,
+      transform 0.2s ease;
 
     &:hover {
       background: rgba(255, 255, 255, 0.15);

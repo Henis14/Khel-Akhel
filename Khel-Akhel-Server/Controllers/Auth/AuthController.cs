@@ -609,7 +609,9 @@ namespace Khel_Akhel_Server.Controllers.Auth
                     if (rotation.FailureReason == "REFRESH_RACE")
                     {
                         sw.Stop();
-                        Logs.Warning($"RefreshToken race detected | IP:{GetClientIpAddress()} | CustomerId:{rotation.CustomerId}");
+                        Logs.Warning(
+                            $"RefreshToken race detected | IP:{GetClientIpAddress()} | CustomerId:{rotation.CustomerId}"
+                        );
                         return StatusCode(
                             StatusCodes.Status409Conflict,
                             new ApiResponse
@@ -617,7 +619,10 @@ namespace Khel_Akhel_Server.Controllers.Auth
                                 Success = false,
                                 StatusCode = 409,
                                 Message = "REFRESH_IN_PROGRESS",
-                                Errors = new List<string> { "Token refresh is currently in progress. Please retry." }
+                                Errors = new List<string>
+                                {
+                                    "Token refresh is currently in progress. Please retry.",
+                                },
                             }
                         );
                     }
@@ -812,11 +817,16 @@ namespace Khel_Akhel_Server.Controllers.Auth
                 }
 
                 // Captcha is strictly required
-                bool captchaValid = _captchaService.ValidateCaptcha(request.CaptchaId, request.Captcha);
+                bool captchaValid = _captchaService.ValidateCaptcha(
+                    request.CaptchaId,
+                    request.Captcha
+                );
                 if (!captchaValid)
                 {
                     sw.Stop();
-                    Logs.Warning($"ForgetPassword rejected | Invalid or expired CAPTCHA | Identifier:{request.UserName}");
+                    Logs.Warning(
+                        $"ForgetPassword rejected | Invalid or expired CAPTCHA | Identifier:{request.UserName}"
+                    );
                     return BadRequest(
                         new ApiResponse
                         {
@@ -855,27 +865,38 @@ namespace Khel_Akhel_Server.Controllers.Auth
                     if (!isAdmin)
                     {
                         // Enforce max 3 requests per account per 24 hours
-                        string rateCountQuery = @"
+                        string rateCountQuery =
+                            @"
                             SELECT COUNT(1)
                             FROM drs_password_reset_request_mst
                             WHERE customer_id = @CustomerId
                               AND CreatedDate >= DATEADD(HOUR, -24, GETDATE())
                               AND IsDeleted = 0";
 
-                        object? countObj = _db.ExecuteScalar(rateCountQuery, new[] { new SqlParameter("@CustomerId", customerId) });
-                        int requestCount24h = countObj != null && countObj != DBNull.Value ? Convert.ToInt32(countObj) : 0;
+                        object? countObj = _db.ExecuteScalar(
+                            rateCountQuery,
+                            new[] { new SqlParameter("@CustomerId", customerId) }
+                        );
+                        int requestCount24h =
+                            countObj != null && countObj != DBNull.Value
+                                ? Convert.ToInt32(countObj)
+                                : 0;
 
                         if (requestCount24h < 3)
                         {
                             // If a PENDING request already exists, refresh its ModifiedDate
-                            string pendingCheckQuery = @"
+                            string pendingCheckQuery =
+                                @"
                                 SELECT TOP 1 ID
                                 FROM drs_password_reset_request_mst
                                 WHERE customer_id = @CustomerId
                                   AND Status = 'PENDING'
                                   AND IsDeleted = 0";
 
-                            DataTable pendingDt = _db.ExecuteQuery(pendingCheckQuery, new[] { new SqlParameter("@CustomerId", customerId) });
+                            DataTable pendingDt = _db.ExecuteQuery(
+                                pendingCheckQuery,
+                                new[] { new SqlParameter("@CustomerId", customerId) }
+                            );
 
                             if (pendingDt.Rows.Count > 0)
                             {
@@ -888,8 +909,9 @@ namespace Khel_Akhel_Server.Controllers.Auth
                                     {
                                         new SqlParameter("@ID", pendingId),
                                         new SqlParameter("@Ip", clientIp),
-                                        new SqlParameter("@UserAgent", userAgent)
-                                    });
+                                        new SqlParameter("@UserAgent", userAgent),
+                                    }
+                                );
                             }
                             else
                             {
@@ -903,8 +925,9 @@ namespace Khel_Akhel_Server.Controllers.Auth
                                     {
                                         new SqlParameter("@CustomerId", customerId),
                                         new SqlParameter("@Ip", clientIp),
-                                        new SqlParameter("@UserAgent", userAgent)
-                                    });
+                                        new SqlParameter("@UserAgent", userAgent),
+                                    }
+                                );
                             }
 
                             await _audit.InsertAuditAsync(
@@ -937,7 +960,8 @@ namespace Khel_Akhel_Server.Controllers.Auth
                         Success = true,
                         StatusCode = 200,
                         Message = "PASSWORD_RESET_REQUESTED",
-                        Data = "If an account exists for these details, our studio team will contact you on your registered mobile number to verify your identity and help you reset your password.",
+                        Data =
+                            "If an account exists for these details, our studio team will contact you on your registered mobile number to verify your identity and help you reset your password.",
                     }
                 );
             }
@@ -967,18 +991,23 @@ namespace Khel_Akhel_Server.Controllers.Auth
         {
             if (string.IsNullOrWhiteSpace(token))
             {
-                return Ok(new ApiResponse
-                {
-                    Success = true,
-                    StatusCode = 200,
-                    Message = "TOKEN_VALIDATED",
-                    Data = new { valid = false }
-                });
+                return Ok(
+                    new ApiResponse
+                    {
+                        Success = true,
+                        StatusCode = 200,
+                        Message = "TOKEN_VALIDATED",
+                        Data = new { valid = false },
+                    }
+                );
             }
 
-            string tokenHash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
+            string tokenHash = Convert.ToBase64String(
+                SHA256.HashData(Encoding.UTF8.GetBytes(token))
+            );
 
-            string query = @"
+            string query =
+                @"
                 SELECT COUNT(1)
                 FROM drs_password_reset_request_mst r
                 INNER JOIN drs_customer_mst c ON c.ID = r.customer_id AND c.IsDeleted = 0 AND c.IsActive = 1 AND c.IsAdmin = 0
@@ -988,16 +1017,22 @@ namespace Khel_Akhel_Server.Controllers.Auth
                   AND r.TokenExpiresUtc > GETUTCDATE()
                   AND r.IsDeleted = 0";
 
-            object? countObj = _db.ExecuteScalar(query, new[] { new SqlParameter("@TokenHash", tokenHash) });
-            bool isValid = countObj != null && countObj != DBNull.Value && Convert.ToInt32(countObj) > 0;
+            object? countObj = _db.ExecuteScalar(
+                query,
+                new[] { new SqlParameter("@TokenHash", tokenHash) }
+            );
+            bool isValid =
+                countObj != null && countObj != DBNull.Value && Convert.ToInt32(countObj) > 0;
 
-            return Ok(new ApiResponse
-            {
-                Success = true,
-                StatusCode = 200,
-                Message = "TOKEN_VALIDATED",
-                Data = new { valid = isValid }
-            });
+            return Ok(
+                new ApiResponse
+                {
+                    Success = true,
+                    StatusCode = 200,
+                    Message = "TOKEN_VALIDATED",
+                    Data = new { valid = isValid },
+                }
+            );
         }
         #endregion
 
@@ -1015,65 +1050,89 @@ namespace Khel_Akhel_Server.Controllers.Auth
                 if (request == null)
                 {
                     sw.Stop();
-                    return BadRequest(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 400,
-                        Message = "INVALID_REQUEST",
-                        Errors = new List<string> { "Request body is required." }
-                    });
+                    return BadRequest(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "INVALID_REQUEST",
+                            Errors = new List<string> { "Request body is required." },
+                        }
+                    );
                 }
 
                 if (string.IsNullOrWhiteSpace(request.Token))
                 {
                     sw.Stop();
-                    return BadRequest(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 400,
-                        Message = "INVALID_OR_EXPIRED_RESET_TOKEN",
-                        Errors = new List<string> { "Reset token is required." }
-                    });
+                    return BadRequest(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "INVALID_OR_EXPIRED_RESET_TOKEN",
+                            Errors = new List<string> { "Reset token is required." },
+                        }
+                    );
                 }
 
                 if (string.IsNullOrEmpty(request.NewPassword))
                 {
                     sw.Stop();
-                    return BadRequest(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 400,
-                        Message = "VALIDATION_FAILED",
-                        Errors = new List<string> { "New password is required." }
-                    });
+                    return BadRequest(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "VALIDATION_FAILED",
+                            Errors = new List<string> { "New password is required." },
+                        }
+                    );
                 }
 
                 if (!ValidationHelper.IsValidPassword(request.NewPassword))
                 {
                     sw.Stop();
-                    return BadRequest(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 400,
-                        Message = "VALIDATION_FAILED",
-                        Errors = new List<string> { "New password must be at least 8 characters long and contain uppercase, lowercase, number, and special character." }
-                    });
+                    return BadRequest(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "VALIDATION_FAILED",
+                            Errors = new List<string>
+                            {
+                                "New password must be at least 8 characters long and contain uppercase, lowercase, number, and special character.",
+                            },
+                        }
+                    );
                 }
 
-                if (!string.Equals(request.NewPassword, request.ConfirmPassword, StringComparison.Ordinal))
+                if (
+                    !string.Equals(
+                        request.NewPassword,
+                        request.ConfirmPassword,
+                        StringComparison.Ordinal
+                    )
+                )
                 {
                     sw.Stop();
-                    return BadRequest(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 400,
-                        Message = "VALIDATION_FAILED",
-                        Errors = new List<string> { "New password and confirm password do not match." }
-                    });
+                    return BadRequest(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "VALIDATION_FAILED",
+                            Errors = new List<string>
+                            {
+                                "New password and confirm password do not match.",
+                            },
+                        }
+                    );
                 }
 
                 string clientIp = GetClientIpAddress();
-                string tokenHash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(request.Token)));
+                string tokenHash = Convert.ToBase64String(
+                    SHA256.HashData(Encoding.UTF8.GetBytes(request.Token))
+                );
 
                 using var con = await _db.GetOpenConnectionAsync();
                 using var tx = con.BeginTransaction(IsolationLevel.ReadCommitted);
@@ -1081,7 +1140,8 @@ namespace Khel_Akhel_Server.Controllers.Auth
                 try
                 {
                     // Atomic token consumption
-                    string consumeQuery = @"
+                    string consumeQuery =
+                        @"
                         UPDATE drs_password_reset_request_mst
                         SET UsedUtc = GETUTCDATE(),
                             Status = 'COMPLETED',
@@ -1101,20 +1161,28 @@ namespace Khel_Akhel_Server.Controllers.Auth
                     {
                         await tx.RollbackAsync();
                         sw.Stop();
-                        Logs.Warning("ResetPassword failed | Invalid, expired or already used reset token");
-                        return BadRequest(new ApiResponse
-                        {
-                            Success = false,
-                            StatusCode = 400,
-                            Message = "INVALID_OR_EXPIRED_RESET_TOKEN",
-                            Errors = new List<string> { "The password reset link has expired, is invalid, or was already used." }
-                        });
+                        Logs.Warning(
+                            "ResetPassword failed | Invalid, expired or already used reset token"
+                        );
+                        return BadRequest(
+                            new ApiResponse
+                            {
+                                Success = false,
+                                StatusCode = 400,
+                                Message = "INVALID_OR_EXPIRED_RESET_TOKEN",
+                                Errors = new List<string>
+                                {
+                                    "The password reset link has expired, is invalid, or was already used.",
+                                },
+                            }
+                        );
                     }
 
                     long customerId = Convert.ToInt64(claimResult);
 
                     // Verify customer state: not deleted, active, and not an admin
-                    string checkCustQuery = @"
+                    string checkCustQuery =
+                        @"
                         SELECT ID, IsAdmin, IsActive, IsDeleted
                         FROM drs_customer_mst
                         WHERE ID = @CustomerId";
@@ -1127,13 +1195,15 @@ namespace Khel_Akhel_Server.Controllers.Auth
                     {
                         await reader.CloseAsync();
                         await tx.RollbackAsync();
-                        return BadRequest(new ApiResponse
-                        {
-                            Success = false,
-                            StatusCode = 400,
-                            Message = "INVALID_OR_EXPIRED_RESET_TOKEN",
-                            Errors = new List<string> { "Account not found." }
-                        });
+                        return BadRequest(
+                            new ApiResponse
+                            {
+                                Success = false,
+                                StatusCode = 400,
+                                Message = "INVALID_OR_EXPIRED_RESET_TOKEN",
+                                Errors = new List<string> { "Account not found." },
+                            }
+                        );
                     }
 
                     bool isAdmin = Convert.ToBoolean(reader["IsAdmin"]);
@@ -1145,19 +1215,27 @@ namespace Khel_Akhel_Server.Controllers.Auth
                     {
                         await tx.RollbackAsync();
                         sw.Stop();
-                        Logs.Warning($"ResetPassword rejected | Ineligible account | CustomerId:{customerId} Admin:{isAdmin} Active:{isActive}");
-                        return BadRequest(new ApiResponse
-                        {
-                            Success = false,
-                            StatusCode = 400,
-                            Message = "INVALID_OR_EXPIRED_RESET_TOKEN",
-                            Errors = new List<string> { "Password reset is not permitted for this account." }
-                        });
+                        Logs.Warning(
+                            $"ResetPassword rejected | Ineligible account | CustomerId:{customerId} Admin:{isAdmin} Active:{isActive}"
+                        );
+                        return BadRequest(
+                            new ApiResponse
+                            {
+                                Success = false,
+                                StatusCode = 400,
+                                Message = "INVALID_OR_EXPIRED_RESET_TOKEN",
+                                Errors = new List<string>
+                                {
+                                    "Password reset is not permitted for this account.",
+                                },
+                            }
+                        );
                     }
 
                     // Update PasswordHash (cost 12), reset failed login attempts, clear lock
                     string newHash = PasswordHelper.HashPassword(request.NewPassword);
-                    string updatePassQuery = @"
+                    string updatePassQuery =
+                        @"
                         UPDATE drs_customer_mst
                         SET PasswordHash = @PasswordHash,
                             FailedLoginAttempts = 0,
@@ -1171,7 +1249,8 @@ namespace Khel_Akhel_Server.Controllers.Auth
                     await updatePassCmd.ExecuteNonQueryAsync();
 
                     // Revoke all refresh tokens
-                    string revokeTokensQuery = @"
+                    string revokeTokensQuery =
+                        @"
                         UPDATE drs_refresh_token_mst
                         SET RevokedUtc = GETUTCDATE(),
                             RevokedByIp = @Ip,
@@ -1202,17 +1281,24 @@ namespace Khel_Akhel_Server.Controllers.Auth
                     sw.Stop();
                     Logs.Info($"ResetPassword completed successfully | CustomerId:{customerId}");
 
-                    return Ok(new ApiResponse
-                    {
-                        Success = true,
-                        StatusCode = 200,
-                        Message = "PASSWORD_RESET_SUCCESS",
-                        Data = "Your password has been reset successfully. Please log in with your new password."
-                    });
+                    return Ok(
+                        new ApiResponse
+                        {
+                            Success = true,
+                            StatusCode = 200,
+                            Message = "PASSWORD_RESET_SUCCESS",
+                            Data =
+                                "Your password has been reset successfully. Please log in with your new password.",
+                        }
+                    );
                 }
                 catch
                 {
-                    try { await tx.RollbackAsync(); } catch { }
+                    try
+                    {
+                        await tx.RollbackAsync();
+                    }
+                    catch { }
                     throw;
                 }
             }

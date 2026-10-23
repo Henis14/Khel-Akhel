@@ -90,6 +90,75 @@ namespace Khel_Akhel_Server.Controllers.Product
                     );
                 }
 
+                // Optional SubCategory
+                long? subCategoryId = null;
+                string? subCategoryName = null;
+                if (!string.IsNullOrWhiteSpace(request.EncryptedSubCategoryId))
+                {
+                    if (
+                        !_encryption.TryDecrypt(request.EncryptedSubCategoryId, out long decSubId)
+                        || decSubId <= 0
+                    )
+                    {
+                        sw.Stop();
+                        return BadRequest(
+                            new ApiResponse
+                            {
+                                Success = false,
+                                StatusCode = 400,
+                                Message = "INVALID_REQUEST",
+                                Errors = new List<string> { "Invalid or tampered subcategory ID." },
+                            }
+                        );
+                    }
+
+                    string checkSubCatQuery =
+                        @"SELECT TOP 1 SubCategoryName, product_category_id
+                          FROM drs_product_subcategory_mst WITH (NOLOCK)
+                          WHERE ID = @SubCategoryID AND IsDeleted = 0 AND IsActive = 1";
+                    DataTable dtSubCat = _db.ExecuteQuery(
+                        checkSubCatQuery,
+                        new[] { new SqlParameter("@SubCategoryID", decSubId) }
+                    );
+
+                    if (dtSubCat.Rows.Count == 0)
+                    {
+                        sw.Stop();
+                        return BadRequest(
+                            new ApiResponse
+                            {
+                                Success = false,
+                                StatusCode = 400,
+                                Message = "SUBCATEGORY_NOT_FOUND",
+                                Errors = new List<string>
+                                {
+                                    "Specified product subcategory does not exist or is inactive.",
+                                },
+                            }
+                        );
+                    }
+
+                    if (Convert.ToInt64(dtSubCat.Rows[0]["product_category_id"]) != categoryId)
+                    {
+                        sw.Stop();
+                        return BadRequest(
+                            new ApiResponse
+                            {
+                                Success = false,
+                                StatusCode = 400,
+                                Message = "INVALID_CATEGORY_HIERARCHY",
+                                Errors = new List<string>
+                                {
+                                    "The selected SubCategory does not belong to the selected Category.",
+                                },
+                            }
+                        );
+                    }
+
+                    subCategoryId = decSubId;
+                    subCategoryName = dtSubCat.Rows[0]["SubCategoryName"]?.ToString();
+                }
+
                 request.ProductName = request.ProductName?.Trim() ?? string.Empty;
                 request.SKU = request.SKU?.Trim() ?? string.Empty;
                 request.ShortDescription = request.ShortDescription?.Trim() ?? string.Empty;
@@ -220,13 +289,17 @@ namespace Khel_Akhel_Server.Controllers.Product
                     string insertProductQuery =
                         @"
                         INSERT INTO drs_product_mst
-                        (product_category_id, ProductName, ProductCode, SKU, ShortDescription, Description, MRP, SellingPrice, IsFeatured, IsNewArrival, IsBestSeller, IsTrending, IsCustomerFavourite, IsActive, IsDeleted, CreatedDate)
+                        (product_category_id, product_subcategory_id, ProductName, ProductCode, SKU, ShortDescription, Description, MRP, SellingPrice, IsFeatured, IsNewArrival, IsBestSeller, IsTrending, IsCustomerFavourite, IsActive, IsDeleted, CreatedDate)
                         VALUES
-                        (@CategoryId, @ProductName, @ProductCode, @SKU, @ShortDescription, @Description, @MRP, @SellingPrice, @IsFeatured, @IsNewArrival, @IsBestSeller, @IsTrending, @IsCustomerFavourite, 1, 0, GETDATE());
+                        (@CategoryId, @SubCategoryId, @ProductName, @ProductCode, @SKU, @ShortDescription, @Description, @MRP, @SellingPrice, @IsFeatured, @IsNewArrival, @IsBestSeller, @IsTrending, @IsCustomerFavourite, 1, 0, GETDATE());
                         SELECT CAST(SCOPE_IDENTITY() AS BIGINT);";
 
                     using SqlCommand productCmd = new(insertProductQuery, con, tx);
                     productCmd.Parameters.AddWithValue("@CategoryId", categoryId);
+                    productCmd.Parameters.AddWithValue(
+                        "@SubCategoryId",
+                        (object?)subCategoryId ?? DBNull.Value
+                    );
                     productCmd.Parameters.AddWithValue("@ProductName", request.ProductName);
                     productCmd.Parameters.AddWithValue("@ProductCode", productCode);
                     productCmd.Parameters.AddWithValue("@SKU", request.SKU);
@@ -270,6 +343,10 @@ namespace Khel_Akhel_Server.Controllers.Product
                     {
                         EncryptedProductId = encryptedProductId,
                         EncryptedCategoryId = request.EncryptedCategoryId,
+                        EncryptedSubCategoryId = subCategoryId.HasValue
+                            ? _encryption.Encrypt(subCategoryId.Value)
+                            : null,
+                        SubCategoryName = subCategoryName,
                         ProductName = request.ProductName,
                         ProductCode = productCode,
                         SKU = request.SKU,
@@ -383,7 +460,7 @@ namespace Khel_Akhel_Server.Controllers.Product
 
                 string selectQuery =
                     @"
-                    SELECT TOP 1 ID, product_category_id, ProductName, ProductCode, SKU, ShortDescription, Description, MRP, SellingPrice, IsFeatured, IsNewArrival, IsBestSeller, IsTrending, IsCustomerFavourite, IsActive
+                    SELECT TOP 1 ID, product_category_id, product_subcategory_id, ProductName, ProductCode, SKU, ShortDescription, Description, MRP, SellingPrice, IsFeatured, IsNewArrival, IsBestSeller, IsTrending, IsCustomerFavourite, IsActive
                     FROM drs_product_mst WITH (NOLOCK)
                     WHERE ID = @ID AND IsDeleted = 0";
 
@@ -407,6 +484,11 @@ namespace Khel_Akhel_Server.Controllers.Product
 
                 DataRow existing = dt.Rows[0];
                 long currentCategoryId = Convert.ToInt64(existing["product_category_id"]);
+                long? currentSubCategoryId =
+                    existing.Table.Columns.Contains("product_subcategory_id")
+                    && existing["product_subcategory_id"] != DBNull.Value
+                        ? Convert.ToInt64(existing["product_subcategory_id"])
+                        : null;
 
                 long newCategoryId = currentCategoryId;
                 if (!string.IsNullOrWhiteSpace(request.EncryptedCategoryId))
@@ -428,6 +510,60 @@ namespace Khel_Akhel_Server.Controllers.Product
                         );
                     }
                     newCategoryId = decCatId;
+                }
+
+                // Determine new SubCategory (Optional)
+                long? newSubCategoryId = currentSubCategoryId;
+                if (request.EncryptedSubCategoryId != null)
+                {
+                    if (string.IsNullOrWhiteSpace(request.EncryptedSubCategoryId))
+                    {
+                        newSubCategoryId = null;
+                    }
+                    else if (
+                        _encryption.TryDecrypt(request.EncryptedSubCategoryId, out long decSubId)
+                        && decSubId > 0
+                    )
+                    {
+                        string checkSub =
+                            "SELECT product_category_id FROM drs_product_subcategory_mst WITH (NOLOCK) WHERE ID = @ID AND IsDeleted = 0 AND IsActive = 1";
+                        DataTable dtSub = _db.ExecuteQuery(
+                            checkSub,
+                            new[] { new SqlParameter("@ID", decSubId) }
+                        );
+                        if (
+                            dtSub.Rows.Count > 0
+                            && Convert.ToInt64(dtSub.Rows[0]["product_category_id"])
+                                == newCategoryId
+                        )
+                        {
+                            newSubCategoryId = decSubId;
+                        }
+                        else
+                        {
+                            newSubCategoryId = null;
+                        }
+                    }
+                }
+                else if (newCategoryId != currentCategoryId)
+                {
+                    if (newSubCategoryId.HasValue)
+                    {
+                        string checkSub =
+                            "SELECT product_category_id FROM drs_product_subcategory_mst WITH (NOLOCK) WHERE ID = @ID AND IsDeleted = 0 AND IsActive = 1";
+                        DataTable dtSub = _db.ExecuteQuery(
+                            checkSub,
+                            new[] { new SqlParameter("@ID", newSubCategoryId.Value) }
+                        );
+                        if (
+                            dtSub.Rows.Count == 0
+                            || Convert.ToInt64(dtSub.Rows[0]["product_category_id"])
+                                != newCategoryId
+                        )
+                        {
+                            newSubCategoryId = null;
+                        }
+                    }
                 }
 
                 string newName =
@@ -568,6 +704,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                     @"
                     UPDATE drs_product_mst
                     SET product_category_id = @CategoryId,
+                        product_subcategory_id = @SubCategoryId,
                         ProductName = @ProductName,
                         ProductCode = @ProductCode,
                         SKU = @SKU,
@@ -589,6 +726,10 @@ namespace Khel_Akhel_Server.Controllers.Product
                     new[]
                     {
                         new SqlParameter("@CategoryId", newCategoryId),
+                        new SqlParameter(
+                            "@SubCategoryId",
+                            (object?)newSubCategoryId ?? DBNull.Value
+                        ),
                         new SqlParameter("@ProductName", newName),
                         new SqlParameter("@ProductCode", newCode),
                         new SqlParameter("@SKU", newSku),
@@ -815,9 +956,14 @@ namespace Khel_Akhel_Server.Controllers.Product
 
                 string query =
                     @"
-                    SELECT p.ID, p.product_category_id, c.CategoryName, p.ProductName, p.ProductCode, p.SKU, p.ShortDescription, p.Description, p.MRP, p.SellingPrice, p.IsFeatured, p.IsNewArrival, p.IsBestSeller, p.IsTrending, p.IsCustomerFavourite, p.IsActive, p.CreatedDate, ISNULL(s.AvailableQty, 0) AS AvailableQty
+                    SELECT p.ID, p.product_category_id, c.CategoryName,
+                           p.product_subcategory_id, sc.SubCategoryName,
+                           p.ProductName, p.ProductCode, p.SKU, p.ShortDescription, p.Description,
+                           p.MRP, p.SellingPrice, p.IsFeatured, p.IsNewArrival, p.IsBestSeller, p.IsTrending,
+                           p.IsCustomerFavourite, p.IsActive, p.CreatedDate, ISNULL(s.AvailableQty, 0) AS AvailableQty
                     FROM drs_product_mst p WITH (NOLOCK)
                     LEFT JOIN drs_product_category_mst c WITH (NOLOCK) ON c.ID = p.product_category_id AND c.IsDeleted = 0
+                    LEFT JOIN drs_product_subcategory_mst sc WITH (NOLOCK) ON sc.ID = p.product_subcategory_id AND sc.IsDeleted = 0
                     LEFT JOIN drs_product_stock_mst s WITH (NOLOCK) ON s.product_id = p.ID AND s.IsDeleted = 0
                     WHERE p.ID = @ID AND p.IsDeleted = 0";
 
@@ -860,7 +1006,15 @@ namespace Khel_Akhel_Server.Controllers.Product
                     EncryptedCategoryId = _encryption.Encrypt(
                         Convert.ToInt64(row["product_category_id"])
                     ),
-                    CategoryName = row["CategoryName"].ToString() ?? "",
+                    CategoryName = row["CategoryName"]?.ToString() ?? "",
+                    EncryptedSubCategoryId =
+                        row["product_subcategory_id"] != DBNull.Value
+                            ? _encryption.Encrypt(Convert.ToInt64(row["product_subcategory_id"]))
+                            : null,
+                    SubCategoryName =
+                        row["SubCategoryName"] != DBNull.Value
+                            ? row["SubCategoryName"]?.ToString()
+                            : null,
                     ProductName = row["ProductName"].ToString() ?? "",
                     ProductCode = row["ProductCode"].ToString() ?? "",
                     SKU = row["SKU"].ToString() ?? "",
@@ -975,6 +1129,18 @@ namespace Khel_Akhel_Server.Controllers.Product
                     }
                 }
 
+                if (!string.IsNullOrWhiteSpace(request.EncryptedSubCategoryId))
+                {
+                    if (
+                        _encryption.TryDecrypt(request.EncryptedSubCategoryId, out long subCatId)
+                        && subCatId > 0
+                    )
+                    {
+                        whereClause += " AND p.product_subcategory_id = @SubCategoryId";
+                        parameters.Add(new SqlParameter("@SubCategoryId", subCatId));
+                    }
+                }
+
                 if (request.MinPrice.HasValue)
                 {
                     whereClause += " AND p.SellingPrice >= @MinPrice";
@@ -1003,7 +1169,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                 {
                     string term = $"%{request.Search.Trim()}%";
                     whereClause +=
-                        " AND (p.ProductName LIKE @Search OR p.ProductCode LIKE @Search OR p.SKU LIKE @Search OR p.Description LIKE @Search)";
+                        " AND (p.ProductName LIKE @Search OR p.ProductCode LIKE @Search OR p.SKU LIKE @Search OR p.Description LIKE @Search OR c.CategoryName LIKE @Search OR sc.SubCategoryName LIKE @Search)";
                     parameters.Add(new SqlParameter("@Search", term));
                 }
 
@@ -1016,16 +1182,25 @@ namespace Khel_Akhel_Server.Controllers.Product
                 };
 
                 string countQuery =
-                    $"SELECT COUNT(1) FROM drs_product_mst p WITH (NOLOCK) {whereClause}";
+                    $@"SELECT COUNT(1)
+                       FROM drs_product_mst p WITH (NOLOCK)
+                       LEFT JOIN drs_product_category_mst c WITH (NOLOCK) ON c.ID = p.product_category_id AND c.IsDeleted = 0
+                       LEFT JOIN drs_product_subcategory_mst sc WITH (NOLOCK) ON sc.ID = p.product_subcategory_id AND sc.IsDeleted = 0
+                       {whereClause}";
                 int totalRecords = Convert.ToInt32(
                     _db.ExecuteScalar(countQuery, parameters.ToArray()) ?? 0
                 );
 
                 string listQuery =
                     $@"
-                    SELECT p.ID, p.product_category_id, c.CategoryName, p.ProductName, p.ProductCode, p.SKU, p.ShortDescription, p.Description, p.MRP, p.SellingPrice, p.IsFeatured, p.IsNewArrival, p.IsBestSeller, p.IsTrending, p.IsCustomerFavourite, p.IsActive, p.CreatedDate, ISNULL(s.AvailableQty, 0) AS AvailableQty
+                    SELECT p.ID, p.product_category_id, c.CategoryName,
+                           p.product_subcategory_id, sc.SubCategoryName,
+                           p.ProductName, p.ProductCode, p.SKU, p.ShortDescription, p.Description,
+                           p.MRP, p.SellingPrice, p.IsFeatured, p.IsNewArrival, p.IsBestSeller, p.IsTrending,
+                           p.IsCustomerFavourite, p.IsActive, p.CreatedDate, ISNULL(s.AvailableQty, 0) AS AvailableQty
                     FROM drs_product_mst p WITH (NOLOCK)
                     LEFT JOIN drs_product_category_mst c WITH (NOLOCK) ON c.ID = p.product_category_id AND c.IsDeleted = 0
+                    LEFT JOIN drs_product_subcategory_mst sc WITH (NOLOCK) ON sc.ID = p.product_subcategory_id AND sc.IsDeleted = 0
                     LEFT JOIN drs_product_stock_mst s WITH (NOLOCK) ON s.product_id = p.ID AND s.IsDeleted = 0
                     {whereClause}
                     ORDER BY {orderByClause}
@@ -1044,7 +1219,17 @@ namespace Khel_Akhel_Server.Controllers.Product
                             EncryptedCategoryId = _encryption.Encrypt(
                                 Convert.ToInt64(row["product_category_id"])
                             ),
-                            CategoryName = row["CategoryName"].ToString() ?? "",
+                            CategoryName = row["CategoryName"]?.ToString() ?? "",
+                            EncryptedSubCategoryId =
+                                row["product_subcategory_id"] != DBNull.Value
+                                    ? _encryption.Encrypt(
+                                        Convert.ToInt64(row["product_subcategory_id"])
+                                    )
+                                    : null,
+                            SubCategoryName =
+                                row["SubCategoryName"] != DBNull.Value
+                                    ? row["SubCategoryName"]?.ToString()
+                                    : null,
                             ProductName = row["ProductName"].ToString() ?? "",
                             ProductCode = row["ProductCode"].ToString() ?? "",
                             SKU = row["SKU"].ToString() ?? "",
@@ -1066,12 +1251,57 @@ namespace Khel_Akhel_Server.Controllers.Product
                     );
                 }
 
+                // Attach product images (default first, then display order) in one query
+                if (dt.Rows.Count > 0)
+                {
+                    var idList = new List<long>();
+                    foreach (DataRow r in dt.Rows)
+                        idList.Add(Convert.ToInt64(r["ID"]));
+
+                    var imageParams = new List<SqlParameter>();
+                    var placeholders = new List<string>();
+                    for (int i = 0; i < idList.Count; i++)
+                    {
+                        placeholders.Add($"@Pid{i}");
+                        imageParams.Add(new SqlParameter($"@Pid{i}", idList[i]));
+                    }
+
+                    string imagesQuery =
+                        $@"SELECT product_id, ImagePath
+                           FROM drs_product_image_mst WITH (NOLOCK)
+                           WHERE IsDeleted = 0
+                             AND product_id IN ({string.Join(",", placeholders)})
+                           ORDER BY product_id, IsDefault DESC, DisplayOrder ASC, ID ASC";
+
+                    DataTable dtImages = _db.ExecuteQuery(imagesQuery, imageParams.ToArray());
+
+                    var imagesByProduct = new Dictionary<long, List<string>>();
+                    foreach (DataRow imgRow in dtImages.Rows)
+                    {
+                        long imgProductId = Convert.ToInt64(imgRow["product_id"]);
+                        if (!imagesByProduct.TryGetValue(imgProductId, out var paths))
+                        {
+                            paths = new List<string>();
+                            imagesByProduct[imgProductId] = paths;
+                        }
+                        paths.Add(imgRow["ImagePath"]?.ToString() ?? "");
+                    }
+
+                    for (int i = 0; i < productList.Count && i < idList.Count; i++)
+                    {
+                        if (imagesByProduct.TryGetValue(idList[i], out var paths))
+                            productList[i].ImagePaths = paths;
+                    }
+                }
+
                 var responseData = new ProductListResponse
                 {
                     Products = productList,
                     TotalRecords = totalRecords,
                     PageIndex = pageIndex,
                     PageSize = pageSize,
+                    TotalPages =
+                        pageSize > 0 ? (int)Math.Ceiling(totalRecords / (double)pageSize) : 0,
                 };
 
                 sw.Stop();

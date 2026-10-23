@@ -61,10 +61,7 @@ export class CommissionedProjectsComponent implements OnInit, OnDestroy {
   searchQuery = '';
   selectedCategory = '';
   selectedStatus = '';
-  startDate = '';
-  endDate = '';
   sortBy = 'newest';
-  dateRangeError: string | null = null;
 
   // Search Debounce
   private searchSubject = new Subject<string>();
@@ -157,8 +154,6 @@ export class CommissionedProjectsComponent implements OnInit, OnDestroy {
         search: this.searchQuery,
         encryptedCategoryId: this.selectedCategory || undefined,
         status: this.selectedStatus || undefined,
-        startDate: this.startDate || undefined,
-        endDate: this.endDate || undefined,
         sortBy: this.sortBy,
       })
       .subscribe({
@@ -201,27 +196,9 @@ export class CommissionedProjectsComponent implements OnInit, OnDestroy {
     this.loadRequests();
   }
 
-  validateDateRange(): boolean {
-    if (this.startDate && this.endDate && this.startDate > this.endDate) {
-      this.dateRangeError = 'From date cannot be later than To date.';
-      return false;
-    }
-    this.dateRangeError = null;
-    return true;
-  }
 
-  onDateFilter(): void {
-    if (!this.validateDateRange()) {
-      return;
-    }
-    this.pageIndex = 1;
-    this.loadRequests();
-  }
 
   applyFilters(): void {
-    if (!this.validateDateRange()) {
-      return;
-    }
     this.pageIndex = 1;
     this.loadRequests();
   }
@@ -236,10 +213,7 @@ export class CommissionedProjectsComponent implements OnInit, OnDestroy {
     this.searchQuery = '';
     this.selectedCategory = '';
     this.selectedStatus = '';
-    this.startDate = '';
-    this.endDate = '';
     this.sortBy = 'newest';
-    this.dateRangeError = null;
     this.pageIndex = 1;
     this.loadRequests();
   }
@@ -249,8 +223,6 @@ export class CommissionedProjectsComponent implements OnInit, OnDestroy {
       this.searchQuery ||
       this.selectedCategory ||
       this.selectedStatus ||
-      this.startDate ||
-      this.endDate ||
       this.sortBy !== 'newest'
     );
   }

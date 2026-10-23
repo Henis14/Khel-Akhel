@@ -86,7 +86,7 @@ export class AuthService {
         if (err.status === 409) {
           // Concurrent refresh race: wait 300ms and retry once
           return timer(300).pipe(
-            switchMap(() => this.apiService.post<AuthResponseData>('auth/refresh', {}))
+            switchMap(() => this.apiService.post<AuthResponseData>('auth/refresh', {})),
           );
         }
         return throwError(() => err);
@@ -105,7 +105,11 @@ export class AuthService {
     );
   }
 
-  forgotPassword(userName: string, captchaId?: string, captcha?: string): Observable<ApiResponse<string>> {
+  forgotPassword(
+    userName: string,
+    captchaId?: string,
+    captcha?: string,
+  ): Observable<ApiResponse<string>> {
     return this.apiService.post<string>('auth/forgot-password', {
       userName,
       captchaId,
@@ -117,7 +121,11 @@ export class AuthService {
     return this.apiService.get<{ valid: boolean }>('auth/reset-password/validate', { token });
   }
 
-  resetPassword(token: string, newPassword: string, confirmPassword: string): Observable<ApiResponse<string>> {
+  resetPassword(
+    token: string,
+    newPassword: string,
+    confirmPassword: string,
+  ): Observable<ApiResponse<string>> {
     return this.apiService.post<string>('auth/reset-password', {
       token,
       newPassword,
@@ -142,21 +150,30 @@ export class AuthService {
     return this.apiService.get<any>('admin/password-reset/requests', params);
   }
 
-  issueResetLink(encryptedRequestId: string, adminNotes: string): Observable<ApiResponse<{ resetUrl: string; expiresUtc: string }>> {
+  issueResetLink(
+    encryptedRequestId: string,
+    adminNotes: string,
+  ): Observable<ApiResponse<{ resetUrl: string; expiresUtc: string }>> {
     return this.apiService.post<{ resetUrl: string; expiresUtc: string }>(
       `admin/password-reset/requests/${encodeURIComponent(encryptedRequestId)}/issue-link`,
       { adminNotes },
     );
   }
 
-  rejectResetRequest(encryptedRequestId: string, adminNotes: string): Observable<ApiResponse<string>> {
+  rejectResetRequest(
+    encryptedRequestId: string,
+    adminNotes: string,
+  ): Observable<ApiResponse<string>> {
     return this.apiService.post<string>(
       `admin/password-reset/requests/${encodeURIComponent(encryptedRequestId)}/reject`,
       { adminNotes },
     );
   }
 
-  issueResetLinkForCustomer(encryptedCustomerId: string, adminNotes: string): Observable<ApiResponse<{ resetUrl: string; expiresUtc: string }>> {
+  issueResetLinkForCustomer(
+    encryptedCustomerId: string,
+    adminNotes: string,
+  ): Observable<ApiResponse<{ resetUrl: string; expiresUtc: string }>> {
     return this.apiService.post<{ resetUrl: string; expiresUtc: string }>(
       `admin/password-reset/customers/${encodeURIComponent(encryptedCustomerId)}/issue-link`,
       { adminNotes },

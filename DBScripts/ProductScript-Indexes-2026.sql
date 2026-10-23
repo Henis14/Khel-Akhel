@@ -280,3 +280,51 @@ BEGIN
         ON drs_password_reset_request_mst (customer_id, CreatedDate);
 END;
 GO
+
+-- SubCategory Indexes
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE name = 'UQ_drs_product_subcategory_mst_Parent_Name'
+      AND object_id = OBJECT_ID('drs_product_subcategory_mst')
+)
+BEGIN
+    CREATE UNIQUE NONCLUSTERED INDEX UQ_drs_product_subcategory_mst_Parent_Name
+        ON drs_product_subcategory_mst (product_category_id, SubCategoryName)
+        WHERE IsDeleted = 0;
+END
+GO
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE name = 'IX_drs_product_subcategory_mst_product_category_id'
+      AND object_id = OBJECT_ID('drs_product_subcategory_mst')
+)
+BEGIN
+    CREATE NONCLUSTERED INDEX IX_drs_product_subcategory_mst_product_category_id
+        ON drs_product_subcategory_mst (product_category_id, DisplayOrder, SubCategoryName)
+        WHERE IsDeleted = 0 AND IsActive = 1;
+END
+GO
+
+-- Ensure product_subcategory_id column exists before creating index
+IF NOT EXISTS (
+    SELECT 1 FROM sys.columns
+    WHERE object_id = OBJECT_ID('drs_product_mst')
+      AND name = 'product_subcategory_id'
+)
+BEGIN
+    ALTER TABLE drs_product_mst ADD product_subcategory_id BIGINT NULL;
+END
+GO
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE name = 'IX_drs_product_mst_product_subcategory_id'
+      AND object_id = OBJECT_ID('drs_product_mst')
+)
+BEGIN
+    CREATE NONCLUSTERED INDEX IX_drs_product_mst_product_subcategory_id
+        ON drs_product_mst (product_subcategory_id)
+        WHERE product_subcategory_id IS NOT NULL AND IsDeleted = 0;
+END
+GO

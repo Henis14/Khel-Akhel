@@ -9,7 +9,10 @@ import {
   ProductResponse,
   ProductUpdateRequest,
 } from '../../models/product.model';
-import { ProductCategoryResponse } from '../../models/product-category.model';
+import {
+  ProductCategoryResponse,
+  ProductSubCategoryResponse,
+} from '../../models/product-category.model';
 import { CustomValidators } from '../../../common/validators/custom.validators';
 import { REGEX_PATTERNS } from '../../../common/constants/regex.constants';
 import { PaginationComponent } from '../../../common/components/pagination/pagination';
@@ -47,6 +50,8 @@ export class ProductsComponent implements OnInit {
   products: ProductResponse[] = [];
   categories: ProductCategoryResponse[] = [];
 
+  modalSubCategories: ProductSubCategoryResponse[] = [];
+
   totalRecords = 0;
   pageIndex = 1;
   pageSize = 10;
@@ -67,6 +72,7 @@ export class ProductsComponent implements OnInit {
   confirmTitle = '';
   confirmMessage = '';
   pendingAction: (() => void) | null = null;
+  isActionSubmitting = false;
 
   ngOnInit(): void {
     this.initForm();
@@ -78,6 +84,7 @@ export class ProductsComponent implements OnInit {
     this.productForm = this.fb.group(
       {
         encryptedCategoryId: ['', [CustomValidators.requiredNonEmpty]],
+        encryptedSubCategoryId: [''],
         productName: ['', [CustomValidators.requiredNonEmpty]],
         sku: [
           '',
@@ -109,7 +116,7 @@ export class ProductsComponent implements OnInit {
     this.categoryService.getList().subscribe({
       next: (res) => {
         if (res.success) {
-          this.categories = res.data || [];
+          this.categories = (res.data || []).filter((c) => c.isActive);
         }
         this.cdr.markForCheck();
       },
@@ -147,14 +154,28 @@ export class ProductsComponent implements OnInit {
       });
   }
 
+  /** waits for a short pause in typing before asking the API */
+  private searchTimer?: ReturnType<typeof setTimeout>;
+
   onSearch(term: string): void {
     this.searchQuery = term;
-    this.pageIndex = 1;
-    this.loadProducts();
+    clearTimeout(this.searchTimer);
+    this.searchTimer = setTimeout(() => {
+      this.pageIndex = 1;
+      this.loadProducts();
+    }, 350);
   }
 
   onCategoryFilterChange(catId: string): void {
     this.selectedCategoryFilter = catId;
+    this.pageIndex = 1;
+    this.loadProducts();
+  }
+
+  clearFilters(): void {
+    clearTimeout(this.searchTimer);
+    this.searchQuery = '';
+    this.selectedCategoryFilter = '';
     this.pageIndex = 1;
     this.loadProducts();
   }
@@ -164,11 +185,31 @@ export class ProductsComponent implements OnInit {
     this.loadProducts();
   }
 
+  onModalCategoryChange(catId: string): void {
+    this.productForm.patchValue({
+      encryptedSubCategoryId: '',
+    });
+    this.modalSubCategories = [];
+
+    if (!catId) return;
+
+    this.categoryService.getSubCategories(catId).subscribe({
+      next: (res) => {
+        if (res.success && res.data) {
+          this.modalSubCategories = res.data.filter((sc) => sc.isActive);
+        }
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
   openCreateModal(): void {
     this.isEditMode = false;
     this.selectedProduct = null;
+    this.modalSubCategories = [];
     this.productForm.reset({
-      encryptedCategoryId: this.categories.length > 0 ? this.categories[0].encryptedCategoryId : '',
+      encryptedCategoryId: '',
+      encryptedSubCategoryId: '',
       productName: '',
       sku: '',
       shortDescription: '',
@@ -187,8 +228,11 @@ export class ProductsComponent implements OnInit {
   openEditModal(product: ProductResponse): void {
     this.isEditMode = true;
     this.selectedProduct = product;
+    this.modalSubCategories = [];
+
     this.productForm.patchValue({
       encryptedCategoryId: product.encryptedCategoryId,
+      encryptedSubCategoryId: '',
       productName: product.productName,
       sku: product.sku,
       shortDescription: product.shortDescription,
@@ -201,6 +245,23 @@ export class ProductsComponent implements OnInit {
       isTrending: product.isTrending,
       isCustomerFavourite: product.isCustomerFavourite,
     });
+
+    if (product.encryptedCategoryId) {
+      this.categoryService.getSubCategories(product.encryptedCategoryId).subscribe({
+        next: (subRes) => {
+          if (subRes.success && subRes.data) {
+            this.modalSubCategories = subRes.data.filter((sc) => sc.isActive);
+            if (product.encryptedSubCategoryId) {
+              this.productForm.patchValue({
+                encryptedSubCategoryId: product.encryptedSubCategoryId,
+              });
+            }
+          }
+          this.cdr.markForCheck();
+        },
+      });
+    }
+
     this.isModalOpen = true;
   }
 
@@ -229,6 +290,7 @@ export class ProductsComponent implements OnInit {
       const updatePayload: ProductUpdateRequest = {
         encryptedProductId: this.selectedProduct.encryptedProductId,
         encryptedCategoryId: this.productForm.value.encryptedCategoryId,
+        encryptedSubCategoryId: this.productForm.value.encryptedSubCategoryId || null,
         productName: this.productForm.value.productName.trim(),
         sku: this.productForm.value.sku.trim(),
         shortDescription: this.productForm.value.shortDescription?.trim() || '',
@@ -261,6 +323,7 @@ export class ProductsComponent implements OnInit {
     } else {
       const createPayload: ProductCreateRequest = {
         encryptedCategoryId: this.productForm.value.encryptedCategoryId,
+        encryptedSubCategoryId: this.productForm.value.encryptedSubCategoryId || null,
         productName: this.productForm.value.productName.trim(),
         sku: this.productForm.value.sku.trim(),
         shortDescription: this.productForm.value.shortDescription?.trim() || '',
@@ -292,8 +355,6 @@ export class ProductsComponent implements OnInit {
       });
     }
   }
-
-  isActionSubmitting = false;
 
   confirmDelete(product: ProductResponse): void {
     this.confirmTitle = 'Delete Product';

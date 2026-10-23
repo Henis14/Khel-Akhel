@@ -12,7 +12,7 @@
             'item-primary': i === 0,
             'item-secondary': i > 0,
             'item-even': i % 2 === 0,
-            'item-odd': i % 2 !== 0
+            'item-odd': i % 2 !== 0,
           }"
           [class.interactive]="interactive"
           (click)="openLightbox(i)"
@@ -71,12 +71,7 @@
 
   <!-- Interactive Lightbox Modal -->
   @if (isLightboxOpen && activeImage) {
-    <div
-      class="gallery-lightbox"
-      role="dialog"
-      aria-modal="true"
-      (click)="closeLightbox()"
-    >
+    <div class="gallery-lightbox" role="dialog" aria-modal="true" (click)="closeLightbox()">
       <div class="lightbox-backdrop"></div>
 
       <div class="lightbox-container" (click)="$event.stopPropagation()">

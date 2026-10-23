@@ -86,7 +86,8 @@
                   <option value="" disabled>-- Select Product --</option>
                   @for (p of productsList; track p.encryptedProductId) {
                     <option [value]="p.encryptedProductId">
-                      {{ p.productName }} ({{ p.productCode || p.sku }}) - Current Stock: {{ p.availableQty }} units
+                      {{ p.productName }} ({{ p.productCode || p.sku }}) - Current Stock:
+                      {{ p.availableQty }} units
                     </option>
                   }
                 </select>
@@ -113,9 +114,7 @@
                   "
                 />
               </div>
-              @if (
-                stockForm.get('quantity')?.touched && stockForm.get('quantity')?.invalid
-              ) {
+              @if (stockForm.get('quantity')?.touched && stockForm.get('quantity')?.invalid) {
                 <div class="invalid-feedback">Quantity must be at least 1.</div>
               }
             </div>
@@ -130,7 +129,9 @@
               <div class="calc-sign">+</div>
               <div class="calc-col">
                 <span class="calc-label">Quantity to Add</span>
-                <span class="calc-val text-primary">{{ stockForm.get('quantity')?.value || 0 }}</span>
+                <span class="calc-val text-primary">{{
+                  stockForm.get('quantity')?.value || 0
+                }}</span>
               </div>
               <div class="calc-sign">=</div>
               <div class="calc-col result">
@@ -147,11 +148,7 @@
       <button type="button" class="btn btn-cancel" (click)="goBack()" [disabled]="submitting">
         Cancel
       </button>
-      <button
-        type="submit"
-        class="btn btn-primary"
-        [disabled]="submitting || stockForm.invalid"
-      >
+      <button type="submit" class="btn btn-primary" [disabled]="submitting || stockForm.invalid">
         @if (submitting) {
           <span class="btn-spinner"></span>
           <span>Saving Stock...</span>

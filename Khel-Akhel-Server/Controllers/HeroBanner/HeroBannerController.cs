@@ -85,18 +85,21 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
                 IsVideo = Convert.ToBoolean(row["IsVideo"]),
                 DisplayOrder = Convert.ToInt32(row["DisplayOrder"]),
                 IsActive = Convert.ToBoolean(row["IsActive"]),
-                CreatedAt = row["CreatedAt"] == DBNull.Value
-                    ? string.Empty
-                    : Convert.ToDateTime(row["CreatedAt"]).ToString("yyyy-MM-dd HH:mm:ss"),
-                UpdatedAt = row["UpdatedAt"] == DBNull.Value
-                    ? null
-                    : Convert.ToDateTime(row["UpdatedAt"]).ToString("yyyy-MM-dd HH:mm:ss"),
+                CreatedAt =
+                    row["CreatedAt"] == DBNull.Value
+                        ? string.Empty
+                        : Convert.ToDateTime(row["CreatedAt"]).ToString("yyyy-MM-dd HH:mm:ss"),
+                UpdatedAt =
+                    row["UpdatedAt"] == DBNull.Value
+                        ? null
+                        : Convert.ToDateTime(row["UpdatedAt"]).ToString("yyyy-MM-dd HH:mm:ss"),
             };
         }
 
         private string GetUploadsDirectory()
         {
-            string webRoot = _env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+            string webRoot =
+                _env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
             string targetDir = Path.Combine(webRoot, "uploads", "hero-banner");
             if (!Directory.Exists(targetDir))
             {
@@ -113,7 +116,12 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
             try
             {
                 // Only delete files inside /uploads/hero-banner
-                if (!mediaUrl.StartsWith("/uploads/hero-banner/", StringComparison.OrdinalIgnoreCase))
+                if (
+                    !mediaUrl.StartsWith(
+                        "/uploads/hero-banner/",
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                )
                     return;
 
                 string fileName = Path.GetFileName(mediaUrl);
@@ -125,7 +133,9 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
             }
             catch (Exception ex)
             {
-                Logs.Warning($"Could not delete file for mediaUrl: {mediaUrl} | Reason: {ex.Message}");
+                Logs.Warning(
+                    $"Could not delete file for mediaUrl: {mediaUrl} | Reason: {ex.Message}"
+                );
             }
         }
         #endregion
@@ -133,7 +143,10 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
         #region GET: Public Retrieve Active Hero Media
         [HttpGet]
         [HttpGet("public")]
-        public async Task<IActionResult> GetPublicHeroMedia([FromQuery] bool? all, [FromQuery] bool? admin)
+        public async Task<IActionResult> GetPublicHeroMedia(
+            [FromQuery] bool? all,
+            [FromQuery] bool? admin
+        )
         {
             var sw = Stopwatch.StartNew();
 
@@ -161,25 +174,33 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
                 }
 
                 sw.Stop();
-                return Ok(new ApiResponse
-                {
-                    Success = true,
-                    StatusCode = 200,
-                    Message = "HERO_MEDIA_RETRIEVED",
-                    Data = list,
-                });
+                return Ok(
+                    new ApiResponse
+                    {
+                        Success = true,
+                        StatusCode = 200,
+                        Message = "HERO_MEDIA_RETRIEVED",
+                        Data = list,
+                    }
+                );
             }
             catch (Exception ex)
             {
                 sw.Stop();
                 Logs.Error("Exception in GetPublicHeroMedia", ex);
-                return StatusCode(500, new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 500,
-                    Message = "SERVER_ERROR",
-                    Errors = new List<string> { "An internal server error occurred while retrieving hero media." },
-                });
+                return StatusCode(
+                    500,
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 500,
+                        Message = "SERVER_ERROR",
+                        Errors = new List<string>
+                        {
+                            "An internal server error occurred while retrieving hero media.",
+                        },
+                    }
+                );
             }
         }
         #endregion
@@ -194,7 +215,8 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
 
             try
             {
-                string query = @"SELECT Id, Title, MediaUrl, IsImage, IsVideo, DisplayOrder, IsActive, CreatedAt, UpdatedAt
+                string query =
+                    @"SELECT Id, Title, MediaUrl, IsImage, IsVideo, DisplayOrder, IsActive, CreatedAt, UpdatedAt
                                  FROM HeroBanners
                                  WHERE IsDeleted = 0
                                  ORDER BY DisplayOrder ASC, CreatedAt ASC;";
@@ -208,25 +230,30 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
                 }
 
                 sw.Stop();
-                return Ok(new ApiResponse
-                {
-                    Success = true,
-                    StatusCode = 200,
-                    Message = "HERO_MEDIA_ADMIN_RETRIEVED",
-                    Data = list,
-                });
+                return Ok(
+                    new ApiResponse
+                    {
+                        Success = true,
+                        StatusCode = 200,
+                        Message = "HERO_MEDIA_ADMIN_RETRIEVED",
+                        Data = list,
+                    }
+                );
             }
             catch (Exception ex)
             {
                 sw.Stop();
                 Logs.Error("Exception in GetAdminHeroMediaList", ex);
-                return StatusCode(500, new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 500,
-                    Message = "SERVER_ERROR",
-                    Errors = new List<string> { "An internal server error occurred." },
-                });
+                return StatusCode(
+                    500,
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 500,
+                        Message = "SERVER_ERROR",
+                        Errors = new List<string> { "An internal server error occurred." },
+                    }
+                );
             }
         }
         #endregion
@@ -242,55 +269,71 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
                 if (!TryResolveBannerId(id, out long bannerId))
                 {
                     sw.Stop();
-                    return BadRequest(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 400,
-                        Message = "INVALID_ID",
-                        Errors = new List<string> { "Invalid Hero Banner ID specified." },
-                    });
+                    return BadRequest(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "INVALID_ID",
+                            Errors = new List<string> { "Invalid Hero Banner ID specified." },
+                        }
+                    );
                 }
 
-                string query = @"SELECT Id, Title, MediaUrl, IsImage, IsVideo, DisplayOrder, IsActive, CreatedAt, UpdatedAt
+                string query =
+                    @"SELECT Id, Title, MediaUrl, IsImage, IsVideo, DisplayOrder, IsActive, CreatedAt, UpdatedAt
                                  FROM HeroBanners
                                  WHERE Id = @Id AND IsDeleted = 0;";
 
-                DataTable dt = await _db.ExecuteQueryAsync(query, new[] { new SqlParameter("@Id", bannerId) });
+                DataTable dt = await _db.ExecuteQueryAsync(
+                    query,
+                    new[] { new SqlParameter("@Id", bannerId) }
+                );
 
                 if (dt.Rows.Count == 0)
                 {
                     sw.Stop();
-                    return NotFound(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 404,
-                        Message = "HERO_BANNER_NOT_FOUND",
-                        Errors = new List<string> { $"Hero Banner with ID '{id}' was not found." },
-                    });
+                    return NotFound(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 404,
+                            Message = "HERO_BANNER_NOT_FOUND",
+                            Errors = new List<string>
+                            {
+                                $"Hero Banner with ID '{id}' was not found.",
+                            },
+                        }
+                    );
                 }
 
                 var response = MapHeroBanner(dt.Rows[0]);
                 sw.Stop();
 
-                return Ok(new ApiResponse
-                {
-                    Success = true,
-                    StatusCode = 200,
-                    Message = "HERO_BANNER_FOUND",
-                    Data = response,
-                });
+                return Ok(
+                    new ApiResponse
+                    {
+                        Success = true,
+                        StatusCode = 200,
+                        Message = "HERO_BANNER_FOUND",
+                        Data = response,
+                    }
+                );
             }
             catch (Exception ex)
             {
                 sw.Stop();
                 Logs.Error($"Exception in GetHeroBannerById for id {id}", ex);
-                return StatusCode(500, new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 500,
-                    Message = "SERVER_ERROR",
-                    Errors = new List<string> { "An internal server error occurred." },
-                });
+                return StatusCode(
+                    500,
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 500,
+                        Message = "SERVER_ERROR",
+                        Errors = new List<string> { "An internal server error occurred." },
+                    }
+                );
             }
         }
         #endregion
@@ -307,39 +350,51 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
             if (request == null)
             {
                 sw.Stop();
-                return BadRequest(new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 400,
-                    Message = "INVALID_REQUEST",
-                    Errors = new List<string> { "Request payload cannot be empty." },
-                });
+                return BadRequest(
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 400,
+                        Message = "INVALID_REQUEST",
+                        Errors = new List<string> { "Request payload cannot be empty." },
+                    }
+                );
             }
 
             // Flag validation: Both cannot be true simultaneously
             if (request.IsImage == true && request.IsVideo == true)
             {
                 sw.Stop();
-                return BadRequest(new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 400,
-                    Message = "INVALID_FLAGS",
-                    Errors = new List<string> { "Both IsImage and IsVideo cannot be true simultaneously." },
-                });
+                return BadRequest(
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 400,
+                        Message = "INVALID_FLAGS",
+                        Errors = new List<string>
+                        {
+                            "Both IsImage and IsVideo cannot be true simultaneously.",
+                        },
+                    }
+                );
             }
 
             // Flag validation: Both cannot be false if flags were explicitly provided
             if (request.IsImage == false && request.IsVideo == false)
             {
                 sw.Stop();
-                return BadRequest(new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 400,
-                    Message = "INVALID_FLAGS",
-                    Errors = new List<string> { "Both IsImage and IsVideo cannot be false for a valid media record." },
-                });
+                return BadRequest(
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 400,
+                        Message = "INVALID_FLAGS",
+                        Errors = new List<string>
+                        {
+                            "Both IsImage and IsVideo cannot be false for a valid media record.",
+                        },
+                    }
+                );
             }
 
             // Mutual exclusion: Cannot upload both images and video in the same request
@@ -349,50 +404,70 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
             if (hasImages && hasVideo)
             {
                 sw.Stop();
-                return BadRequest(new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 400,
-                    Message = "MIXED_MEDIA_PROHIBITED",
-                    Errors = new List<string> { "The hero section may contain multiple images OR one video, not both in the same request." },
-                });
+                return BadRequest(
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 400,
+                        Message = "MIXED_MEDIA_PROHIBITED",
+                        Errors = new List<string>
+                        {
+                            "The hero section may contain multiple images OR one video, not both in the same request.",
+                        },
+                    }
+                );
             }
 
             if (!hasImages && !hasVideo)
             {
                 sw.Stop();
-                return BadRequest(new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 400,
-                    Message = "MISSING_MEDIA",
-                    Errors = new List<string> { "Please provide either image file(s) or an MP4 video file." },
-                });
+                return BadRequest(
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 400,
+                        Message = "MISSING_MEDIA",
+                        Errors = new List<string>
+                        {
+                            "Please provide either image file(s) or an MP4 video file.",
+                        },
+                    }
+                );
             }
 
             // If flag was provided, ensure it matches actual payload
             if (hasImages && request.IsVideo == true)
             {
                 sw.Stop();
-                return BadRequest(new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 400,
-                    Message = "FLAG_PAYLOAD_MISMATCH",
-                    Errors = new List<string> { "Request contains images but IsVideo flag was set to true." },
-                });
+                return BadRequest(
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 400,
+                        Message = "FLAG_PAYLOAD_MISMATCH",
+                        Errors = new List<string>
+                        {
+                            "Request contains images but IsVideo flag was set to true.",
+                        },
+                    }
+                );
             }
 
             if (hasVideo && request.IsImage == true)
             {
                 sw.Stop();
-                return BadRequest(new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 400,
-                    Message = "FLAG_PAYLOAD_MISMATCH",
-                    Errors = new List<string> { "Request contains video but IsImage flag was set to true." },
-                });
+                return BadRequest(
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 400,
+                        Message = "FLAG_PAYLOAD_MISMATCH",
+                        Errors = new List<string>
+                        {
+                            "Request contains video but IsImage flag was set to true.",
+                        },
+                    }
+                );
             }
 
             bool isImageMode = hasImages;
@@ -403,7 +478,10 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
             {
                 foreach (var file in request.Images!)
                 {
-                    var (isValid, errorMessage) = await FileValidationHelper.IsValidImageAsync(file, MaxImageSizeInBytes);
+                    var (isValid, errorMessage) = await FileValidationHelper.IsValidImageAsync(
+                        file,
+                        MaxImageSizeInBytes
+                    );
                     if (!isValid)
                     {
                         validationErrors.Add($"File '{file.FileName}': {errorMessage}");
@@ -412,7 +490,10 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
             }
             else
             {
-                var (isValid, errorMessage) = await FileValidationHelper.IsValidMp4VideoAsync(request.Video!, MaxVideoSizeInBytes);
+                var (isValid, errorMessage) = await FileValidationHelper.IsValidMp4VideoAsync(
+                    request.Video!,
+                    MaxVideoSizeInBytes
+                );
                 if (!isValid)
                 {
                     validationErrors.Add($"File '{request.Video!.FileName}': {errorMessage}");
@@ -422,13 +503,15 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
             if (validationErrors.Count > 0)
             {
                 sw.Stop();
-                return BadRequest(new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 400,
-                    Message = "VALIDATION_FAILED",
-                    Errors = validationErrors,
-                });
+                return BadRequest(
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 400,
+                        Message = "VALIDATION_FAILED",
+                        Errors = validationErrors,
+                    }
+                );
             }
 
             string uploadsDir = GetUploadsDirectory();
@@ -442,23 +525,27 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
             try
             {
                 // Concurrency and mode enforcement: Check current hero configuration with update lock
-                string checkModeSql = @"
+                string checkModeSql =
+                    @"
                     SELECT Id, MediaUrl, IsImage, IsVideo 
                     FROM HeroBanners WITH (UPDLOCK, HOLDLOCK) 
                     WHERE IsDeleted = 0;";
 
-                var existingRows = new List<(long Id, string MediaUrl, bool IsImage, bool IsVideo)>();
+                var existingRows =
+                    new List<(long Id, string MediaUrl, bool IsImage, bool IsVideo)>();
                 using (SqlCommand checkCmd = new SqlCommand(checkModeSql, conn, tran))
                 using (SqlDataReader reader = await checkCmd.ExecuteReaderAsync())
                 {
                     while (await reader.ReadAsync())
                     {
-                        existingRows.Add((
-                            reader.GetInt64(0),
-                            reader.GetString(1),
-                            reader.GetBoolean(2),
-                            reader.GetBoolean(3)
-                        ));
+                        existingRows.Add(
+                            (
+                                reader.GetInt64(0),
+                                reader.GetString(1),
+                                reader.GetBoolean(2),
+                                reader.GetBoolean(3)
+                            )
+                        );
                     }
                 }
 
@@ -472,16 +559,18 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
                     {
                         tran.Rollback();
                         sw.Stop();
-                        return Conflict(new ApiResponse
-                        {
-                            Success = false,
-                            StatusCode = 409,
-                            Message = "MEDIA_MODE_CONFLICT",
-                            Errors = new List<string>
+                        return Conflict(
+                            new ApiResponse
                             {
-                                "The hero section currently contains a video configuration. To upload images, set ReplaceExisting to true to replace the video configuration.",
-                            },
-                        });
+                                Success = false,
+                                StatusCode = 409,
+                                Message = "MEDIA_MODE_CONFLICT",
+                                Errors = new List<string>
+                                {
+                                    "The hero section currently contains a video configuration. To upload images, set ReplaceExisting to true to replace the video configuration.",
+                                },
+                            }
+                        );
                     }
                 }
                 else if (!isImageMode && existingHasImages)
@@ -490,16 +579,18 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
                     {
                         tran.Rollback();
                         sw.Stop();
-                        return Conflict(new ApiResponse
-                        {
-                            Success = false,
-                            StatusCode = 409,
-                            Message = "MEDIA_MODE_CONFLICT",
-                            Errors = new List<string>
+                        return Conflict(
+                            new ApiResponse
                             {
-                                "The hero section currently contains image banners. To upload a video, set ReplaceExisting to true to replace the image configuration.",
-                            },
-                        });
+                                Success = false,
+                                StatusCode = 409,
+                                Message = "MEDIA_MODE_CONFLICT",
+                                Errors = new List<string>
+                                {
+                                    "The hero section currently contains image banners. To upload a video, set ReplaceExisting to true to replace the image configuration.",
+                                },
+                            }
+                        );
                     }
                 }
                 else if (!isImageMode && existingHasVideo)
@@ -508,23 +599,26 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
                     {
                         tran.Rollback();
                         sw.Stop();
-                        return Conflict(new ApiResponse
-                        {
-                            Success = false,
-                            StatusCode = 409,
-                            Message = "VIDEO_LIMIT_REACHED",
-                            Errors = new List<string>
+                        return Conflict(
+                            new ApiResponse
                             {
-                                "A hero video is already configured. Only one video is permitted. Set ReplaceExisting to true to replace it.",
-                            },
-                        });
+                                Success = false,
+                                StatusCode = 409,
+                                Message = "VIDEO_LIMIT_REACHED",
+                                Errors = new List<string>
+                                {
+                                    "A hero video is already configured. Only one video is permitted. Set ReplaceExisting to true to replace it.",
+                                },
+                            }
+                        );
                     }
                 }
 
                 // If replacing existing, soft delete all existing hero banners
                 if (request.ReplaceExisting && existingRows.Count > 0)
                 {
-                    string softDeleteSql = "UPDATE HeroBanners SET IsDeleted = 1, UpdatedAt = GETDATE() WHERE IsDeleted = 0;";
+                    string softDeleteSql =
+                        "UPDATE HeroBanners SET IsDeleted = 1, UpdatedAt = GETDATE() WHERE IsDeleted = 0;";
                     using SqlCommand deleteCmd = new SqlCommand(softDeleteSql, conn, tran);
                     await deleteCmd.ExecuteNonQueryAsync();
 
@@ -542,10 +636,14 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
                     // If existing images exist and not replacing, determine next display order
                     if (!request.ReplaceExisting && existingHasImages)
                     {
-                        string maxOrderSql = "SELECT ISNULL(MAX(DisplayOrder), 0) FROM HeroBanners WHERE IsDeleted = 0;";
+                        string maxOrderSql =
+                            "SELECT ISNULL(MAX(DisplayOrder), 0) FROM HeroBanners WHERE IsDeleted = 0;";
                         using SqlCommand maxOrderCmd = new SqlCommand(maxOrderSql, conn, tran);
                         object? maxOrderObj = await maxOrderCmd.ExecuteScalarAsync();
-                        int maxOrder = (maxOrderObj != null && maxOrderObj != DBNull.Value) ? Convert.ToInt32(maxOrderObj) : 0;
+                        int maxOrder =
+                            (maxOrderObj != null && maxOrderObj != DBNull.Value)
+                                ? Convert.ToInt32(maxOrderObj)
+                                : 0;
                         if (request.DisplayOrder <= 0)
                         {
                             orderIndex = maxOrder + 1;
@@ -566,15 +664,20 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
                         createdPhysicalPaths.Add(diskPath);
 
                         string relativeUrl = $"/uploads/hero-banner/{uniqueName}";
-                        int currentOrder = request.DisplayOrder > 0 ? request.DisplayOrder + i : orderIndex + i;
+                        int currentOrder =
+                            request.DisplayOrder > 0 ? request.DisplayOrder + i : orderIndex + i;
 
-                        string insertSql = @"
+                        string insertSql =
+                            @"
                             INSERT INTO HeroBanners (Title, MediaUrl, IsImage, IsVideo, DisplayOrder, IsActive, IsDeleted, CreatedAt)
                             OUTPUT INSERTED.Id, INSERTED.CreatedAt
                             VALUES (@Title, @MediaUrl, 1, 0, @DisplayOrder, 1, 0, GETDATE());";
 
                         using SqlCommand insertCmd = new SqlCommand(insertSql, conn, tran);
-                        insertCmd.Parameters.AddWithValue("@Title", (object?)request.Title?.Trim() ?? DBNull.Value);
+                        insertCmd.Parameters.AddWithValue(
+                            "@Title",
+                            (object?)request.Title?.Trim() ?? DBNull.Value
+                        );
                         insertCmd.Parameters.AddWithValue("@MediaUrl", relativeUrl);
                         insertCmd.Parameters.AddWithValue("@DisplayOrder", currentOrder);
 
@@ -584,18 +687,20 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
                             long insertedId = insertReader.GetInt64(0);
                             DateTime createdAt = insertReader.GetDateTime(1);
 
-                            createdResponses.Add(new HeroBannerItemResponse
-                            {
-                                Id = insertedId,
-                                EncryptedId = _encryption.Encrypt(insertedId),
-                                Title = request.Title?.Trim(),
-                                MediaUrl = relativeUrl,
-                                IsImage = true,
-                                IsVideo = false,
-                                DisplayOrder = currentOrder,
-                                IsActive = true,
-                                CreatedAt = createdAt.ToString("yyyy-MM-dd HH:mm:ss"),
-                            });
+                            createdResponses.Add(
+                                new HeroBannerItemResponse
+                                {
+                                    Id = insertedId,
+                                    EncryptedId = _encryption.Encrypt(insertedId),
+                                    Title = request.Title?.Trim(),
+                                    MediaUrl = relativeUrl,
+                                    IsImage = true,
+                                    IsVideo = false,
+                                    DisplayOrder = currentOrder,
+                                    IsActive = true,
+                                    CreatedAt = createdAt.ToString("yyyy-MM-dd HH:mm:ss"),
+                                }
+                            );
                         }
                     }
                 }
@@ -616,13 +721,17 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
                     string relativeUrl = $"/uploads/hero-banner/{uniqueName}";
                     int displayOrder = request.DisplayOrder > 0 ? request.DisplayOrder : 1;
 
-                    string insertSql = @"
+                    string insertSql =
+                        @"
                         INSERT INTO HeroBanners (Title, MediaUrl, IsImage, IsVideo, DisplayOrder, IsActive, IsDeleted, CreatedAt)
                         OUTPUT INSERTED.Id, INSERTED.CreatedAt
                         VALUES (@Title, @MediaUrl, 0, 1, @DisplayOrder, 1, 0, GETDATE());";
 
                     using SqlCommand insertCmd = new SqlCommand(insertSql, conn, tran);
-                    insertCmd.Parameters.AddWithValue("@Title", (object?)request.Title?.Trim() ?? DBNull.Value);
+                    insertCmd.Parameters.AddWithValue(
+                        "@Title",
+                        (object?)request.Title?.Trim() ?? DBNull.Value
+                    );
                     insertCmd.Parameters.AddWithValue("@MediaUrl", relativeUrl);
                     insertCmd.Parameters.AddWithValue("@DisplayOrder", displayOrder);
 
@@ -632,18 +741,20 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
                         long insertedId = insertReader.GetInt64(0);
                         DateTime createdAt = insertReader.GetDateTime(1);
 
-                        createdResponses.Add(new HeroBannerItemResponse
-                        {
-                            Id = insertedId,
-                            EncryptedId = _encryption.Encrypt(insertedId),
-                            Title = request.Title?.Trim(),
-                            MediaUrl = relativeUrl,
-                            IsImage = false,
-                            IsVideo = true,
-                            DisplayOrder = displayOrder,
-                            IsActive = true,
-                            CreatedAt = createdAt.ToString("yyyy-MM-dd HH:mm:ss"),
-                        });
+                        createdResponses.Add(
+                            new HeroBannerItemResponse
+                            {
+                                Id = insertedId,
+                                EncryptedId = _encryption.Encrypt(insertedId),
+                                Title = request.Title?.Trim(),
+                                MediaUrl = relativeUrl,
+                                IsImage = false,
+                                IsVideo = true,
+                                DisplayOrder = displayOrder,
+                                IsActive = true,
+                                CreatedAt = createdAt.ToString("yyyy-MM-dd HH:mm:ss"),
+                            }
+                        );
                     }
                 }
 
@@ -658,17 +769,24 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
                 sw.Stop();
                 Logs.Info($"CreateHeroMedia succeeded | Created {createdResponses.Count} items");
 
-                return StatusCode(201, new ApiResponse
-                {
-                    Success = true,
-                    StatusCode = 201,
-                    Message = isImageMode ? "HERO_IMAGES_CREATED" : "HERO_VIDEO_CREATED",
-                    Data = createdResponses,
-                });
+                return StatusCode(
+                    201,
+                    new ApiResponse
+                    {
+                        Success = true,
+                        StatusCode = 201,
+                        Message = isImageMode ? "HERO_IMAGES_CREATED" : "HERO_VIDEO_CREATED",
+                        Data = createdResponses,
+                    }
+                );
             }
             catch (Exception ex)
             {
-                try { tran.Rollback(); } catch { }
+                try
+                {
+                    tran.Rollback();
+                }
+                catch { }
 
                 // Safe cleanup of newly written files upon DB persistence failure
                 foreach (var physicalPath in createdPhysicalPaths)
@@ -682,19 +800,27 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
                     }
                     catch (Exception fileEx)
                     {
-                        Logs.Warning($"Failed to cleanup orphaned file: {physicalPath} | Reason: {fileEx.Message}");
+                        Logs.Warning(
+                            $"Failed to cleanup orphaned file: {physicalPath} | Reason: {fileEx.Message}"
+                        );
                     }
                 }
 
                 sw.Stop();
                 Logs.Error("Exception in CreateHeroMedia", ex);
-                return StatusCode(500, new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 500,
-                    Message = "SERVER_ERROR",
-                    Errors = new List<string> { "An internal server error occurred while persisting hero media." },
-                });
+                return StatusCode(
+                    500,
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 500,
+                        Message = "SERVER_ERROR",
+                        Errors = new List<string>
+                        {
+                            "An internal server error occurred while persisting hero media.",
+                        },
+                    }
+                );
             }
         }
         #endregion
@@ -702,7 +828,10 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
         #region PUT: Update Hero Media Record or Replace File
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateHeroMedia(string id, [FromForm] HeroBannerUpdateRequest request)
+        public async Task<IActionResult> UpdateHeroMedia(
+            string id,
+            [FromForm] HeroBannerUpdateRequest request
+        )
         {
             Logs.Info($"UpdateHeroMedia API started for id: {id}");
             var sw = Stopwatch.StartNew();
@@ -710,25 +839,29 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
             if (!TryResolveBannerId(id, out long bannerId))
             {
                 sw.Stop();
-                return BadRequest(new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 400,
-                    Message = "INVALID_ID",
-                    Errors = new List<string> { "Invalid Hero Banner ID specified." },
-                });
+                return BadRequest(
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 400,
+                        Message = "INVALID_ID",
+                        Errors = new List<string> { "Invalid Hero Banner ID specified." },
+                    }
+                );
             }
 
             if (request == null)
             {
                 sw.Stop();
-                return BadRequest(new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 400,
-                    Message = "INVALID_REQUEST",
-                    Errors = new List<string> { "Request payload cannot be empty." },
-                });
+                return BadRequest(
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 400,
+                        Message = "INVALID_REQUEST",
+                        Errors = new List<string> { "Request payload cannot be empty." },
+                    }
+                );
             }
 
             string? newPhysicalPath = null;
@@ -741,7 +874,8 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
             try
             {
                 // Fetch target record with update lock
-                string selectSql = @"
+                string selectSql =
+                    @"
                     SELECT Id, Title, MediaUrl, IsImage, IsVideo, DisplayOrder, IsActive 
                     FROM HeroBanners WITH (UPDLOCK) 
                     WHERE Id = @Id AND IsDeleted = 0;";
@@ -763,13 +897,18 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
                 {
                     tran.Rollback();
                     sw.Stop();
-                    return NotFound(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 404,
-                        Message = "HERO_BANNER_NOT_FOUND",
-                        Errors = new List<string> { $"Hero Banner with ID '{id}' was not found." },
-                    });
+                    return NotFound(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 404,
+                            Message = "HERO_BANNER_NOT_FOUND",
+                            Errors = new List<string>
+                            {
+                                $"Hero Banner with ID '{id}' was not found.",
+                            },
+                        }
+                    );
                 }
 
                 bool isImageRecord = Convert.ToBoolean(record["IsImage"]);
@@ -781,34 +920,45 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
                 {
                     if (isImageRecord)
                     {
-                        var (isValid, errorMessage) = await FileValidationHelper.IsValidImageAsync(request.MediaFile, MaxImageSizeInBytes);
+                        var (isValid, errorMessage) = await FileValidationHelper.IsValidImageAsync(
+                            request.MediaFile,
+                            MaxImageSizeInBytes
+                        );
                         if (!isValid)
                         {
                             tran.Rollback();
                             sw.Stop();
-                            return BadRequest(new ApiResponse
-                            {
-                                Success = false,
-                                StatusCode = 400,
-                                Message = "INVALID_IMAGE",
-                                Errors = new List<string> { errorMessage },
-                            });
+                            return BadRequest(
+                                new ApiResponse
+                                {
+                                    Success = false,
+                                    StatusCode = 400,
+                                    Message = "INVALID_IMAGE",
+                                    Errors = new List<string> { errorMessage },
+                                }
+                            );
                         }
                     }
                     else if (isVideoRecord)
                     {
-                        var (isValid, errorMessage) = await FileValidationHelper.IsValidMp4VideoAsync(request.MediaFile, MaxVideoSizeInBytes);
+                        var (isValid, errorMessage) =
+                            await FileValidationHelper.IsValidMp4VideoAsync(
+                                request.MediaFile,
+                                MaxVideoSizeInBytes
+                            );
                         if (!isValid)
                         {
                             tran.Rollback();
                             sw.Stop();
-                            return BadRequest(new ApiResponse
-                            {
-                                Success = false,
-                                StatusCode = 400,
-                                Message = "INVALID_VIDEO",
-                                Errors = new List<string> { errorMessage },
-                            });
+                            return BadRequest(
+                                new ApiResponse
+                                {
+                                    Success = false,
+                                    StatusCode = 400,
+                                    Message = "INVALID_VIDEO",
+                                    Errors = new List<string> { errorMessage },
+                                }
+                            );
                         }
                     }
 
@@ -827,7 +977,8 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
                 }
 
                 // Build update query
-                string updateSql = @"
+                string updateSql =
+                    @"
                     UPDATE HeroBanners
                     SET Title = COALESCE(@Title, Title),
                         DisplayOrder = COALESCE(@DisplayOrder, DisplayOrder),
@@ -842,10 +993,24 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
                 using (SqlCommand updateCmd = new SqlCommand(updateSql, conn, tran))
                 {
                     updateCmd.Parameters.AddWithValue("@Id", bannerId);
-                    updateCmd.Parameters.AddWithValue("@Title", (object?)request.Title?.Trim() ?? DBNull.Value);
-                    updateCmd.Parameters.AddWithValue("@DisplayOrder", request.DisplayOrder.HasValue ? (object)request.DisplayOrder.Value : DBNull.Value);
-                    updateCmd.Parameters.AddWithValue("@IsActive", request.IsActive.HasValue ? (object)request.IsActive.Value : DBNull.Value);
-                    updateCmd.Parameters.AddWithValue("@MediaUrl", (object?)newMediaUrl ?? DBNull.Value);
+                    updateCmd.Parameters.AddWithValue(
+                        "@Title",
+                        (object?)request.Title?.Trim() ?? DBNull.Value
+                    );
+                    updateCmd.Parameters.AddWithValue(
+                        "@DisplayOrder",
+                        request.DisplayOrder.HasValue
+                            ? (object)request.DisplayOrder.Value
+                            : DBNull.Value
+                    );
+                    updateCmd.Parameters.AddWithValue(
+                        "@IsActive",
+                        request.IsActive.HasValue ? (object)request.IsActive.Value : DBNull.Value
+                    );
+                    updateCmd.Parameters.AddWithValue(
+                        "@MediaUrl",
+                        (object?)newMediaUrl ?? DBNull.Value
+                    );
 
                     using SqlDataReader reader = await updateCmd.ExecuteReaderAsync();
                     if (await reader.ReadAsync())
@@ -862,7 +1027,9 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
                             DisplayOrder = reader.GetInt32(5),
                             IsActive = reader.GetBoolean(6),
                             CreatedAt = reader.GetDateTime(7).ToString("yyyy-MM-dd HH:mm:ss"),
-                            UpdatedAt = reader.IsDBNull(8) ? null : reader.GetDateTime(8).ToString("yyyy-MM-dd HH:mm:ss"),
+                            UpdatedAt = reader.IsDBNull(8)
+                                ? null
+                                : reader.GetDateTime(8).ToString("yyyy-MM-dd HH:mm:ss"),
                         };
                     }
                 }
@@ -876,33 +1043,49 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
                 }
 
                 sw.Stop();
-                return Ok(new ApiResponse
-                {
-                    Success = true,
-                    StatusCode = 200,
-                    Message = "HERO_BANNER_UPDATED",
-                    Data = updatedResponse,
-                });
+                return Ok(
+                    new ApiResponse
+                    {
+                        Success = true,
+                        StatusCode = 200,
+                        Message = "HERO_BANNER_UPDATED",
+                        Data = updatedResponse,
+                    }
+                );
             }
             catch (Exception ex)
             {
-                try { tran.Rollback(); } catch { }
+                try
+                {
+                    tran.Rollback();
+                }
+                catch { }
 
                 // Safe cleanup of newly written file upon DB failure
                 if (newPhysicalPath != null && System.IO.File.Exists(newPhysicalPath))
                 {
-                    try { System.IO.File.Delete(newPhysicalPath); } catch { }
+                    try
+                    {
+                        System.IO.File.Delete(newPhysicalPath);
+                    }
+                    catch { }
                 }
 
                 sw.Stop();
                 Logs.Error($"Exception in UpdateHeroMedia for id {id}", ex);
-                return StatusCode(500, new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 500,
-                    Message = "SERVER_ERROR",
-                    Errors = new List<string> { "An internal server error occurred while updating the hero banner." },
-                });
+                return StatusCode(
+                    500,
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 500,
+                        Message = "SERVER_ERROR",
+                        Errors = new List<string>
+                        {
+                            "An internal server error occurred while updating the hero banner.",
+                        },
+                    }
+                );
             }
         }
         #endregion
@@ -918,60 +1101,80 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
             if (!TryResolveBannerId(id, out long bannerId))
             {
                 sw.Stop();
-                return BadRequest(new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 400,
-                    Message = "INVALID_ID",
-                    Errors = new List<string> { "Invalid Hero Banner ID specified." },
-                });
+                return BadRequest(
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 400,
+                        Message = "INVALID_ID",
+                        Errors = new List<string> { "Invalid Hero Banner ID specified." },
+                    }
+                );
             }
 
             try
             {
-                string selectSql = @"SELECT Id, MediaUrl FROM HeroBanners WHERE Id = @Id AND IsDeleted = 0;";
-                DataTable dt = await _db.ExecuteQueryAsync(selectSql, new[] { new SqlParameter("@Id", bannerId) });
+                string selectSql =
+                    @"SELECT Id, MediaUrl FROM HeroBanners WHERE Id = @Id AND IsDeleted = 0;";
+                DataTable dt = await _db.ExecuteQueryAsync(
+                    selectSql,
+                    new[] { new SqlParameter("@Id", bannerId) }
+                );
 
                 if (dt.Rows.Count == 0)
                 {
                     sw.Stop();
-                    return NotFound(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 404,
-                        Message = "HERO_BANNER_NOT_FOUND",
-                        Errors = new List<string> { $"Hero Banner with ID '{id}' was not found." },
-                    });
+                    return NotFound(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 404,
+                            Message = "HERO_BANNER_NOT_FOUND",
+                            Errors = new List<string>
+                            {
+                                $"Hero Banner with ID '{id}' was not found.",
+                            },
+                        }
+                    );
                 }
 
                 string mediaUrl = dt.Rows[0]["MediaUrl"]?.ToString() ?? string.Empty;
 
-                string deleteSql = @"UPDATE HeroBanners SET IsDeleted = 1, UpdatedAt = GETDATE() WHERE Id = @Id;";
+                string deleteSql =
+                    @"UPDATE HeroBanners SET IsDeleted = 1, UpdatedAt = GETDATE() WHERE Id = @Id;";
                 _db.ExecuteNonQuery(deleteSql, new[] { new SqlParameter("@Id", bannerId) });
 
                 // Safely delete associated physical file
                 SafeDeletePhysicalFile(mediaUrl);
 
                 sw.Stop();
-                return Ok(new ApiResponse
-                {
-                    Success = true,
-                    StatusCode = 200,
-                    Message = "HERO_BANNER_DELETED",
-                    Data = new { Id = bannerId, EncryptedId = _encryption.Encrypt(bannerId) },
-                });
+                return Ok(
+                    new ApiResponse
+                    {
+                        Success = true,
+                        StatusCode = 200,
+                        Message = "HERO_BANNER_DELETED",
+                        Data = new { Id = bannerId, EncryptedId = _encryption.Encrypt(bannerId) },
+                    }
+                );
             }
             catch (Exception ex)
             {
                 sw.Stop();
                 Logs.Error($"Exception in DeleteHeroMedia for id {id}", ex);
-                return StatusCode(500, new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 500,
-                    Message = "SERVER_ERROR",
-                    Errors = new List<string> { "An internal server error occurred while deleting the hero banner." },
-                });
+                return StatusCode(
+                    500,
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 500,
+                        Message = "SERVER_ERROR",
+                        Errors = new List<string>
+                        {
+                            "An internal server error occurred while deleting the hero banner.",
+                        },
+                    }
+                );
             }
         }
         #endregion
@@ -979,83 +1182,104 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
         #region PATCH: Toggle Active Status
         [Authorize(Roles = "Admin")]
         [HttpPatch("{id}/status")]
-        public async Task<IActionResult> UpdateHeroMediaStatus(string id, [FromBody] HeroBannerStatusUpdateRequest? request)
+        public async Task<IActionResult> UpdateHeroMediaStatus(
+            string id,
+            [FromBody] HeroBannerStatusUpdateRequest? request
+        )
         {
             var sw = Stopwatch.StartNew();
 
             if (!TryResolveBannerId(id, out long bannerId))
             {
                 sw.Stop();
-                return BadRequest(new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 400,
-                    Message = "INVALID_ID",
-                    Errors = new List<string> { "Invalid Hero Banner ID specified." },
-                });
+                return BadRequest(
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 400,
+                        Message = "INVALID_ID",
+                        Errors = new List<string> { "Invalid Hero Banner ID specified." },
+                    }
+                );
             }
 
             if (request == null)
             {
                 sw.Stop();
-                return BadRequest(new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 400,
-                    Message = "INVALID_REQUEST",
-                    Errors = new List<string> { "Request body cannot be null." },
-                });
+                return BadRequest(
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 400,
+                        Message = "INVALID_REQUEST",
+                        Errors = new List<string> { "Request body cannot be null." },
+                    }
+                );
             }
 
             try
             {
-                string updateSql = @"
+                string updateSql =
+                    @"
                     UPDATE HeroBanners
                     SET IsActive = @IsActive, UpdatedAt = GETDATE()
                     OUTPUT INSERTED.Id, INSERTED.Title, INSERTED.MediaUrl, INSERTED.IsImage, INSERTED.IsVideo,
                            INSERTED.DisplayOrder, INSERTED.IsActive, INSERTED.CreatedAt, INSERTED.UpdatedAt
                     WHERE Id = @Id AND IsDeleted = 0;";
 
-                DataTable dt = await _db.ExecuteQueryAsync(updateSql, new[]
-                {
-                    new SqlParameter("@Id", bannerId),
-                    new SqlParameter("@IsActive", request.IsActive),
-                });
+                DataTable dt = await _db.ExecuteQueryAsync(
+                    updateSql,
+                    new[]
+                    {
+                        new SqlParameter("@Id", bannerId),
+                        new SqlParameter("@IsActive", request.IsActive),
+                    }
+                );
 
                 if (dt.Rows.Count == 0)
                 {
                     sw.Stop();
-                    return NotFound(new ApiResponse
-                    {
-                        Success = false,
-                        StatusCode = 404,
-                        Message = "HERO_BANNER_NOT_FOUND",
-                        Errors = new List<string> { $"Hero Banner with ID '{id}' was not found." },
-                    });
+                    return NotFound(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 404,
+                            Message = "HERO_BANNER_NOT_FOUND",
+                            Errors = new List<string>
+                            {
+                                $"Hero Banner with ID '{id}' was not found.",
+                            },
+                        }
+                    );
                 }
 
                 var response = MapHeroBanner(dt.Rows[0]);
                 sw.Stop();
 
-                return Ok(new ApiResponse
-                {
-                    Success = true,
-                    StatusCode = 200,
-                    Message = "HERO_BANNER_STATUS_UPDATED",
-                    Data = response,
-                });
+                return Ok(
+                    new ApiResponse
+                    {
+                        Success = true,
+                        StatusCode = 200,
+                        Message = "HERO_BANNER_STATUS_UPDATED",
+                        Data = response,
+                    }
+                );
             }
             catch (Exception ex)
             {
                 sw.Stop();
                 Logs.Error($"Exception in UpdateHeroMediaStatus for id {id}", ex);
-                return StatusCode(500, new ApiResponse
-                {
-                    Success = false,
-                    StatusCode = 500,
-                    Message = "SERVER_ERROR",
-                    Errors = new List<string> { "An internal server error occurred." },
-                });
+                return StatusCode(
+                    500,
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 500,
+                        Message = "SERVER_ERROR",
+                        Errors = new List<string> { "An internal server error occurred." },
+                    }
+                );
             }
         }
         #endregion

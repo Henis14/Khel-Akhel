@@ -128,7 +128,8 @@ export const GALLERY_LAYOUT_OPTIONS: GalleryLayoutOption[] = [
     id: 'grid-3',
     title: 'Three-Column Grid',
     badge: 'Layout A',
-    description: 'Uniform 3-column arrangement with consistent aspect proportions. Ideal for artwork series, print editions, and visual collections.',
+    description:
+      'Uniform 3-column arrangement with consistent aspect proportions. Ideal for artwork series, print editions, and visual collections.',
     recommendedImages: '3, 6, 9+ images',
     presetKey: 'uniform-3col',
     thumbnailClass: 'thumb-grid-3',
@@ -137,7 +138,8 @@ export const GALLERY_LAYOUT_OPTIONS: GalleryLayoutOption[] = [
     id: 'grid-2',
     title: 'Two-Column Grid',
     badge: 'Layout B',
-    description: 'Balanced 2-column presentation offering larger photographic scale and detail visibility for key artwork pieces.',
+    description:
+      'Balanced 2-column presentation offering larger photographic scale and detail visibility for key artwork pieces.',
     recommendedImages: '2, 4, 6+ images',
     presetKey: 'uniform-2col',
     thumbnailClass: 'thumb-grid-2',
@@ -146,7 +148,8 @@ export const GALLERY_LAYOUT_OPTIONS: GalleryLayoutOption[] = [
     id: 'editorial',
     title: 'Asymmetric Editorial',
     badge: 'Layout C',
-    description: 'Dynamic magazine-style composition pairing tall hero images with staggered secondary visual blocks.',
+    description:
+      'Dynamic magazine-style composition pairing tall hero images with staggered secondary visual blocks.',
     recommendedImages: '3 to 7 images',
     presetKey: 'editorial-asym',
     thumbnailClass: 'thumb-editorial',
@@ -155,7 +158,8 @@ export const GALLERY_LAYOUT_OPTIONS: GalleryLayoutOption[] = [
     id: 'featured',
     title: 'Featured + Supporting',
     badge: 'Layout D',
-    description: 'One prominent centerpiece image highlighted by a balanced constellation of supporting detail images.',
+    description:
+      'One prominent centerpiece image highlighted by a balanced constellation of supporting detail images.',
     recommendedImages: '3 to 5 images',
     presetKey: 'featured-focus',
     thumbnailClass: 'thumb-featured',
@@ -164,7 +168,8 @@ export const GALLERY_LAYOUT_OPTIONS: GalleryLayoutOption[] = [
     id: 'full-width',
     title: 'Full-Width Showcase',
     badge: 'Layout E',
-    description: 'Expansive wide-span featured image spanning the full editorial width, accompanied by supporting photo rows.',
+    description:
+      'Expansive wide-span featured image spanning the full editorial width, accompanied by supporting photo rows.',
     recommendedImages: '1 to 5 images',
     presetKey: 'panoramic-hero',
     thumbnailClass: 'thumb-full-width',
@@ -173,7 +178,8 @@ export const GALLERY_LAYOUT_OPTIONS: GalleryLayoutOption[] = [
     id: 'masonry',
     title: 'Masonry Flow',
     badge: 'Layout F',
-    description: 'Natural vertical columns that honor the native aspect ratio and vertical orientation of every photograph without cropping.',
+    description:
+      'Natural vertical columns that honor the native aspect ratio and vertical orientation of every photograph without cropping.',
     recommendedImages: '4 to 12 images',
     presetKey: 'masonry-cascade',
     thumbnailClass: 'thumb-masonry',
@@ -182,7 +188,8 @@ export const GALLERY_LAYOUT_OPTIONS: GalleryLayoutOption[] = [
     id: 'asymmetric',
     title: 'Asymmetric Dual Spread',
     badge: 'Layout G',
-    description: 'Editorial cadence combining wide horizontal landscape frames with narrow vertical portrait frames in an alternating rhythm.',
+    description:
+      'Editorial cadence combining wide horizontal landscape frames with narrow vertical portrait frames in an alternating rhythm.',
     recommendedImages: '2 to 8 images',
     presetKey: 'asymmetric-duo',
     thumbnailClass: 'thumb-asymmetric',

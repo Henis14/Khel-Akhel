@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -6,7 +6,10 @@ import { AdminProductService } from '../../../services/admin-product.service';
 import { AdminProductCategoryService } from '../../../services/admin-product-category.service';
 import { AdminProductImageService } from '../../../services/admin-product-image.service';
 import { ProductCreateRequest } from '../../../models/product.model';
-import { ProductCategoryResponse } from '../../../models/product-category.model';
+import {
+  ProductCategoryResponse,
+  ProductSubCategoryResponse,
+} from '../../../models/product-category.model';
 import { CustomValidators } from '../../../../common/validators/custom.validators';
 import { REGEX_PATTERNS } from '../../../../common/constants/regex.constants';
 import { BreadcrumbComponent } from '../../../../common/components/breadcrumb/breadcrumb';
@@ -36,11 +39,14 @@ export class AddProductComponent implements OnInit, OnDestroy {
   private categoryService = inject(AdminProductCategoryService);
   private productImageService = inject(AdminProductImageService);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
 
   productForm!: FormGroup;
   categories: ProductCategoryResponse[] = [];
+  subCategories: ProductSubCategoryResponse[] = [];
 
   loadingCategories = false;
+  loadingSubCategories = false;
   submitting = false;
   isUploadingImages = false;
   errorMessage: string | null = null;
@@ -67,6 +73,7 @@ export class AddProductComponent implements OnInit, OnDestroy {
     this.productForm = this.fb.group(
       {
         encryptedCategoryId: ['', [CustomValidators.requiredNonEmpty]],
+        encryptedSubCategoryId: [''],
         productName: ['', [CustomValidators.requiredNonEmpty]],
         sku: [
           '',
@@ -112,15 +119,36 @@ export class AddProductComponent implements OnInit, OnDestroy {
         this.loadingCategories = false;
         if (res.success && res.data) {
           this.categories = res.data.filter((c) => c.isActive);
-          if (this.categories.length > 0) {
-            this.productForm.patchValue({
-              encryptedCategoryId: this.categories[0].encryptedCategoryId,
-            });
-          }
         }
+        this.cdr.markForCheck();
       },
       error: () => {
         this.loadingCategories = false;
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  onCategoryChange(categoryId: string): void {
+    this.productForm.patchValue({
+      encryptedSubCategoryId: '',
+    });
+    this.subCategories = [];
+
+    if (!categoryId) return;
+
+    this.loadingSubCategories = true;
+    this.categoryService.getSubCategories(categoryId).subscribe({
+      next: (res) => {
+        this.loadingSubCategories = false;
+        if (res.success && res.data) {
+          this.subCategories = res.data.filter((sc) => sc.isActive);
+        }
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.loadingSubCategories = false;
+        this.cdr.markForCheck();
       },
     });
   }
@@ -209,6 +237,7 @@ export class AddProductComponent implements OnInit, OnDestroy {
 
     const payload: ProductCreateRequest = {
       encryptedCategoryId: this.productForm.value.encryptedCategoryId,
+      encryptedSubCategoryId: this.productForm.value.encryptedSubCategoryId || null,
       productName: this.productForm.value.productName.trim(),
       sku: this.productForm.value.sku.trim(),
       shortDescription: this.productForm.value.shortDescription?.trim() || '',
@@ -254,7 +283,7 @@ export class AddProductComponent implements OnInit, OnDestroy {
                   const errDetail =
                     imgErr.error?.errors && imgErr.error.errors.length > 0
                       ? imgErr.error.errors.join('; ')
-                      : (imgErr.error?.message || 'Upload error');
+                      : imgErr.error?.message || 'Upload error';
                   this.errorMessage = `Product created, but image upload failed: ${errDetail}. You can upload images in Product Detail.`;
                   setTimeout(() => {
                     this.router.navigate(['/admin/products', encryptedProductId]);

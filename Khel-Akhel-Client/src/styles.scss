@@ -1378,3 +1378,226 @@ td.actions-cell,
     background-color: var(--admin-surface-alt, #eef1f4);
   }
 }
+
+/* ==========================================================================
+   Admin polish — small refinements on top of Theme No. 6 (colours unchanged)
+   ========================================================================== */
+.admin-wrapper {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+
+  ::selection {
+    background: var(--admin-sidebar-active, #dce3e8);
+    color: var(--admin-text-primary, #25313b);
+  }
+
+  /* Page header: tighter title, calmer subtitle */
+  .page-header {
+    h1,
+    .page-title {
+      font-weight: 650;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle,
+    .page-subtitle {
+      line-height: 1.55;
+    }
+  }
+
+  /* Buttons: gentle lift on hover, press on click, clear disabled state */
+  .btn {
+    transition:
+      background-color var(--admin-speed, 0.18s) var(--admin-ease, ease),
+      border-color var(--admin-speed, 0.18s) var(--admin-ease, ease),
+      color var(--admin-speed, 0.18s) var(--admin-ease, ease),
+      box-shadow var(--admin-speed, 0.18s) var(--admin-ease, ease),
+      transform var(--admin-speed, 0.18s) var(--admin-ease, ease);
+
+    &:focus-visible {
+      box-shadow: var(--admin-ring);
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0) scale(0.98);
+    }
+
+    &:disabled,
+    &.disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+  }
+
+  .btn-primary,
+  .btn-accent,
+  .btn-terracotta,
+  .btn-danger {
+    &:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: var(--admin-shadow-md);
+    }
+  }
+
+  .btn-secondary,
+  .btn-outline {
+    &:hover:not(:disabled) {
+      box-shadow: var(--admin-shadow-sm);
+    }
+  }
+
+  /* Inputs: hover hint before focus, consistent ring */
+  .form-control {
+    &:hover:not(:disabled):not(:focus) {
+      border-color: var(--admin-input-focus, #71818f);
+    }
+
+    &:focus {
+      box-shadow: var(--admin-ring);
+    }
+
+    &.is-invalid:focus {
+      box-shadow: var(--admin-ring-danger);
+    }
+  }
+
+  .form-group label,
+  .form-group .form-label {
+    font-weight: 600;
+    letter-spacing: 0.005em;
+  }
+
+  /* Cards: softer layered shadow and a slightly tinted header */
+  .card,
+  .filter-card,
+  .table-card {
+    border-color: var(--admin-border-light, #e9edf1);
+
+    &.card-hover:hover {
+      transform: translateY(-2px);
+    }
+  }
+
+  .card.card-hover,
+  .filter-card.card-hover,
+  .table-card.card-hover {
+    transition:
+      box-shadow 0.22s var(--admin-ease, ease),
+      border-color 0.22s var(--admin-ease, ease),
+      transform 0.22s var(--admin-ease, ease);
+  }
+
+  .card-header-clean,
+  .card-header-box {
+    background: linear-gradient(180deg, var(--admin-surface, #fff) 0%, #fafbfc 100%);
+  }
+
+  /* Tables: refined header, tabular numbers, accent on row hover */
+  .table {
+    font-variant-numeric: tabular-nums;
+
+    th {
+      font-size: 0.72rem;
+      font-weight: 650;
+      letter-spacing: 0.06em;
+      color: var(--admin-text-secondary, #65727d);
+      background-color: #f5f7f9;
+    }
+
+    td {
+      vertical-align: middle;
+    }
+
+    tbody tr {
+      &:hover td:first-child {
+        box-shadow: inset 3px 0 0 var(--admin-primary, #263541);
+      }
+
+      &:last-child td {
+        border-bottom: 0;
+      }
+    }
+  }
+
+  .table-responsive {
+    scrollbar-width: thin;
+    scrollbar-color: var(--admin-border-strong, #cbd3da) transparent;
+  }
+
+  /* Badges: a touch more breathing room */
+  .badge {
+    letter-spacing: 0.01em;
+    font-weight: 600;
+  }
+
+  /* Alerts: soft left accent */
+  .alert {
+    border-left-width: 3px;
+  }
+
+  /* Tabs: smooth active underline */
+  .nav-tabs .tab-item {
+    transition:
+      color var(--admin-speed, 0.18s) var(--admin-ease, ease),
+      border-color var(--admin-speed, 0.18s) var(--admin-ease, ease);
+  }
+
+  /* Modal: rounder, deeper, frosted backdrop */
+  .modal-backdrop {
+    background-color: rgba(38, 53, 65, 0.45);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  .modal-content {
+    border-radius: var(--admin-radius-xl, 16px);
+    border-color: var(--admin-border-light, #e9edf1);
+  }
+
+  .modal-footer {
+    background-color: #f8fafb;
+  }
+
+  /* Links inside content */
+  a:focus-visible {
+    outline: none;
+    border-radius: 4px;
+    box-shadow: var(--admin-ring);
+  }
+
+  /* Thin, quiet scrollbars across the admin */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--admin-border-strong, #cbd3da) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: var(--admin-border-strong, #cbd3da);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-wrapper {
+    .btn,
+    .card,
+    .filter-card,
+    .table-card {
+      transition: none !important;
+      transform: none !important;
+    }
+  }
+}

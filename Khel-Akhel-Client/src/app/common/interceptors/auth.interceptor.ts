@@ -36,7 +36,11 @@ export const authInterceptor: HttpInterceptorFn = (
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
       // 409 Conflict from refresh endpoint: concurrent refresh race condition
-      if (error.status === 409 && req.url.includes('/api/auth/refresh') && !req.headers.has('X-Refresh-Retry')) {
+      if (
+        error.status === 409 &&
+        req.url.includes('/api/auth/refresh') &&
+        !req.headers.has('X-Refresh-Retry')
+      ) {
         return timer(300).pipe(
           switchMap(() => {
             const retryReq = req.clone({

@@ -2,6 +2,8 @@ export interface ProductResponse {
   encryptedProductId: string;
   encryptedCategoryId: string;
   categoryName: string;
+  encryptedSubCategoryId?: string | null;
+  subCategoryName?: string | null;
   productName: string;
   productCode: string;
   sku: string;
@@ -22,6 +24,7 @@ export interface ProductResponse {
 
 export interface ProductCreateRequest {
   encryptedCategoryId: string;
+  encryptedSubCategoryId?: string | null;
   productName: string;
   productCode?: string;
   sku: string;
@@ -39,6 +42,7 @@ export interface ProductCreateRequest {
 export interface ProductUpdateRequest {
   encryptedProductId: string;
   encryptedCategoryId?: string;
+  encryptedSubCategoryId?: string | null;
   productName?: string;
   productCode?: string;
   sku?: string;
@@ -58,6 +62,7 @@ export interface ProductListRequest {
   pageIndex: number;
   pageSize: number;
   encryptedCategoryId?: string;
+  encryptedSubCategoryId?: string;
   minPrice?: number;
   maxPrice?: number;
   isFeatured?: boolean;
@@ -75,4 +80,5 @@ export interface ProductListResponse {
   totalRecords: number;
   pageIndex: number;
   pageSize: number;
+  totalPages: number;
 }

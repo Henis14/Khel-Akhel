@@ -41,6 +41,7 @@
               <select
                 class="form-select"
                 formControlName="encryptedCategoryId"
+                (change)="onCategoryChange($any($event.target).value)"
                 [class.is-invalid]="
                   productForm.get('encryptedCategoryId')?.touched &&
                   productForm.get('encryptedCategoryId')?.invalid
@@ -60,6 +61,36 @@
               >
                 Product category is required.
               </div>
+            </div>
+
+            <!-- SubCategory (Optional) -->
+            <div class="form-field">
+              <label class="form-label"
+                >Product SubCategory
+                <span
+                  class="optional-tag"
+                  style="font-size: 0.75rem; color: #64748b; font-weight: normal"
+                  >(Optional)</span
+                ></label
+              >
+              <select
+                class="form-select"
+                formControlName="encryptedSubCategoryId"
+                [disabled]="loadingSubCategories || subCategories.length === 0"
+              >
+                <option value="">
+                  {{
+                    loadingSubCategories
+                      ? 'Loading SubCategories...'
+                      : subCategories.length === 0
+                        ? '-- No SubCategories Available --'
+                        : '-- Optional: Select SubCategory --'
+                  }}
+                </option>
+                <option *ngFor="let sub of subCategories" [value]="sub.encryptedSubCategoryId">
+                  {{ sub.subCategoryName }}
+                </option>
+              </select>
             </div>
 
             <!-- SKU Code -->

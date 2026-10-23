@@ -1,82 +1,84 @@
-/* ==========================================================================
-   Khel-Akhel Admin Global Color Tokens — Theme No. 6: Neutral Grey
-   ========================================================================== */
 :root {
-  /* Theme No. 6: Neutral Grey Core Tokens */
-  --admin-primary: #263541;             /* Primary Dark Charcoal */
-  --admin-primary-hover: #344451;       /* Secondary Charcoal */
-  --admin-primary-active: #1e2a34;      /* Deep Charcoal Active */
+  --admin-primary: #263541;
+  --admin-primary-hover: #344451;
+  --admin-primary-active: #1e2a34;
   --admin-primary-soft: rgba(38, 53, 65, 0.08);
   --admin-primary-border: #263541;
 
-  --admin-secondary: #344451;           /* Secondary Charcoal */
+  --admin-secondary: #344451;
   --admin-secondary-hover: #263541;
 
-  /* Surfaces & Backgrounds */
-  --admin-bg: #F3F5F7;                  /* Main Page Background */
-  --admin-surface: #FFFFFF;             /* Card & Panel Background */
-  --admin-surface-alt: #EEF1F4;         /* Subtle Secondary Surface */
-  --admin-surface-hover: #F1F4F6;       /* Row Hover & Subtle Hover */
-  --admin-white: #FFFFFF;
+  --admin-bg: #f3f5f7;
+  --admin-surface: #ffffff;
+  --admin-surface-alt: #eef1f4;
+  --admin-surface-hover: #f1f4f6;
+  --admin-white: #ffffff;
 
   /* Typography Colors */
-  --admin-text-primary: #25313B;        /* Primary Text */
-  --admin-text-secondary: #65727D;      /* Secondary Text */
-  --admin-text-muted: #84909A;          /* Muted Text */
-  --admin-text-disabled: #A0ABB5;
+  --admin-text-primary: #25313b; /* Primary Text */
+  --admin-text-secondary: #65727d; /* Secondary Text */
+  --admin-text-muted: #84909a; /* Muted Text */
+  --admin-text-disabled: #a0abb5;
 
   /* Borders & Dividers */
-  --admin-border: #DCE2E7;              /* Borders & Dividers */
-  --admin-border-light: #E9EDF1;        /* Light Divider */
-  --admin-border-strong: #CBD3DA;       /* Strong Border / Input Border */
+  --admin-border: #dce2e7; /* Borders & Dividers */
+  --admin-border-light: #e9edf1; /* Light Divider */
+  --admin-border-strong: #cbd3da; /* Strong Border / Input Border */
 
   /* Sidebar Tokens (Theme No. 6 Neutral Grey) */
-  --admin-sidebar-bg: #263541;          /* Sidebar Background */
-  --admin-sidebar-hover: #3B4A56;       /* Sidebar Hover Background */
-  --admin-sidebar-active: #DCE3E8;      /* Sidebar Active Background */
-  --admin-sidebar-text: #CBD3DA;        /* Sidebar Regular Text */
+  --admin-sidebar-bg: #263541; /* Sidebar Background */
+  --admin-sidebar-hover: #3b4a56; /* Sidebar Hover Background */
+  --admin-sidebar-active: #dce3e8; /* Sidebar Active Background */
+  --admin-sidebar-text: #cbd3da; /* Sidebar Regular Text */
   --admin-sidebar-text-active: #263541; /* Sidebar Active Text */
   --admin-sidebar-border: rgba(220, 226, 231, 0.12);
 
   /* Form Controls */
-  --admin-input-bg: #FFFFFF;            /* Input Background */
-  --admin-input-border: #CBD3DA;        /* Input Border */
-  --admin-input-focus: #71818F;         /* Focus Outline */
+  --admin-input-bg: #ffffff; /* Input Background */
+  --admin-input-border: #cbd3da; /* Input Border */
+  --admin-input-focus: #71818f; /* Focus Outline */
   --admin-input-focus-ring: rgba(113, 129, 143, 0.2);
-  --admin-input-disabled: #EEF1F4;
+  --admin-input-disabled: #eef1f4;
 
   /* Tables */
-  --admin-table-th-bg: #E9EDF1;         /* Table Header Background */
-  --admin-table-th-text: #25313B;       /* Table Header Text */
-  --admin-table-hover-bg: #F1F4F6;      /* Table Row Hover Background */
-  --admin-table-border: #DCE2E7;
+  --admin-table-th-bg: #e9edf1; /* Table Header Background */
+  --admin-table-th-text: #25313b; /* Table Header Text */
+  --admin-table-hover-bg: #f1f4f6; /* Table Row Hover Background */
+  --admin-table-border: #dce2e7;
 
   /* Semantic Status Indicators */
-  --admin-status-success: #2E7D32;
-  --admin-status-success-bg: #E8F5E9;
-  --admin-status-success-border: #A5D6A7;
-  --admin-status-success-text: #1B5E20;
+  --admin-status-success: #2e7d32;
+  --admin-status-success-bg: #e8f5e9;
+  --admin-status-success-border: #a5d6a7;
+  --admin-status-success-text: #1b5e20;
 
-  --admin-status-danger: #D32F2F;
-  --admin-status-danger-bg: #FFEBEE;
-  --admin-status-danger-border: #FFCDD2;
-  --admin-status-danger-text: #C62828;
+  --admin-status-danger: #d32f2f;
+  --admin-status-danger-bg: #ffebee;
+  --admin-status-danger-border: #ffcdd2;
+  --admin-status-danger-text: #c62828;
 
-  --admin-status-warning: #ED6C02;
-  --admin-status-warning-bg: #FFF3E0;
-  --admin-status-warning-border: #FFE0B2;
-  --admin-status-warning-text: #E65100;
+  --admin-status-warning: #ed6c02;
+  --admin-status-warning-bg: #fff3e0;
+  --admin-status-warning-border: #ffe0b2;
+  --admin-status-warning-text: #e65100;
 
-  --admin-status-info: #0288D1;
-  --admin-status-info-bg: #E1F5FE;
-  --admin-status-info-border: #B3E5FC;
-  --admin-status-info-text: #0277BD;
+  --admin-status-info: #0288d1;
+  --admin-status-info-bg: #e1f5fe;
+  --admin-status-info-border: #b3e5fc;
+  --admin-status-info-text: #0277bd;
 
   /* Elevation & Shadows */
-  --admin-shadow-xs: 0 1px 2px 0 rgba(38, 53, 65, 0.04);
-  --admin-shadow-sm: 0 2px 4px 0 rgba(38, 53, 65, 0.06);
-  --admin-shadow-md: 0 4px 8px -1px rgba(38, 53, 65, 0.08);
-  --admin-shadow-lg: 0 10px 20px -3px rgba(38, 53, 65, 0.1);
+  /* Layered, softer shadows: a tight contact shadow plus a wide ambient one */
+  --admin-shadow-xs: 0 1px 2px 0 rgba(38, 53, 65, 0.05);
+  --admin-shadow-sm: 0 1px 2px rgba(38, 53, 65, 0.04), 0 2px 6px -1px rgba(38, 53, 65, 0.06);
+  --admin-shadow-md: 0 1px 3px rgba(38, 53, 65, 0.05), 0 6px 16px -4px rgba(38, 53, 65, 0.1);
+  --admin-shadow-lg: 0 2px 6px rgba(38, 53, 65, 0.06), 0 18px 40px -12px rgba(38, 53, 65, 0.22);
+
+  /* Focus ring & motion */
+  --admin-ring: 0 0 0 3px rgba(113, 129, 143, 0.28);
+  --admin-ring-danger: 0 0 0 3px rgba(211, 47, 47, 0.18);
+  --admin-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --admin-speed: 0.18s;
 
   /* Border Radius */
   --admin-radius-sm: 6px;
@@ -85,9 +87,6 @@
   --admin-radius-xl: 16px;
 }
 
-/* ==========================================================================
-   Admin Shell Scope: Cascade Theme No. 6 Tokens to all child elements
-   ========================================================================== */
 .admin-wrapper,
 .admin-login-shell,
 .admin-layout-container {
