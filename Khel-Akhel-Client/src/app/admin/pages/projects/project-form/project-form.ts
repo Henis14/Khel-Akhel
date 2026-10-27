@@ -4,6 +4,9 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { AdminProjectService } from '../../../services/admin-project.service';
 import {
+  CONTENT_TYPE_GROUPS,
+  CONTENT_TYPES,
+  GALLERY_LAYOUT_OPTIONS,
   ProjectCreatePayload,
   ProjectDetail,
   ProjectImage,
@@ -22,6 +25,7 @@ import {
 import { BreadcrumbComponent } from '../../../../common/components/breadcrumb/breadcrumb';
 import { BreadcrumbItem } from '../../../../common/models/breadcrumb.model';
 import { AppLoaderComponent } from '../../../../common/components/app-loader/app-loader';
+import { CustomValidators } from '../../../../common/validators/custom.validators';
 
 @Component({
   selector: 'app-project-form',
@@ -53,6 +57,9 @@ export class ProjectFormComponent implements OnInit {
 
   form!: FormGroup;
   selectedLayout: string = 'grid-3';
+
+  /** Disciplines grouped exactly like the storefront Projects menu (daras.co.in sections). */
+  readonly contentTypeGroups = CONTENT_TYPE_GROUPS;
 
   // Visual Image Assets state
   currentEditorImages: EditorImageItem[] = [];
@@ -89,7 +96,14 @@ export class ProjectFormComponent implements OnInit {
 
   private initForm(): void {
     this.form = this.fb.group({
-      heading: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(200)]],
+      heading: [
+        '',
+        [
+          CustomValidators.requiredNonEmpty,
+          Validators.minLength(2),
+          Validators.maxLength(200),
+        ],
+      ],
       subheading: ['', [Validators.maxLength(250)]],
       contentType: [''],
       projectOrEventTitle: ['', [Validators.maxLength(200)]],
@@ -105,7 +119,7 @@ export class ProjectFormComponent implements OnInit {
           Validators.pattern(/^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/i),
         ],
       ],
-      displayOrder: [0, [Validators.min(0)]],
+      displayOrder: [0, [CustomValidators.nonNegativeInteger]],
       isPublished: [false],
       isActive: [true],
     });
@@ -195,6 +209,20 @@ export class ProjectFormComponent implements OnInit {
       originalFileName: img.fileName,
       displayOrder: img.displayOrder,
     }));
+  }
+
+  /** Keep an older free-text discipline selectable so editing never loses it. */
+  get legacyContentType(): string | null {
+    const v = (this.form?.get('contentType')?.value || '').trim();
+    return v && !CONTENT_TYPES.includes(v) ? v : null;
+  }
+
+  get selectedLayoutTitle(): string {
+    return GALLERY_LAYOUT_OPTIONS.find((o) => o.id === this.selectedLayout)?.title || this.selectedLayout;
+  }
+
+  charCount(control: string): number {
+    return (this.form?.get(control)?.value || '').length;
   }
 
   save(): void {

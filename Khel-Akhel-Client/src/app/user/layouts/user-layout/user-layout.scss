@@ -141,6 +141,18 @@ $ease: cubic-bezier(0.22, 0.61, 0.36, 1);
       color: var(--user-maroon);
       background: #fffaf0;
     }
+    .btn-auth-account {
+      color: #fffaf0;
+      border-color: rgba(255, 250, 240, 0.45);
+      background: rgba(255, 255, 255, 0.12);
+
+      &:hover,
+      &.active {
+        color: var(--user-maroon);
+        background: #fffaf0;
+        border-color: #fffaf0;
+      }
+    }
     .nav-link.active::after {
       background: var(--user-haldi);
     }
@@ -352,6 +364,31 @@ $ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   cursor: pointer;
   text-decoration: underline;
   text-underline-offset: 4px;
+}
+
+.btn-auth-account {
+  @extend %caps;
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  color: var(--user-maroon);
+  background: var(--user-limewash, #f7f4ee);
+  border: 1px solid rgba(69, 18, 10, 0.18);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+
+  &:hover,
+  &.active {
+    background: var(--user-maroon);
+    color: #ffffff;
+    border-color: var(--user-maroon);
+    box-shadow: 0 2px 8px rgba(69, 18, 10, 0.15);
+  }
 }
 
 /* ---------- Mobile toggle ---------- */
@@ -829,9 +866,16 @@ $ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   overflow-wrap: anywhere;
 }
 
+.drawer-user-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
 .btn-drawer-logout {
   @extend %caps;
-  margin-top: 0.75rem;
+  margin-top: 0;
   padding: 0;
   border: 0;
   color: var(--user-maroon);
@@ -839,6 +883,30 @@ $ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   cursor: pointer;
   text-decoration: underline;
   text-underline-offset: 4px;
+}
+
+.btn-drawer-account {
+  @extend %caps;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 1.1rem;
+  border-radius: 999px;
+  background: var(--user-maroon);
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  transition: background 0.2s ease;
+
+  &:hover {
+    background: #2f0b05;
+  }
+
+  &.active {
+    background: #2f0b05;
+    box-shadow: 0 0 0 2px var(--user-haldi);
+  }
 }
 
 .drawer-daras-tag {

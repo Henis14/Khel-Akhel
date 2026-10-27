@@ -75,7 +75,14 @@ export class CustomerDetailComponent implements OnInit {
 
   initResetForm(): void {
     this.resetForm = this.fb.group({
-      adminNotes: ['', [Validators.required, Validators.minLength(5)]],
+      adminNotes: [
+        '',
+        [
+          CustomValidators.requiredNonEmpty,
+          Validators.minLength(5),
+          Validators.maxLength(1000),
+        ],
+      ],
     });
   }
 

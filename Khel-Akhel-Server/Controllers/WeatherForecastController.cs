@@ -1,3 +1,4 @@
+﻿using Khel_Akhel_Server.BL.Common;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Khel_Akhel_Server.Controllers
@@ -21,13 +22,16 @@ namespace Khel_Akhel_Server.Controllers
         [HttpGet(Name = "GetWeatherForecast")]
         public IEnumerable<WeatherForecast> Get()
         {
-            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+            Logs.Info("GetWeatherForecast API started");
+            var result = Enumerable.Range(1, 5).Select(index => new WeatherForecast
             {
                 Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
                 TemperatureC = Random.Shared.Next(-20, 55),
                 Summary = Summaries[Random.Shared.Next(Summaries.Length)]
             })
             .ToArray();
+            Logs.Info($"GetWeatherForecast completed successfully | Count: {result.Length}");
+            return result;
         }
     }
 }

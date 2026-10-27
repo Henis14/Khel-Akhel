@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { adminGuard } from './common/guards/admin.guard';
+import { userGuard } from './common/guards/user.guard';
 import { UnauthorizedComponent } from './common/components/unauthorized/unauthorized';
 
 export const routes: Routes = [
@@ -262,6 +263,26 @@ export const routes: Routes = [
           import('./user/pages/reset-password/reset-password').then(
             (m) => m.ResetPasswordComponent,
           ),
+      },
+      {
+        path: 'account',
+        canActivate: [userGuard],
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./user/pages/account/account-overview/account-overview').then(
+                (m) => m.AccountOverview,
+              ),
+          },
+          {
+            path: 'addresses',
+            loadComponent: () =>
+              import('./user/pages/account/manage-addresses/manage-addresses').then(
+                (m) => m.ManageAddresses,
+              ),
+          },
+        ],
       },
     ],
   },

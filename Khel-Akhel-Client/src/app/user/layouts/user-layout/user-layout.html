@@ -131,6 +131,14 @@
               >
                 Sign out
               </button>
+              <a
+                routerLink="/account"
+                routerLinkActive="active"
+                class="btn-auth-account"
+                aria-label="Manage your account"
+              >
+                Account
+              </a>
             </div>
           } @else {
             <div class="guest-auth-actions">
@@ -330,7 +338,17 @@
         <div class="drawer-user-info">
           <p class="drawer-user-meta">Signed in as</p>
           <p class="drawer-user-email">{{ authService.currentUser()?.email }}</p>
-          <button type="button" class="btn-drawer-logout" (click)="logout()">Sign out</button>
+          <div class="drawer-user-actions">
+            <button type="button" class="btn-drawer-logout" (click)="logout()">Sign out</button>
+            <a
+              routerLink="/account"
+              routerLinkActive="active"
+              class="btn-drawer-account"
+              (click)="closeMobileMenu()"
+            >
+              Account
+            </a>
+          </div>
         </div>
       } @else {
         <div class="drawer-auth-grid">

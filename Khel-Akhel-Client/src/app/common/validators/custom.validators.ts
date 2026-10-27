@@ -132,4 +132,19 @@ export class CustomValidators {
     }
     return null;
   }
+
+  /**
+   * Validates positive integer (> 0 and integer).
+   */
+  static positiveInteger(control: AbstractControl): ValidationErrors | null {
+    const value = control.value;
+    if (value === null || value === undefined || value === '') {
+      return null;
+    }
+    const num = Number(value);
+    if (isNaN(num) || num <= 0 || !Number.isInteger(num)) {
+      return { positiveInteger: true };
+    }
+    return null;
+  }
 }

@@ -1,176 +1,203 @@
-<div class="gallery-wrapper" [class.empty-state]="!images || images.length === 0">
-  @if (images && images.length > 0) {
-    <div
-      class="daras-gallery"
-      [ngClass]="'layout-' + resolvedLayout"
-      [attr.data-count]="images.length"
-    >
-      @for (img of images; track img.imageUrl + $index; let i = $index) {
-        <figure
-          class="gallery-item"
-          [ngClass]="{
-            'item-primary': i === 0,
-            'item-secondary': i > 0,
-            'item-even': i % 2 === 0,
-            'item-odd': i % 2 !== 0,
-          }"
-          [class.interactive]="interactive"
-          (click)="openLightbox(i)"
-          [title]="interactive ? 'Click to view high-resolution image' : ''"
-        >
-          <div class="image-inner">
-            <img
-              [src]="img.imageUrl"
-              [alt]="img.originalFileName || sectionTitle || 'Gallery image ' + (i + 1)"
-              loading="lazy"
-              (error)="onImageError($event)"
-            />
-            @if (interactive) {
-              <div class="hover-overlay">
-                <span class="zoom-icon">
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                    <line x1="11" y1="8" x2="11" y2="14"></line>
-                    <line x1="8" y1="11" x2="14" y2="11"></line>
-                  </svg>
-                </span>
-              </div>
+<div class="gallery-wrapper" [style.--g-gap]="gap + 'px'">
+  @if (images.length > 0) {
+    @switch (mode()) {
+      @case ('grid') {
+        <div class="g-grid" [attr.data-layout]="layout()" [attr.data-count]="images.length">
+          @for (cell of cells(); track cell.index) {
+            <figure
+              class="g-item"
+              [class.interactive]="interactive"
+              [style.grid-column]="cell.column"
+              [style.grid-row]="cell.row"
+              [style.aspect-ratio]="cell.aspect"
+              (click)="openLightbox(cell.index)"
+            >
+              <ng-container
+                *ngTemplateOutlet="tile; context: { $implicit: images[cell.index], i: cell.index }"
+              ></ng-container>
+            </figure>
+          }
+        </div>
+      }
+
+      @case ('justified') {
+        <div class="g-justified">
+          @for (row of justifiedRows(); track $index) {
+            <div class="g-jrow" [class.g-jrow--short]="!row.fill">
+              @for (it of row.items; track it.index) {
+                <figure
+                  class="g-item"
+                  [class.interactive]="interactive"
+                  [style.aspect-ratio]="it.ratio"
+                  [style.flex]="row.fill ? it.ratio + ' 1 0' : '0 0 auto'"
+                  [style.width]="
+                    row.fill ? null : 'calc(' + (it.ratio / row.target) * 100 + '% - var(--g-gap))'
+                  "
+                  (click)="openLightbox(it.index)"
+                >
+                  <ng-container
+                    *ngTemplateOutlet="tile; context: { $implicit: images[it.index], i: it.index }"
+                  ></ng-container>
+                </figure>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      @case ('columns') {
+        <div class="g-columns">
+          @for (col of staggerColumns(); track $index; let ci = $index) {
+            <div class="g-col" [class.g-col--offset]="ci % 2 === 1">
+              @for (it of col; track it.index) {
+                <figure
+                  class="g-item"
+                  [class.interactive]="interactive"
+                  [style.aspect-ratio]="staggerRatio()"
+                  (click)="openLightbox(it.index)"
+                >
+                  <ng-container
+                    *ngTemplateOutlet="tile; context: { $implicit: images[it.index], i: it.index }"
+                  ></ng-container>
+                </figure>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      @case ('strip') {
+        <div class="g-strip-wrap">
+          <div class="g-strip" #strip [style.--strip-h]="stripHeight() + 'px'" tabindex="0">
+            @for (img of images; track img.imageUrl + $index; let i = $index) {
+              <figure
+                class="g-item"
+                [class.interactive]="interactive"
+                [style.aspect-ratio]="stripRatio(img.imageUrl)"
+                (click)="openLightbox(i)"
+              >
+                <ng-container
+                  *ngTemplateOutlet="tile; context: { $implicit: img, i: i }"
+                ></ng-container>
+              </figure>
             }
           </div>
-          @if (img.caption) {
-            <figcaption class="image-caption">{{ img.caption }}</figcaption>
+          @if (images.length > 1) {
+            <div class="g-strip-nav">
+              <button type="button" (click)="scrollStrip(strip, -1)" aria-label="Scroll photographs left">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 18l-6-6 6-6" /></svg>
+              </button>
+              <button type="button" (click)="scrollStrip(strip, 1)" aria-label="Scroll photographs right">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18l6-6-6-6" /></svg>
+              </button>
+            </div>
           }
-        </figure>
+        </div>
       }
-    </div>
+
+      @case ('masonry') {
+        <div class="g-masonry" [style.column-count]="masonryColumns()">
+          @for (img of images; track img.imageUrl + $index; let i = $index) {
+            <figure
+              class="g-item g-item--natural"
+              [class.interactive]="interactive"
+              [style.aspect-ratio]="ratioOf(img.imageUrl)"
+              (click)="openLightbox(i)"
+            >
+              <ng-container
+                *ngTemplateOutlet="tile; context: { $implicit: img, i: i }"
+              ></ng-container>
+            </figure>
+          }
+        </div>
+      }
+    }
   } @else {
     <div class="gallery-placeholder">
-      <svg
-        width="36"
-        height="36"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="1.5"
-      >
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
         <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
         <circle cx="8.5" cy="8.5" r="1.5"></circle>
         <polyline points="21 15 16 10 5 21"></polyline>
       </svg>
-      <p>No gallery images selected for this section yet.</p>
+      <p>No photographs added to this project yet.</p>
     </div>
   }
 
-  <!-- Interactive Lightbox Modal -->
-  @if (isLightboxOpen && activeImage) {
+  <ng-template #tile let-img let-i="i">
+    <img
+      [src]="img.imageUrl"
+      [alt]="altFor(i)"
+      loading="lazy"
+      decoding="async"
+      (load)="onImageLoad($event, img.imageUrl)"
+      (error)="onImageError($event)"
+    />
+    @if (interactive) {
+      <span class="g-zoom" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+        </svg>
+      </span>
+    }
+    @if (img.caption) {
+      <figcaption class="g-caption">{{ img.caption }}</figcaption>
+    }
+  </ng-template>
+
+  <!-- Lightbox -->
+  @if (activeImage(); as active) {
     <div class="gallery-lightbox" role="dialog" aria-modal="true" (click)="closeLightbox()">
       <div class="lightbox-backdrop"></div>
 
       <div class="lightbox-container" (click)="$event.stopPropagation()">
-        <!-- Lightbox Header Controls -->
         <div class="lightbox-header">
           <div class="lightbox-meta">
-            <span class="lightbox-counter">
-              {{ activeLightboxIndex + 1 }} / {{ images.length }}
-            </span>
-            @if (activeImage.originalFileName) {
-              <span class="lightbox-filename">{{ activeImage.originalFileName }}</span>
+            <span class="lightbox-counter">{{ (lightboxIndex() ?? 0) + 1 }} / {{ images.length }}</span>
+            @if (sectionTitle) {
+              <span class="lightbox-filename">{{ sectionTitle }}</span>
             }
           </div>
-          <button
-            type="button"
-            class="lightbox-close-btn"
-            (click)="closeLightbox()"
-            aria-label="Close image viewer"
-          >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
+          <button type="button" class="lightbox-close-btn" (click)="closeLightbox()" aria-label="Close">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
           </button>
         </div>
 
-        <!-- Lightbox Active View -->
         <div class="lightbox-body">
           @if (images.length > 1) {
-            <button
-              type="button"
-              class="lightbox-nav-btn prev"
-              (click)="prevImage(); $event.stopPropagation()"
-              aria-label="Previous image"
-            >
-              <svg
-                width="28"
-                height="28"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
+            <button type="button" class="lightbox-nav-btn prev" (click)="prevImage()" aria-label="Previous photograph">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="15 18 9 12 15 6"></polyline>
               </svg>
             </button>
           }
 
           <div class="lightbox-image-stage">
-            <img
-              [src]="activeImage.imageUrl"
-              [alt]="activeImage.originalFileName || 'Full view'"
-              (error)="onImageError($event)"
-            />
+            <img [src]="active.imageUrl" [alt]="altFor(lightboxIndex() ?? 0)" (error)="onImageError($event)" />
           </div>
 
           @if (images.length > 1) {
-            <button
-              type="button"
-              class="lightbox-nav-btn next"
-              (click)="nextImage(); $event.stopPropagation()"
-              aria-label="Next image"
-            >
-              <svg
-                width="28"
-                height="28"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
+            <button type="button" class="lightbox-nav-btn next" (click)="nextImage()" aria-label="Next photograph">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="9 18 15 12 9 6"></polyline>
               </svg>
             </button>
           }
         </div>
 
-        <!-- Thumbnail Strip in Lightbox -->
         @if (images.length > 1) {
           <div class="lightbox-thumbs">
             @for (thumb of images; track thumb.imageUrl + $index; let ti = $index) {
               <button
                 type="button"
                 class="lightbox-thumb-btn"
-                [class.active]="ti === activeLightboxIndex"
-                (click)="activeLightboxIndex = ti"
+                [class.active]="ti === lightboxIndex()"
+                (click)="lightboxIndex.set(ti)"
+                [attr.aria-label]="'Show photograph ' + (ti + 1)"
               >
-                <img
-                  [src]="thumb.imageUrl"
-                  [alt]="'Thumbnail ' + (ti + 1)"
-                  (error)="onImageError($event)"
-                />
+                <img [src]="thumb.imageUrl" alt="" (error)="onImageError($event)" />
               </button>
             }
           </div>

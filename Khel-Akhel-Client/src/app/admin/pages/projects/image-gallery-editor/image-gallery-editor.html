@@ -115,6 +115,23 @@
         >
       </div>
 
+      <!-- Layout fit guidance -->
+      <div class="layout-fit" [attr.data-state]="layoutFit.state">
+        <span class="fit-dot" aria-hidden="true"></span>
+        <div class="fit-text">
+          <strong>{{ layoutFit.message }}</strong>
+          <small>
+            Image #1 is the cover shown on the Projects page.
+            @if (cropRiskCount > 0) {
+              <span class="fit-crop">
+                {{ cropRiskCount }} image{{ cropRiskCount > 1 ? 's' : '' }} will be cropped a lot
+                — try a different position or layout.
+              </span>
+            }
+          </small>
+        </div>
+      </div>
+
       <div class="thumbnail-grid">
         @for (item of items; track item.id; let i = $index) {
           <div
@@ -131,6 +148,9 @@
             <div class="order-badge" title="Display sequence #{{ item.displayOrder }}">
               #{{ item.displayOrder }}
             </div>
+            @if (i === 0) {
+              <div class="cover-badge">Cover</div>
+            }
 
             <!-- Status Tag -->
             <div class="status-tag" [class.new]="!item.isExisting">
@@ -139,7 +159,7 @@
 
             <!-- Image Thumbnail -->
             <div class="thumb-image-holder">
-              <img [src]="item.previewUrl" [alt]="item.fileName" />
+              <img [src]="item.previewUrl" [alt]="item.fileName" (load)="onThumbLoad($event, item.id)" />
               <div class="drag-handle-hint" title="Drag to reorder">
                 <svg
                   width="18"
@@ -164,6 +184,17 @@
               <p class="filename" [title]="item.fileName">{{ item.fileName }}</p>
               @if (item.fileSize > 0) {
                 <span class="filesize">{{ formatFileSize(item.fileSize) }}</span>
+              }
+              <div class="slot-info" [class.crop-risk]="isCropRisk(item.id, i)">
+                <span class="slot-frame" [title]="'Frame ratio ' + slotFor(i).ratioLabel">
+                  {{ slotFor(i).label }} · {{ slotFor(i).ratioLabel }}
+                </span>
+                @if (orientationOf(item.id)) {
+                  <span class="slot-orient">{{ orientationOf(item.id) }}</span>
+                }
+              </div>
+              @if (isCropRisk(item.id, i)) {
+                <span class="crop-note">Shape differs from this frame — will be cropped</span>
               }
             </div>
 
@@ -208,6 +239,16 @@
                 </button>
               </div>
 
+              @if (i > 0) {
+                <button
+                  type="button"
+                  class="cover-btn"
+                  (click)="setAsCover(i)"
+                  title="Make this the cover image"
+                >
+                  Set cover
+                </button>
+              }
               <button
                 type="button"
                 class="remove-btn"

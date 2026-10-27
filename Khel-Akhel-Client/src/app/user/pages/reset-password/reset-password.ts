@@ -1,10 +1,17 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../common/services/auth.service';
 import { CustomValidators } from '../../../common/validators/custom.validators';
+import { REGEX_PATTERNS } from '../../../common/constants/regex.constants';
 
+/**
+ * Reset Password.
+ *  /reset-password              → change an existing password: email + mobile must match the account
+ *                                 and the existing password must be correct.
+ *  /reset-password?token=…      → admin-issued reset link (unchanged behaviour): new password only.
+ */
 @Component({
   selector: 'app-reset-password',
   standalone: true,
@@ -20,8 +27,9 @@ export class ResetPasswordComponent implements OnInit {
 
   resetForm!: FormGroup;
 
+  /** Present only when the page was opened from an admin-issued reset link. */
   readonly token = signal<string | null>(null);
-  readonly validating = signal<boolean>(true);
+  readonly validating = signal<boolean>(false);
   readonly isValidToken = signal<boolean>(false);
   readonly loading = signal<boolean>(false);
   readonly successMessage = signal<string | null>(null);
@@ -29,43 +37,59 @@ export class ResetPasswordComponent implements OnInit {
   readonly showPassword = signal<boolean>(false);
 
   ngOnInit(): void {
-    const rawToken = this.route.snapshot.queryParams['token'];
-    this.token.set(rawToken || null);
+    const rawToken = this.route.snapshot.queryParams['token'] || null;
+    this.token.set(rawToken);
 
     this.resetForm = this.fb.group({
+      email: [
+        '',
+        [
+          CustomValidators.requiredNonEmpty,
+          CustomValidators.pattern(REGEX_PATTERNS.EMAIL, 'invalidEmail'),
+        ],
+      ],
+      mobileNo: [
+        '',
+        [
+          CustomValidators.requiredNonEmpty,
+          CustomValidators.pattern(REGEX_PATTERNS.MOBILE, 'invalidMobile'),
+        ],
+      ],
+      currentPassword: ['', [CustomValidators.requiredNonEmpty]],
       newPassword: [
         '',
         [
           CustomValidators.requiredNonEmpty,
-          Validators.minLength(8),
-          Validators.pattern(
-            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/,
-          ),
+          CustomValidators.rawPattern(REGEX_PATTERNS.PASSWORD, 'invalidPassword'),
         ],
       ],
       confirmPassword: ['', [CustomValidators.requiredNonEmpty]],
     });
 
-    if (!rawToken) {
-      this.validating.set(false);
-      this.isValidToken.set(false);
-      return;
+    if (rawToken) {
+      // Admin-issued link: identity was already verified by the studio — only a new password is needed
+      ['email', 'mobileNo', 'currentPassword'].forEach((c) => this.resetForm.get(c)?.disable());
+      this.validating.set(true);
+      this.authService.validateResetToken(rawToken).subscribe({
+        next: (res) => {
+          this.validating.set(false);
+          this.isValidToken.set(res.success && res.data?.valid === true);
+        },
+        error: () => {
+          this.validating.set(false);
+          this.isValidToken.set(false);
+        },
+      });
     }
-
-    this.authService.validateResetToken(rawToken).subscribe({
-      next: (res) => {
-        this.validating.set(false);
-        this.isValidToken.set(res.success && res.data?.valid === true);
-      },
-      error: () => {
-        this.validating.set(false);
-        this.isValidToken.set(false);
-      },
-    });
   }
 
   get f() {
     return this.resetForm.controls;
+  }
+
+  get passwordsMismatch(): boolean {
+    const { newPassword, confirmPassword } = this.resetForm.getRawValue();
+    return !!confirmPassword && newPassword !== confirmPassword;
   }
 
   togglePasswordVisibility(): void {
@@ -73,40 +97,44 @@ export class ResetPasswordComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.resetForm.invalid || this.loading() || !this.token()) {
+    if (this.resetForm.invalid || this.passwordsMismatch || this.loading()) {
       this.resetForm.markAllAsTouched();
-      return;
-    }
-
-    const { newPassword, confirmPassword } = this.resetForm.value;
-    if (newPassword !== confirmPassword) {
-      this.errorMessage.set('New password and confirm password do not match.');
       return;
     }
 
     this.loading.set(true);
     this.errorMessage.set(null);
 
-    this.authService.resetPassword(this.token()!, newPassword, confirmPassword).subscribe({
-      next: () => {
+    const v = this.resetForm.getRawValue();
+    const request$ = this.token()
+      ? this.authService.resetPassword(this.token()!, v.newPassword, v.confirmPassword)
+      : this.authService.changePassword({
+          email: v.email.trim(),
+          mobileNo: v.mobileNo.trim(),
+          currentPassword: v.currentPassword,
+          newPassword: v.newPassword,
+          confirmPassword: v.confirmPassword,
+        });
+
+    request$.subscribe({
+      next: (res) => {
         this.loading.set(false);
+        // the server signs the account out everywhere — start a fresh session
+        this.authService.clearSession();
         this.successMessage.set(
-          'Your password has been successfully reset. Redirecting you to sign in...',
+          res.data || 'Your password has been changed. Please sign in with your new password.',
         );
-        setTimeout(() => {
-          this.router.navigate(['/admin/login']);
-        }, 2200);
+        setTimeout(() => this.router.navigate(['/login']), 2500);
       },
       error: (err) => {
         this.loading.set(false);
         if (err.error?.message === 'INVALID_OR_EXPIRED_RESET_TOKEN') {
           this.isValidToken.set(false);
-          this.errorMessage.set('This reset link has expired, is invalid, or was already used.');
         } else if (err.status === 429) {
           this.errorMessage.set('Too many attempts. Please try again later.');
         } else {
           this.errorMessage.set(
-            err.error?.errors?.[0] || 'Failed to reset password. Please contact the studio.',
+            err.error?.errors?.[0] || 'We could not change your password. Please try again.',
           );
         }
       },

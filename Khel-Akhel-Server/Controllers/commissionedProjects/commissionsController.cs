@@ -198,7 +198,9 @@ namespace Khel_Akhel_Server.Controllers.commissionedProjects
             if (!string.IsNullOrWhiteSpace(request.Website))
             {
                 sw.Stop();
-                Logs.Warning($"Honeypot triggered for CreateCommissionRequest from IP {GetClientIpAddress()}");
+                Logs.Warning(
+                    $"Honeypot triggered for CreateCommissionRequest from IP {GetClientIpAddress()}"
+                );
                 return Ok(
                     new ApiResponse
                     {
@@ -223,19 +225,26 @@ namespace Khel_Akhel_Server.Controllers.commissionedProjects
             }
 
             // Captcha validation (mandatory for all commission requests)
-            if (string.IsNullOrWhiteSpace(request.CaptchaId)
+            if (
+                string.IsNullOrWhiteSpace(request.CaptchaId)
                 || string.IsNullOrWhiteSpace(request.Captcha)
-                || !_captchaService.ValidateCaptcha(request.CaptchaId, request.Captcha))
+                || !_captchaService.ValidateCaptcha(request.CaptchaId, request.Captcha)
+            )
             {
                 sw.Stop();
-                Logs.Warning($"CreateCommissionRequest rejected | Reason: Invalid or missing CAPTCHA from IP {GetClientIpAddress()}");
+                Logs.Warning(
+                    $"CreateCommissionRequest rejected | Reason: Invalid or missing CAPTCHA from IP {GetClientIpAddress()}"
+                );
                 return BadRequest(
                     new ApiResponse
                     {
                         Success = false,
                         StatusCode = 400,
                         Message = "INVALID_CAPTCHA",
-                        Errors = new List<string> { "Invalid or expired CAPTCHA. Please solve the security verification again." },
+                        Errors = new List<string>
+                        {
+                            "Invalid or expired CAPTCHA. Please solve the security verification again.",
+                        },
                     }
                 );
             }
@@ -1074,6 +1083,9 @@ namespace Khel_Akhel_Server.Controllers.commissionedProjects
                 )
                 {
                     sw.Stop();
+                    Logs.Warning(
+                        $"UpdateCommissionStatus rejected | Invalid encrypted request ID: {request.EncryptedRequestId}"
+                    );
                     return BadRequest(
                         new ApiResponse
                         {
@@ -1097,6 +1109,9 @@ namespace Khel_Akhel_Server.Controllers.commissionedProjects
                 )
                 {
                     sw.Stop();
+                    Logs.Warning(
+                        $"UpdateCommissionStatus rejected | Invalid status '{request.Status}' | RequestId:{requestId}"
+                    );
                     return BadRequest(
                         new ApiResponse
                         {
@@ -1117,6 +1132,9 @@ namespace Khel_Akhel_Server.Controllers.commissionedProjects
                 )
                 {
                     sw.Stop();
+                    Logs.Warning(
+                        $"UpdateCommissionStatus rejected | Admin notes exceed 2000 characters | RequestId:{requestId}"
+                    );
                     return BadRequest(
                         new ApiResponse
                         {
@@ -1145,6 +1163,9 @@ namespace Khel_Akhel_Server.Controllers.commissionedProjects
                 if (dt.Rows.Count == 0)
                 {
                     sw.Stop();
+                    Logs.Warning(
+                        $"UpdateCommissionStatus rejected | Commission request not found | RequestId:{requestId}"
+                    );
                     return NotFound(
                         new ApiResponse
                         {

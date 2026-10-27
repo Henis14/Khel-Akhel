@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
 
 namespace Khel_Akhel_Server.Models
@@ -19,7 +18,6 @@ namespace Khel_Akhel_Server.Models
 
     public class HeroBannerCreateRequest
     {
-        [StringLength(200)]
         public string? Title { get; set; }
 
         public int DisplayOrder { get; set; } = 0;
@@ -37,7 +35,6 @@ namespace Khel_Akhel_Server.Models
 
     public class HeroBannerUpdateRequest
     {
-        [StringLength(200)]
         public string? Title { get; set; }
 
         public int? DisplayOrder { get; set; }

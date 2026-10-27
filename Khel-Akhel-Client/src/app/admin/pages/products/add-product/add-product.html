@@ -131,7 +131,7 @@
                   productForm.get('productName')?.touched && productForm.get('productName')?.invalid
                 "
               >
-                Product name is required.
+                Product name (2-200 characters) is required.
               </div>
             </div>
 
@@ -142,8 +142,20 @@
                 type="text"
                 class="form-control"
                 formControlName="shortDescription"
+                maxlength="500"
                 placeholder="Brief 1-line summary"
+                [class.is-invalid]="
+                  productForm.get('shortDescription')?.touched && productForm.get('shortDescription')?.invalid
+                "
               />
+              <div
+                class="invalid-feedback"
+                *ngIf="
+                  productForm.get('shortDescription')?.touched && productForm.get('shortDescription')?.invalid
+                "
+              >
+                Short description cannot exceed 500 characters.
+              </div>
             </div>
 
             <!-- Full Description (Full Width) -->

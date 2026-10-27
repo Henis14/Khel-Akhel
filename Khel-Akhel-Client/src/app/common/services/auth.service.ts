@@ -10,6 +10,7 @@ import {
   UserSession,
   CaptchaResponseData,
   ChangePasswordRequest,
+  ForgotPasswordRequest,
 } from '../models/auth.model';
 import { CustomerCreateRequest } from '../../admin/models/customer.model';
 import { ApiResponse } from '../models/api-response.model';
@@ -66,8 +67,8 @@ export class AuthService {
     return this.apiService.post<any>('customer/create', request);
   }
 
-  changePassword(request: ChangePasswordRequest): Observable<ApiResponse<null>> {
-    return this.apiService.patch<null>('auth/change-password', request);
+  changePassword(request: ChangePasswordRequest): Observable<ApiResponse<string>> {
+    return this.apiService.patch<string>('auth/change-password', request);
   }
 
   login(credentials: PortalLoginRequest): Observable<ApiResponse<AuthResponseData>> {
@@ -105,16 +106,8 @@ export class AuthService {
     );
   }
 
-  forgotPassword(
-    userName: string,
-    captchaId?: string,
-    captcha?: string,
-  ): Observable<ApiResponse<string>> {
-    return this.apiService.post<string>('auth/forgot-password', {
-      userName,
-      captchaId,
-      captcha,
-    });
+  forgotPassword(request: ForgotPasswordRequest): Observable<ApiResponse<string>> {
+    return this.apiService.post<string>('auth/forgot-password', request);
   }
 
   validateResetToken(token: string): Observable<ApiResponse<{ valid: boolean }>> {

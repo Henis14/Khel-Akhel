@@ -1,4 +1,4 @@
-using System.Data;
+﻿using System.Data;
 using System.Diagnostics;
 using System.Security.Claims;
 using Khel_Akhel_Server.BL.Common;
@@ -417,6 +417,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                 if (currentUserId <= 0)
                 {
                     sw.Stop();
+                    Logs.Warning("CustomerUpdate rejected | Unauthorized: Invalid current user identifier");
                     return Unauthorized(
                         new ApiResponse
                         {
@@ -437,6 +438,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                     )
                     {
                         sw.Stop();
+                        Logs.Warning($"CustomerUpdate rejected | Invalid encrypted customer ID: {encryptedId}");
                         return BadRequest(
                             new ApiResponse
                             {
@@ -567,6 +569,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                     if (dupEmail > 0)
                     {
                         sw.Stop();
+                        Logs.Warning($"CustomerUpdate duplicate email detected | Email:{newEmail} CustomerId:{targetCustomerId}");
                         return Conflict(
                             new ApiResponse
                             {
@@ -605,6 +608,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                     if (dupMobile > 0)
                     {
                         sw.Stop();
+                        Logs.Warning($"CustomerUpdate duplicate mobile detected | Mobile:{newMobileNo} CustomerId:{targetCustomerId}");
                         return Conflict(
                             new ApiResponse
                             {
@@ -740,6 +744,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                     if (!_encryption.TryDecrypt(targetEncryptedId, out long decryptedId))
                     {
                         sw.Stop();
+                        Logs.Warning($"CustomerSoftDelete rejected | Invalid encrypted customer ID: {targetEncryptedId}");
                         return BadRequest(
                             new ApiResponse
                             {

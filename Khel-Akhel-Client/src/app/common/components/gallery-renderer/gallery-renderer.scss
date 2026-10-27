@@ -1,4 +1,12 @@
+$ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+:host {
+  display: block;
+  width: 100%;
+}
+
 .gallery-wrapper {
+  --g-gap: 8px;
   width: 100%;
   position: relative;
 }
@@ -8,324 +16,207 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 3rem 1.5rem;
-  background-color: rgba(31, 53, 87, 0.03);
-  border: 1px dashed rgba(31, 53, 87, 0.2);
-  border-radius: 8px;
-  color: var(--ka-text-secondary, #6b6a63);
-  text-align: center;
   gap: 0.75rem;
-
-  svg {
-    stroke: var(--ka-text-secondary, #6b6a63);
-    opacity: 0.6;
-  }
+  padding: 3rem 1.5rem;
+  border: 1px dashed rgba(69, 18, 10, 0.2);
+  background: rgba(69, 18, 10, 0.03);
+  color: #8a817d;
+  text-align: center;
 
   p {
     margin: 0;
     font-size: 0.9rem;
-    font-style: italic;
   }
 }
 
-/* Base Gallery Frame & Item Styling */
-.daras-gallery {
-  width: 100%;
-  display: grid;
-  gap: 1.5rem;
-}
-
-.gallery-item {
-  margin: 0;
-  padding: 0;
+/* ==========================================================================
+   Tiles
+   ========================================================================== */
+.g-item {
   position: relative;
+  margin: 0;
   overflow: hidden;
-  border-radius: 6px;
-  background-color: #ede9e0;
-  transition:
-    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-    box-shadow 0.25s ease;
-
-  &.interactive {
-    cursor: pointer;
-
-    &:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 24px rgba(31, 53, 87, 0.12);
-
-      .hover-overlay {
-        opacity: 1;
-      }
-
-      img {
-        transform: scale(1.03);
-      }
-    }
-  }
-
-  .image-inner {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-  }
+  background: #efe8dc;
+  min-width: 0;
 
   img {
     display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    transition:
+      transform 0.9s $ease,
+      opacity 0.7s ease;
   }
 
-  .hover-overlay {
+  /* photos fade in softly as they arrive instead of popping in */
+  img:not(.is-loaded) {
+    opacity: 0;
+  }
+
+  &.interactive {
+    cursor: zoom-in;
+
+    &:hover img {
+      transform: scale(1.03);
+    }
+
+    &:hover .g-zoom {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* masonry: the figure reserves the photo's own shape, so nothing is cropped */
+  &--natural img {
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.g-zoom {
+  position: absolute;
+  right: 0.6rem;
+  bottom: 0.6rem;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #45120a;
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s $ease;
+  pointer-events: none;
+}
+
+.g-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 1.5rem 0.75rem 0.6rem;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.55));
+  color: #fff;
+  font-size: 0.78rem;
+}
+
+/* 12-column grid: every layout except masonry & justified */
+.g-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-auto-flow: row dense;
+  gap: var(--g-gap);
+}
+
+/* tiles get their size from the grid, never from the photo — keeps large tiles aligned with the squares beside them */
+.g-grid .g-item {
+  min-height: 0;
+
+  img {
     position: absolute;
     inset: 0;
-    background: rgba(31, 53, 87, 0.35);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-
-    .zoom-icon {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.92);
-      color: var(--ka-navy, #1f3557);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      transform: scale(0.9);
-      transition: transform 0.2s ease;
-    }
-  }
-
-  .image-caption {
-    padding: 0.5rem 0.25rem 0.25rem 0.25rem;
-    font-size: 0.8rem;
-    color: var(--ka-text-secondary, #6b6a63);
-    font-style: italic;
-    line-height: 1.3;
   }
 }
 
-/* ==========================================================================
-   LAYOUT A: Three-Column Uniform Grid (grid-3)
-   ========================================================================== */
-.layout-grid-3 {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1.5rem;
+/* Justified rows: photos keep their proportions, edges line up */
+.g-justified {
+  display: grid;
+  gap: var(--g-gap);
+}
 
-  .gallery-item {
-    aspect-ratio: 4 / 3;
-  }
+.g-jrow {
+  display: flex;
+  gap: var(--g-gap);
 
-  @media (max-width: 900px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  @media (max-width: 560px) {
-    grid-template-columns: 1fr;
-    gap: 1.15rem;
+  &--short {
+    justify-content: flex-start;
   }
 }
 
-/* ==========================================================================
-   LAYOUT B: Two-Column Grid (grid-2)
-   ========================================================================== */
-.layout-grid-2 {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 2rem;
+/* Staggered columns: editorial spread with the middle column dropped */
+.g-columns {
+  display: flex;
+  gap: var(--g-gap);
+  align-items: flex-start;
+}
 
-  .gallery-item {
-    aspect-ratio: 16 / 11;
-  }
+.g-col {
+  flex: 1 1 0;
+  min-width: 0;
+  display: grid;
+  gap: var(--g-gap);
 
-  @media (max-width: 640px) {
-    grid-template-columns: 1fr;
-    gap: 1.25rem;
+  &--offset {
+    padding-top: 12%;
   }
 }
 
-/* ==========================================================================
-   LAYOUT C: Asymmetric Editorial Grid (editorial)
-   ========================================================================== */
-.layout-editorial {
-  grid-template-columns: repeat(12, 1fr);
-  gap: 1.5rem;
+/* Filmstrip: one scrolling row, equal height */
+.g-strip-wrap {
+  position: relative;
+}
 
-  .gallery-item:nth-child(1) {
-    grid-column: span 7;
-    aspect-ratio: 4 / 3;
+.g-strip {
+  display: flex;
+  gap: var(--g-gap);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  overscroll-behavior-x: contain;
+
+  .g-item {
+    flex: none;
+    height: var(--strip-h, 340px);
+    scroll-snap-align: start;
   }
 
-  .gallery-item:nth-child(2) {
-    grid-column: span 5;
-    aspect-ratio: 1 / 1;
+  &:focus-visible {
+    outline: 2px solid #f2c230;
+    outline-offset: 3px;
   }
+}
 
-  .gallery-item:nth-child(3) {
-    grid-column: span 5;
-    aspect-ratio: 1 / 1;
-  }
+.g-strip-nav {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
 
-  .gallery-item:nth-child(4) {
-    grid-column: span 7;
-    aspect-ratio: 16 / 10;
-  }
+  button {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid rgba(69, 18, 10, 0.25);
+    background: transparent;
+    color: #45120a;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
 
-  .gallery-item:nth-child(n + 5) {
-    grid-column: span 4;
-    aspect-ratio: 4 / 3;
-  }
-
-  @media (max-width: 900px) {
-    .gallery-item:nth-child(n) {
-      grid-column: span 6;
-      aspect-ratio: 4 / 3;
-    }
-  }
-
-  @media (max-width: 560px) {
-    .gallery-item:nth-child(n) {
-      grid-column: span 12;
-      aspect-ratio: 4 / 3;
+    &:hover {
+      background: #45120a;
+      color: #fff;
     }
   }
 }
 
-/* ==========================================================================
-   LAYOUT D: Featured Hero + Supporting (featured)
-   ========================================================================== */
-.layout-featured {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1.5rem;
+/* Masonry: uncropped columns */
+.g-masonry {
+  column-gap: var(--g-gap);
 
-  .gallery-item:first-child {
-    grid-column: 1 / -1;
-    aspect-ratio: 16 / 9;
-    max-height: 520px;
-  }
-
-  .gallery-item:not(:first-child) {
-    aspect-ratio: 4 / 3;
-  }
-
-  @media (max-width: 768px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-
-    .gallery-item:first-child {
-      aspect-ratio: 16 / 10;
-    }
-  }
-
-  @media (max-width: 520px) {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* ==========================================================================
-   LAYOUT E: Full-Width Panoramic Showcase (full-width)
-   ========================================================================== */
-.layout-full-width {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1.5rem;
-
-  .gallery-item:first-child {
-    grid-column: 1 / -1;
-    aspect-ratio: 21 / 9;
-    min-height: 280px;
-    max-height: 560px;
-  }
-
-  .gallery-item:not(:first-child) {
-    aspect-ratio: 1 / 1;
-  }
-
-  @media (max-width: 900px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-
-    .gallery-item:first-child {
-      aspect-ratio: 16 / 9;
-    }
-  }
-
-  @media (max-width: 520px) {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* ==========================================================================
-   LAYOUT F: Masonry Style (masonry)
-   ========================================================================== */
-.layout-masonry {
-  display: block;
-  column-count: 3;
-  column-gap: 1.5rem;
-
-  .gallery-item {
+  .g-item {
     break-inside: avoid;
-    margin-bottom: 1.5rem;
-    height: auto;
-
-    img {
-      height: auto;
-      object-fit: contain;
-    }
-  }
-
-  @media (max-width: 900px) {
-    column-count: 2;
-  }
-
-  @media (max-width: 560px) {
-    column-count: 1;
+    margin-bottom: var(--g-gap);
   }
 }
 
-/* ==========================================================================
-   LAYOUT G: Asymmetric Dual Spread (asymmetric)
-   ========================================================================== */
-.layout-asymmetric {
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: 1.75rem;
-
-  /* Alternating pairs: 7 / 5, then 5 / 7 */
-  .gallery-item:nth-child(4n + 1) {
-    grid-column: span 7;
-    aspect-ratio: 16 / 10;
-  }
-
-  .gallery-item:nth-child(4n + 2) {
-    grid-column: span 5;
-    aspect-ratio: 4 / 3;
-  }
-
-  .gallery-item:nth-child(4n + 3) {
-    grid-column: span 5;
-    aspect-ratio: 4 / 3;
-  }
-
-  .gallery-item:nth-child(4n + 4) {
-    grid-column: span 7;
-    aspect-ratio: 16 / 10;
-  }
-
-  @media (max-width: 900px) {
-    .gallery-item:nth-child(n) {
-      grid-column: span 6;
-      aspect-ratio: 4 / 3;
-    }
-  }
-
-  @media (max-width: 560px) {
-    .gallery-item:nth-child(n) {
-      grid-column: span 12;
-      aspect-ratio: 4 / 3;
-    }
+@media (prefers-reduced-motion: reduce) {
+  .g-item img,
+  .g-zoom {
+    transition: none;
   }
 }
 
@@ -495,7 +386,7 @@
       &.active,
       &:hover {
         opacity: 1;
-        border-color: var(--ka-terracotta, #b45132);
+        border-color: var(--g-accent, #f2c230);
         transform: scale(1.05);
       }
     }

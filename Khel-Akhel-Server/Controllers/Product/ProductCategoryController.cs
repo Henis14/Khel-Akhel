@@ -255,6 +255,9 @@ namespace Khel_Akhel_Server.Controllers.Product
                 )
                 {
                     sw.Stop();
+                    Logs.Warning(
+                        $"ProductCategoryUpdate rejected | Invalid encrypted category ID: {request.EncryptedCategoryId}"
+                    );
                     return BadRequest(
                         new ApiResponse
                         {
@@ -282,6 +285,9 @@ namespace Khel_Akhel_Server.Controllers.Product
                 if (dt.Rows.Count == 0)
                 {
                     sw.Stop();
+                    Logs.Warning(
+                        $"ProductCategoryUpdate rejected | Category not found | CategoryId:{categoryId}"
+                    );
                     return NotFound(
                         new ApiResponse
                         {
@@ -326,6 +332,9 @@ namespace Khel_Akhel_Server.Controllers.Product
                     if (dup > 0)
                     {
                         sw.Stop();
+                        Logs.Warning(
+                            $"ProductCategoryUpdate rejected | Duplicate category name '{newName}' for CategoryId:{categoryId}"
+                        );
                         return Conflict(
                             new ApiResponse
                             {
@@ -438,6 +447,9 @@ namespace Khel_Akhel_Server.Controllers.Product
                 if (!_encryption.TryDecrypt(encryptedId, out long categoryId) || categoryId <= 0)
                 {
                     sw.Stop();
+                    Logs.Warning(
+                        $"GetProductCategoryById rejected | Invalid encrypted category ID: {encryptedId}"
+                    );
                     return BadRequest(
                         new ApiResponse
                         {
@@ -465,6 +477,9 @@ namespace Khel_Akhel_Server.Controllers.Product
                 if (dt.Rows.Count == 0)
                 {
                     sw.Stop();
+                    Logs.Warning(
+                        $"GetProductCategoryById rejected | Category not found | CategoryId:{categoryId}"
+                    );
                     return NotFound(
                         new ApiResponse
                         {
@@ -611,6 +626,9 @@ namespace Khel_Akhel_Server.Controllers.Product
                 )
                 {
                     sw.Stop();
+                    Logs.Warning(
+                        $"ProductCategorySoftDelete rejected | Invalid encrypted category ID: {targetEncryptedId}"
+                    );
                     return BadRequest(
                         new ApiResponse
                         {
@@ -638,6 +656,9 @@ namespace Khel_Akhel_Server.Controllers.Product
                 if (dt.Rows.Count == 0)
                 {
                     sw.Stop();
+                    Logs.Warning(
+                        $"ProductCategorySoftDelete rejected | Category not found | CategoryId:{categoryId}"
+                    );
                     return NotFound(
                         new ApiResponse
                         {
@@ -669,6 +690,9 @@ namespace Khel_Akhel_Server.Controllers.Product
                 if (childSubCount > 0)
                 {
                     sw.Stop();
+                    Logs.Warning(
+                        $"ProductCategorySoftDelete rejected | Category {categoryId} contains active subcategories ({childSubCount})"
+                    );
                     return BadRequest(
                         new ApiResponse
                         {
@@ -696,6 +720,9 @@ namespace Khel_Akhel_Server.Controllers.Product
                 if (prodCount > 0)
                 {
                     sw.Stop();
+                    Logs.Warning(
+                        $"ProductCategorySoftDelete rejected | Category {categoryId} contains active products ({prodCount})"
+                    );
                     return BadRequest(
                         new ApiResponse
                         {
@@ -792,6 +819,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                 if (request == null)
                 {
                     sw.Stop();
+                    Logs.Warning("ProductSubCategoryCreate rejected | Reason: Null request body");
                     return BadRequest(
                         new ApiResponse
                         {
@@ -809,6 +837,9 @@ namespace Khel_Akhel_Server.Controllers.Product
                 )
                 {
                     sw.Stop();
+                    Logs.Warning(
+                        $"ProductSubCategoryCreate rejected | Invalid parent Category ID: {request.EncryptedCategoryId}"
+                    );
                     return BadRequest(
                         new ApiResponse
                         {
@@ -832,6 +863,9 @@ namespace Khel_Akhel_Server.Controllers.Product
                 if (catNameObj == null)
                 {
                     sw.Stop();
+                    Logs.Warning(
+                        $"ProductSubCategoryCreate rejected | Parent category not found or inactive | CategoryId:{categoryId}"
+                    );
                     return BadRequest(
                         new ApiResponse
                         {
@@ -862,6 +896,9 @@ namespace Khel_Akhel_Server.Controllers.Product
                 if (errors.Any())
                 {
                     sw.Stop();
+                    Logs.Warning(
+                        $"ProductSubCategoryCreate rejected | Validation errors: {string.Join(", ", errors)}"
+                    );
                     return BadRequest(
                         new ApiResponse
                         {
@@ -892,6 +929,9 @@ namespace Khel_Akhel_Server.Controllers.Product
                 if (dup > 0)
                 {
                     sw.Stop();
+                    Logs.Warning(
+                        $"ProductSubCategoryCreate rejected | Duplicate subcategory name '{request.SubCategoryName}' under CategoryId:{categoryId}"
+                    );
                     return Conflict(
                         new ApiResponse
                         {
@@ -1001,6 +1041,9 @@ namespace Khel_Akhel_Server.Controllers.Product
                 if (request == null || string.IsNullOrWhiteSpace(request.EncryptedSubCategoryId))
                 {
                     sw.Stop();
+                    Logs.Warning(
+                        "ProductSubCategoryUpdate rejected | Missing subcategory ID or request body"
+                    );
                     return BadRequest(
                         new ApiResponse
                         {
@@ -1018,6 +1061,9 @@ namespace Khel_Akhel_Server.Controllers.Product
                 )
                 {
                     sw.Stop();
+                    Logs.Warning(
+                        $"ProductSubCategoryUpdate rejected | Invalid encrypted SubCategory ID: {request.EncryptedSubCategoryId}"
+                    );
                     return BadRequest(
                         new ApiResponse
                         {
@@ -1046,6 +1092,9 @@ namespace Khel_Akhel_Server.Controllers.Product
                 if (dt.Rows.Count == 0)
                 {
                     sw.Stop();
+                    Logs.Warning(
+                        $"ProductSubCategoryUpdate rejected | Subcategory not found | SubCategoryId:{subCategoryId}"
+                    );
                     return NotFound(
                         new ApiResponse
                         {
@@ -1070,6 +1119,9 @@ namespace Khel_Akhel_Server.Controllers.Product
                     )
                     {
                         sw.Stop();
+                        Logs.Warning(
+                            $"ProductSubCategoryUpdate rejected | Invalid parent category ID: {request.EncryptedCategoryId}"
+                        );
                         return BadRequest(
                             new ApiResponse
                             {
@@ -1090,6 +1142,9 @@ namespace Khel_Akhel_Server.Controllers.Product
                     if (cObj == null)
                     {
                         sw.Stop();
+                        Logs.Warning(
+                            $"ProductSubCategoryUpdate rejected | Parent category not found or inactive | CategoryId:{decCatId}"
+                        );
                         return BadRequest(
                             new ApiResponse
                             {
@@ -1182,6 +1237,9 @@ namespace Khel_Akhel_Server.Controllers.Product
                     if (dup > 0)
                     {
                         sw.Stop();
+                        Logs.Warning(
+                            $"ProductSubCategoryUpdate rejected | Duplicate subcategory name '{newName}' under CategoryId:{newCategoryId}"
+                        );
                         return Conflict(
                             new ApiResponse
                             {
@@ -1294,6 +1352,9 @@ namespace Khel_Akhel_Server.Controllers.Product
                 )
                 {
                     sw.Stop();
+                    Logs.Warning(
+                        $"GetProductSubCategoryById rejected | Invalid encrypted SubCategory ID: {encryptedSubCategoryId}"
+                    );
                     return BadRequest(
                         new ApiResponse
                         {
@@ -1319,6 +1380,9 @@ namespace Khel_Akhel_Server.Controllers.Product
                 if (dt.Rows.Count == 0)
                 {
                     sw.Stop();
+                    Logs.Warning(
+                        $"GetProductSubCategoryById rejected | Subcategory not found | SubCategoryId:{subCategoryId}"
+                    );
                     return NotFound(
                         new ApiResponse
                         {
@@ -1513,6 +1577,9 @@ namespace Khel_Akhel_Server.Controllers.Product
                 )
                 {
                     sw.Stop();
+                    Logs.Warning(
+                        $"ProductSubCategorySoftDelete rejected | Invalid encrypted SubCategory ID: {targetEncryptedId}"
+                    );
                     return BadRequest(
                         new ApiResponse
                         {
@@ -1535,6 +1602,9 @@ namespace Khel_Akhel_Server.Controllers.Product
                 if (dt.Rows.Count == 0)
                 {
                     sw.Stop();
+                    Logs.Warning(
+                        $"ProductSubCategorySoftDelete rejected | SubCategory not found | SubCategoryId:{subCategoryId}"
+                    );
                     return NotFound(
                         new ApiResponse
                         {
@@ -1565,6 +1635,9 @@ namespace Khel_Akhel_Server.Controllers.Product
                 if (prodCount > 0)
                 {
                     sw.Stop();
+                    Logs.Warning(
+                        $"ProductSubCategorySoftDelete rejected | SubCategory {subCategoryId} has {prodCount} active products assigned"
+                    );
                     return BadRequest(
                         new ApiResponse
                         {

@@ -87,6 +87,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                 )
                 {
                     sw.Stop();
+                    Logs.Warning($"AddStockByproductId rejected | Invalid encrypted product ID: {request.EncryptedProductId}");
                     return BadRequest(
                         new ApiResponse
                         {
@@ -134,6 +135,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                 if (productExists == 0)
                 {
                     sw.Stop();
+                    Logs.Warning($"AddStockByproductId rejected | Product not found or inactive | ProductId:{productId}");
                     return NotFound(
                         new ApiResponse
                         {
@@ -290,6 +292,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                 )
                 {
                     sw.Stop();
+                    Logs.Warning($"UpdateStockByproductId rejected | Invalid encrypted product ID: {request.EncryptedProductId}");
                     return BadRequest(
                         new ApiResponse
                         {

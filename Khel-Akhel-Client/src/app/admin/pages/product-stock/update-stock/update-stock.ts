@@ -47,7 +47,7 @@ export class UpdateStockComponent implements OnInit {
   initForm(): void {
     this.stockForm = this.fb.group({
       encryptedProductId: ['', [CustomValidators.requiredNonEmpty]],
-      quantity: [1, [CustomValidators.requiredNonEmpty, CustomValidators.positiveNumber]],
+      quantity: [1, [CustomValidators.requiredNonEmpty, CustomValidators.positiveInteger]],
     });
   }
 

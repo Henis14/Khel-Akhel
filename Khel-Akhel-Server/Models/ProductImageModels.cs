@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Http;
+
 namespace Khel_Akhel_Server.Models
 {
     public class ProductImageUploadRequest

@@ -104,7 +104,13 @@ export class ProductDetailComponent implements OnInit {
       {
         encryptedCategoryId: ['', [CustomValidators.requiredNonEmpty]],
         encryptedSubCategoryId: [''],
-        productName: ['', [CustomValidators.requiredNonEmpty]],
+        productName: [
+          '',
+          [
+            CustomValidators.requiredNonEmpty,
+            CustomValidators.pattern(/^.{2,200}$/, 'invalidLength'),
+          ],
+        ],
         sku: [
           '',
           [
@@ -112,7 +118,7 @@ export class ProductDetailComponent implements OnInit {
             CustomValidators.pattern(REGEX_PATTERNS.SKU, 'invalidSku'),
           ],
         ],
-        shortDescription: [''],
+        shortDescription: ['', [CustomValidators.pattern(/^[\s\S]{0,500}$/, 'invalidLength')]],
         description: [''],
         mrp: [
           0,

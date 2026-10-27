@@ -1,0 +1,201 @@
+<div class="pj">
+  <!-- ============================ Intro ============================ -->
+  <header class="pj-wrap pj-intro">
+    <p class="pj-eyebrow">Projects</p>
+    <h1 class="pj-title">Spaces, sets &amp; objects <em>made for play</em></h1>
+    <p class="pj-lede">
+      Festivals and stage sets, installations, lamps and furniture, wearable art, soundscapes and
+      circles of learning — the work of DARAS, made with many hands.
+    </p>
+  </header>
+
+  <!-- ============================ Sections ============================ -->
+  @if (!loading() && !error() && disciplines().length > 1) {
+    <nav class="pj-tabs" aria-label="Filter projects by section">
+      <div class="pj-wrap pj-tabs-inner">
+        <button
+          type="button"
+          class="pj-tab"
+          [class.is-active]="!activeType()"
+          [attr.aria-pressed]="!activeType()"
+          (click)="setType('')"
+        >
+          All<sup>{{ projects().length }}</sup>
+        </button>
+        @for (d of disciplines(); track d.slug) {
+          <button
+            type="button"
+            class="pj-tab"
+            [class.is-active]="activeType() === d.slug"
+            [attr.aria-pressed]="activeType() === d.slug"
+            (click)="setType(d.slug)"
+          >
+            {{ d.name }}<sup>{{ d.count }}</sup>
+          </button>
+        }
+      </div>
+    </nav>
+  }
+
+  <!-- ============================ Projects ============================ -->
+  <div class="pj-list" [class.reveal-ready]="revealReady()">
+    @if (loading()) {
+      @for (s of skeletons; track s) {
+        <div class="pj-wrap pj-project is-in" aria-hidden="true">
+          <div class="pj-info">
+            <span class="sk sk-line sk-short"></span>
+            <span class="sk sk-line sk-title"></span>
+            <span class="sk sk-line"></span>
+            <span class="sk sk-line sk-mid"></span>
+          </div>
+          <div class="sk-gallery">
+            <span class="sk"></span><span class="sk"></span><span class="sk"></span>
+          </div>
+        </div>
+      }
+    } @else if (error()) {
+      <div class="pj-wrap pj-state">
+        <p class="pj-state-title">We couldn't load the projects just now.</p>
+        <p class="pj-state-text">Please check your connection and try again.</p>
+        <button type="button" class="pj-btn" (click)="load(true)">Try again</button>
+      </div>
+    } @else if (views().length === 0) {
+      <div class="pj-wrap pj-state">
+        @if (activeType()) {
+          <p class="pj-state-title">Nothing here yet.</p>
+          <p class="pj-state-text">Projects for this section are on their way.</p>
+          <button type="button" class="pj-btn" (click)="setType('')">See all projects</button>
+        } @else {
+          <p class="pj-state-title">The studio is putting the archive together.</p>
+          <p class="pj-state-text">New projects will appear here soon.</p>
+        }
+      </div>
+    } @else {
+      @for (v of views(); track v.project.slug) {
+        <section
+          class="pj-wrap pj-project"
+          [id]="'project-' + v.project.slug"
+          [class.is-focus]="focusSlug() === v.project.slug"
+          [attr.aria-labelledby]="'pj-title-' + v.project.slug"
+        >
+          <!-- details: a quiet caption column that stays beside the photographs -->
+          <div class="pj-info">
+            <div class="pj-info-inner">
+              <p class="pj-kicker">
+                <span class="pj-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+                @if (v.project.contentType) {
+                  <span>{{ v.project.contentType }}</span>
+                }
+              </p>
+
+              <h2 class="pj-name" [id]="'pj-title-' + v.project.slug">{{ v.project.heading }}</h2>
+
+              @if (v.sub) {
+                <p class="pj-sub">{{ v.sub }}</p>
+              }
+
+              @if (v.project.displayYear || v.forTitle || v.project.location) {
+                <dl class="pj-meta">
+                  @if (v.project.displayYear) {
+                    <div>
+                      <dt>When</dt>
+                      <dd>{{ v.project.displayYear }}</dd>
+                    </div>
+                  }
+                  @if (v.forTitle) {
+                    <div>
+                      <dt>For</dt>
+                      <dd>{{ v.forTitle }}</dd>
+                    </div>
+                  }
+                  @if (v.project.location) {
+                    <div>
+                      <dt>Where</dt>
+                      <dd>{{ v.project.location }}</dd>
+                    </div>
+                  }
+                </dl>
+              }
+
+              @if (v.project.shortDescription) {
+                <p class="pj-lead">{{ v.project.shortDescription }}</p>
+              }
+
+              @if (v.paragraphs.length) {
+                <div
+                  class="pj-more"
+                  [class.is-open]="isExpanded(v.project.slug)"
+                  [id]="'pj-more-' + v.project.slug"
+                >
+                  <div class="pj-more-inner">
+                    @for (para of v.paragraphs; track $index) {
+                      <p>{{ para }}</p>
+                    }
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  class="pj-link"
+                  [attr.aria-expanded]="isExpanded(v.project.slug)"
+                  [attr.aria-controls]="'pj-more-' + v.project.slug"
+                  (click)="toggle(v.project.slug)"
+                >
+                  {{ isExpanded(v.project.slug) ? 'Read less' : 'Read the story' }}
+                  <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true">
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                </button>
+              }
+
+              @if (v.credits.length) {
+                <ul class="pj-credits" aria-label="Credits">
+                  @for (c of v.credits; track $index) {
+                    <li>{{ c }}</li>
+                  }
+                </ul>
+              }
+
+              @if (v.project.externalUrl) {
+                <a
+                  class="pj-link pj-ext"
+                  [href]="v.project.externalUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {{ linkLabel(v.project.externalUrl) }}
+                  <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true">
+                    <path d="M7 17 17 7M9 7h8v8" />
+                  </svg>
+                </a>
+              }
+            </div>
+          </div>
+
+          <!-- photographs, in the layout chosen in admin -->
+          <div class="pj-photos">
+            @if (v.gallery.length) {
+              <app-gallery-renderer
+                class="pj-gallery"
+                [images]="v.gallery"
+                [layoutType]="v.project.layoutType"
+                [interactive]="true"
+                [sectionTitle]="v.project.heading"
+                [gap]="6"
+              ></app-gallery-renderer>
+            }
+          </div>
+        </section>
+      }
+    }
+  </div>
+
+  <!-- ============================ CTA ============================ -->
+  @if (!loading()) {
+    <section class="pj-cta">
+      <div class="pj-wrap pj-cta-inner">
+        <p class="pj-cta-title">Have a space, a festival or an idea in mind?</p>
+        <a class="pj-btn" routerLink="/commissions">Commission a project</a>
+      </div>
+    </section>
+  }
+</div>

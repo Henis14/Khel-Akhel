@@ -1,4 +1,4 @@
-using System.Data;
+﻿using System.Data;
 using System.Diagnostics;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -773,7 +773,106 @@ namespace Khel_Akhel_Server.Controllers.Auth
         }
         #endregion
 
+        #region Password Self-Service Helpers
+        /// <summary>
+        /// Shared input checks for Forgot Password and Reset (Change) Password.
+        /// </summary>
+        private static List<string> ValidatePasswordChangeInput(
+            string email,
+            string mobileNo,
+            string newPassword,
+            string confirmPassword
+        )
+        {
+            var errors = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(email))
+                errors.Add("Email address is required.");
+            else if (!ValidationHelper.IsValidEmail(email))
+                errors.Add("Please enter a valid email address.");
+
+            if (string.IsNullOrWhiteSpace(mobileNo))
+                errors.Add("Mobile number is required.");
+            else if (!ValidationHelper.IsValidMobile(mobileNo))
+                errors.Add("Please enter a valid 10-digit mobile number.");
+
+            if (string.IsNullOrEmpty(newPassword))
+                errors.Add("New password is required.");
+            else if (!ValidationHelper.IsValidPassword(newPassword))
+                errors.Add(
+                    "New password must be at least 8 characters long and contain uppercase, lowercase, number, and special character."
+                );
+
+            if (!string.Equals(newPassword, confirmPassword, StringComparison.Ordinal))
+                errors.Add("New password and confirm password do not match.");
+
+            return errors;
+        }
+
+        /// <summary>
+        /// Finds an active account whose email AND mobile number both match the database record.
+        /// </summary>
+        private DataRow? FindAccountByEmailAndMobile(string email, string mobileNo)
+        {
+            DataTable dt = _db.ExecuteQuery(
+                @"
+                SELECT TOP 1 ID, PasswordHash, IsAdmin, AccountLockedUntil
+                FROM drs_customer_mst
+                WHERE LOWER(Email) = LOWER(@Email)
+                  AND MobileNo = @MobileNo
+                  AND IsDeleted = 0
+                  AND IsActive = 1",
+                new[]
+                {
+                    new SqlParameter("@Email", email),
+                    new SqlParameter("@MobileNo", mobileNo),
+                }
+            );
+            return dt.Rows.Count > 0 ? dt.Rows[0] : null;
+        }
+
+        /// <summary>
+        /// Saves the new password hash, clears any login lock, signs out all sessions and writes the audit entry.
+        /// </summary>
+        private async Task SaveNewPasswordAsync(long customerId, string newPassword, string auditAction)
+        {
+            _db.ExecuteNonQuery(
+                @"
+                UPDATE drs_customer_mst
+                SET PasswordHash = @PasswordHash,
+                    FailedLoginAttempts = 0,
+                    AccountLockedUntil = NULL,
+                    ModifiedDate = GETDATE()
+                WHERE ID = @ID AND IsDeleted = 0",
+                new[]
+                {
+                    new SqlParameter("@PasswordHash", PasswordHelper.HashPassword(newPassword)),
+                    new SqlParameter("@ID", customerId),
+                }
+            );
+
+            await _refreshTokens.RevokeAllAsync(customerId, GetClientIpAddress());
+            DeleteRefreshTokenCookie();
+
+            await _audit.InsertAuditAsync(
+                customerId: customerId,
+                moduleName: "Auth",
+                action: auditAction,
+                tableName: "drs_customer_mst",
+                entityId: customerId,
+                oldValue: null,
+                newValue: null,
+                ipAddress: GetClientIpAddress(),
+                userAgent: GetUserAgent()
+            );
+        }
+        #endregion
+
         #region Forgot Password API
+        /// <summary>
+        /// Forgot Password: the customer proves who they are with their registered email + mobile number
+        /// (both must match the database) and a CAPTCHA, then sets a new password.
+        /// </summary>
         [AllowAnonymous]
         [EnableRateLimiting("auth-login")]
         [HttpPost("forgot-password")]
@@ -787,6 +886,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                 if (request == null)
                 {
                     sw.Stop();
+                    Logs.Warning("ForgetPassword rejected: Request body is required");
                     return BadRequest(
                         new ApiResponse
                         {
@@ -798,35 +898,37 @@ namespace Khel_Akhel_Server.Controllers.Auth
                     );
                 }
 
-                request.UserName = request.UserName?.Trim() ?? string.Empty;
+                request.Email = request.Email?.Trim() ?? string.Empty;
+                request.MobileNo = request.MobileNo?.Trim() ?? string.Empty;
                 request.CaptchaId = request.CaptchaId?.Trim();
                 request.Captcha = request.Captcha?.Trim();
 
-                if (string.IsNullOrWhiteSpace(request.UserName))
+                var errors = ValidatePasswordChangeInput(
+                    request.Email,
+                    request.MobileNo,
+                    request.NewPassword,
+                    request.ConfirmPassword
+                );
+                if (errors.Any())
                 {
                     sw.Stop();
+                    Logs.Warning($"ForgetPassword rejected: Validation failed ({string.Join("; ", errors)})");
                     return BadRequest(
                         new ApiResponse
                         {
                             Success = false,
                             StatusCode = 400,
                             Message = "VALIDATION_FAILED",
-                            Errors = new List<string> { "Email or mobile number is required." },
+                            Errors = errors,
                         }
                     );
                 }
 
                 // Captcha is strictly required
-                bool captchaValid = _captchaService.ValidateCaptcha(
-                    request.CaptchaId,
-                    request.Captcha
-                );
-                if (!captchaValid)
+                if (!_captchaService.ValidateCaptcha(request.CaptchaId, request.Captcha))
                 {
                     sw.Stop();
-                    Logs.Warning(
-                        $"ForgetPassword rejected | Invalid or expired CAPTCHA | Identifier:{request.UserName}"
-                    );
+                    Logs.Warning("ForgetPassword rejected | Invalid or expired CAPTCHA");
                     return BadRequest(
                         new ApiResponse
                         {
@@ -838,130 +940,39 @@ namespace Khel_Akhel_Server.Controllers.Auth
                     );
                 }
 
-                string clientIp = GetClientIpAddress();
-                string userAgent = GetUserAgent();
-
-                // Look up customer without NOLOCK
-                string checkQuery =
-                    @"
-                    SELECT TOP 1 ID, Email, MobileNo, IsAdmin
-                    FROM drs_customer_mst
-                    WHERE (LOWER(Email) = LOWER(@UserName) OR MobileNo = @UserName)
-                      AND IsDeleted = 0
-                      AND IsActive = 1";
-
-                DataTable dt = _db.ExecuteQuery(
-                    checkQuery,
-                    new[] { new SqlParameter("@UserName", request.UserName) }
-                );
-
-                if (dt.Rows.Count > 0)
+                // Email AND mobile must both match the same customer (admin accounts are excluded)
+                DataRow? account = FindAccountByEmailAndMobile(request.Email, request.MobileNo);
+                if (account == null || Convert.ToBoolean(account["IsAdmin"]))
                 {
-                    DataRow row = dt.Rows[0];
-                    bool isAdmin = Convert.ToBoolean(row["IsAdmin"]);
-                    long customerId = Convert.ToInt64(row["ID"]);
-
-                    // Admin accounts NEVER get a reset request row from this endpoint
-                    if (!isAdmin)
-                    {
-                        // Enforce max 3 requests per account per 24 hours
-                        string rateCountQuery =
-                            @"
-                            SELECT COUNT(1)
-                            FROM drs_password_reset_request_mst
-                            WHERE customer_id = @CustomerId
-                              AND CreatedDate >= DATEADD(HOUR, -24, GETDATE())
-                              AND IsDeleted = 0";
-
-                        object? countObj = _db.ExecuteScalar(
-                            rateCountQuery,
-                            new[] { new SqlParameter("@CustomerId", customerId) }
-                        );
-                        int requestCount24h =
-                            countObj != null && countObj != DBNull.Value
-                                ? Convert.ToInt32(countObj)
-                                : 0;
-
-                        if (requestCount24h < 3)
+                    sw.Stop();
+                    Logs.Warning("ForgetPassword rejected | Email and mobile number do not match any customer");
+                    return BadRequest(
+                        new ApiResponse
                         {
-                            // If a PENDING request already exists, refresh its ModifiedDate
-                            string pendingCheckQuery =
-                                @"
-                                SELECT TOP 1 ID
-                                FROM drs_password_reset_request_mst
-                                WHERE customer_id = @CustomerId
-                                  AND Status = 'PENDING'
-                                  AND IsDeleted = 0";
-
-                            DataTable pendingDt = _db.ExecuteQuery(
-                                pendingCheckQuery,
-                                new[] { new SqlParameter("@CustomerId", customerId) }
-                            );
-
-                            if (pendingDt.Rows.Count > 0)
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "DETAILS_NOT_MATCHED",
+                            Errors = new List<string>
                             {
-                                long pendingId = Convert.ToInt64(pendingDt.Rows[0]["ID"]);
-                                _db.ExecuteNonQuery(
-                                    @"UPDATE drs_password_reset_request_mst
-                                      SET ModifiedDate = GETDATE(), RequestedIp = @Ip, UserAgent = @UserAgent
-                                      WHERE ID = @ID",
-                                    new[]
-                                    {
-                                        new SqlParameter("@ID", pendingId),
-                                        new SqlParameter("@Ip", clientIp),
-                                        new SqlParameter("@UserAgent", userAgent),
-                                    }
-                                );
-                            }
-                            else
-                            {
-                                // Insert PENDING row with Source = CUSTOMER_REQUEST
-                                _db.ExecuteNonQuery(
-                                    @"INSERT INTO drs_password_reset_request_mst
-                                      (customer_id, Source, Status, RequestedIp, UserAgent, IsActive, IsDeleted, CreatedDate)
-                                      VALUES
-                                      (@CustomerId, 'CUSTOMER_REQUEST', 'PENDING', @Ip, @UserAgent, 1, 0, GETDATE())",
-                                    new[]
-                                    {
-                                        new SqlParameter("@CustomerId", customerId),
-                                        new SqlParameter("@Ip", clientIp),
-                                        new SqlParameter("@UserAgent", userAgent),
-                                    }
-                                );
-                            }
-
-                            await _audit.InsertAuditAsync(
-                                customerId: customerId,
-                                moduleName: "Auth",
-                                action: "PasswordResetRequested",
-                                tableName: "drs_password_reset_request_mst",
-                                entityId: customerId,
-                                oldValue: null,
-                                newValue: $"Reset requested from IP {clientIp}",
-                                ipAddress: clientIp,
-                                userAgent: userAgent
-                            );
+                                "The email address and mobile number do not match our records.",
+                            },
                         }
-                    }
+                    );
                 }
-                else
-                {
-                    // Constant-timing mitigation: execute a small dummy query
-                    _ = _db.ExecuteScalar("SELECT 1", null);
-                }
+
+                long customerId = Convert.ToInt64(account["ID"]);
+                await SaveNewPasswordAsync(customerId, request.NewPassword, "PasswordResetSelfService");
 
                 sw.Stop();
-                Logs.Info("ForgetPassword processed");
+                Logs.Info($"ForgetPassword completed | CustomerId:{customerId} | Elapsed:{sw.ElapsedMilliseconds}ms");
 
-                // Always return identical success response to avoid account enumeration
                 return Ok(
                     new ApiResponse
                     {
                         Success = true,
                         StatusCode = 200,
-                        Message = "PASSWORD_RESET_REQUESTED",
-                        Data =
-                            "If an account exists for these details, our studio team will contact you on your registered mobile number to verify your identity and help you reset your password.",
+                        Message = "PASSWORD_RESET_SUCCESS",
+                        Data = "Your password has been reset. Please sign in with your new password.",
                     }
                 );
             }
@@ -989,50 +1000,70 @@ namespace Khel_Akhel_Server.Controllers.Auth
         [HttpGet("reset-password/validate")]
         public IActionResult ValidateResetToken([FromQuery] string? token)
         {
-            if (string.IsNullOrWhiteSpace(token))
+            Logs.Info("ValidateResetToken API started");
+            try
             {
+                if (string.IsNullOrWhiteSpace(token))
+                {
+                    Logs.Warning("ValidateResetToken rejected: Token query parameter is missing or empty");
+                    return Ok(
+                        new ApiResponse
+                        {
+                            Success = true,
+                            StatusCode = 200,
+                            Message = "TOKEN_VALIDATED",
+                            Data = new { valid = false },
+                        }
+                    );
+                }
+
+                string tokenHash = Convert.ToBase64String(
+                    SHA256.HashData(Encoding.UTF8.GetBytes(token))
+                );
+
+                string query =
+                    @"
+                    SELECT COUNT(1)
+                    FROM drs_password_reset_request_mst r
+                    INNER JOIN drs_customer_mst c ON c.ID = r.customer_id AND c.IsDeleted = 0 AND c.IsActive = 1 AND c.IsAdmin = 0
+                    WHERE r.TokenHash = @TokenHash
+                      AND r.Status = 'LINK_ISSUED'
+                      AND r.UsedUtc IS NULL
+                      AND r.TokenExpiresUtc > GETUTCDATE()
+                      AND r.IsDeleted = 0";
+
+                object? countObj = _db.ExecuteScalar(
+                    query,
+                    new[] { new SqlParameter("@TokenHash", tokenHash) }
+                );
+                bool isValid =
+                    countObj != null && countObj != DBNull.Value && Convert.ToInt32(countObj) > 0;
+
+                Logs.Info($"ValidateResetToken completed successfully | IsValid: {isValid}");
                 return Ok(
                     new ApiResponse
                     {
                         Success = true,
                         StatusCode = 200,
                         Message = "TOKEN_VALIDATED",
-                        Data = new { valid = false },
+                        Data = new { valid = isValid },
                     }
                 );
             }
-
-            string tokenHash = Convert.ToBase64String(
-                SHA256.HashData(Encoding.UTF8.GetBytes(token))
-            );
-
-            string query =
-                @"
-                SELECT COUNT(1)
-                FROM drs_password_reset_request_mst r
-                INNER JOIN drs_customer_mst c ON c.ID = r.customer_id AND c.IsDeleted = 0 AND c.IsActive = 1 AND c.IsAdmin = 0
-                WHERE r.TokenHash = @TokenHash
-                  AND r.Status = 'LINK_ISSUED'
-                  AND r.UsedUtc IS NULL
-                  AND r.TokenExpiresUtc > GETUTCDATE()
-                  AND r.IsDeleted = 0";
-
-            object? countObj = _db.ExecuteScalar(
-                query,
-                new[] { new SqlParameter("@TokenHash", tokenHash) }
-            );
-            bool isValid =
-                countObj != null && countObj != DBNull.Value && Convert.ToInt32(countObj) > 0;
-
-            return Ok(
-                new ApiResponse
-                {
-                    Success = true,
-                    StatusCode = 200,
-                    Message = "TOKEN_VALIDATED",
-                    Data = new { valid = isValid },
-                }
-            );
+            catch (Exception ex)
+            {
+                Logs.Error("Exception occurred in ValidateResetToken API", ex);
+                return StatusCode(
+                    500,
+                    new ApiResponse
+                    {
+                        Success = false,
+                        StatusCode = 500,
+                        Message = "SERVER_ERROR",
+                        Errors = new List<string> { "An internal server error occurred." },
+                    }
+                );
+            }
         }
         #endregion
 
@@ -1050,6 +1081,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                 if (request == null)
                 {
                     sw.Stop();
+                    Logs.Warning("ResetPassword rejected: Request body is required");
                     return BadRequest(
                         new ApiResponse
                         {
@@ -1064,6 +1096,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                 if (string.IsNullOrWhiteSpace(request.Token))
                 {
                     sw.Stop();
+                    Logs.Warning("ResetPassword rejected: Reset token is required");
                     return BadRequest(
                         new ApiResponse
                         {
@@ -1078,6 +1111,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                 if (string.IsNullOrEmpty(request.NewPassword))
                 {
                     sw.Stop();
+                    Logs.Warning("ResetPassword rejected: New password is required");
                     return BadRequest(
                         new ApiResponse
                         {
@@ -1092,6 +1126,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                 if (!ValidationHelper.IsValidPassword(request.NewPassword))
                 {
                     sw.Stop();
+                    Logs.Warning("ResetPassword rejected: Password complexity requirements not met");
                     return BadRequest(
                         new ApiResponse
                         {
@@ -1115,6 +1150,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                 )
                 {
                     sw.Stop();
+                    Logs.Warning("ResetPassword rejected: Passwords do not match");
                     return BadRequest(
                         new ApiResponse
                         {
@@ -1321,8 +1357,12 @@ namespace Khel_Akhel_Server.Controllers.Auth
         #endregion
 
         #region Change Password API
-        [Authorize]
-        [EnableRateLimiting("auth-session")]
+        /// <summary>
+        /// Reset Password (change an existing password): email + mobile number must match the database
+        /// record and the existing password must be correct. Works signed in or signed out.
+        /// </summary>
+        [AllowAnonymous]
+        [EnableRateLimiting("auth-login")]
         [HttpPatch("change-password")]
         [HttpPost("change-password")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest? request)
@@ -1335,6 +1375,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                 if (request == null)
                 {
                     sw.Stop();
+                    Logs.Warning("ChangePassword rejected: Request body cannot be null");
                     return BadRequest(
                         new ApiResponse
                         {
@@ -1346,43 +1387,24 @@ namespace Khel_Akhel_Server.Controllers.Auth
                     );
                 }
 
-                long customerId = GetAuthenticatedUserId();
-                if (customerId <= 0)
-                {
-                    sw.Stop();
-                    return Unauthorized(
-                        new ApiResponse
-                        {
-                            Success = false,
-                            StatusCode = 401,
-                            Message = "UNAUTHORIZED",
-                            Errors = new List<string> { "Authentication required." },
-                        }
-                    );
-                }
+                request.Email = request.Email?.Trim() ?? string.Empty;
+                request.MobileNo = request.MobileNo?.Trim() ?? string.Empty;
 
-                var errors = new List<string>();
+                var errors = ValidatePasswordChangeInput(
+                    request.Email,
+                    request.MobileNo,
+                    request.NewPassword,
+                    request.ConfirmPassword
+                );
                 if (string.IsNullOrEmpty(request.CurrentPassword))
-                    errors.Add("Current password is required.");
-                if (string.IsNullOrEmpty(request.NewPassword))
-                    errors.Add("New password is required.");
-                else if (!ValidationHelper.IsValidPassword(request.NewPassword))
-                    errors.Add(
-                        "New password must be at least 8 characters long and contain uppercase, lowercase, number, and special character."
-                    );
-
-                if (
-                    !string.Equals(
-                        request.NewPassword,
-                        request.ConfirmPassword,
-                        StringComparison.Ordinal
-                    )
-                )
-                    errors.Add("New password and confirm password do not match.");
+                    errors.Insert(0, "Existing password is required.");
+                else if (string.Equals(request.CurrentPassword, request.NewPassword, StringComparison.Ordinal))
+                    errors.Add("New password must be different from your existing password.");
 
                 if (errors.Any())
                 {
                     sw.Stop();
+                    Logs.Warning($"ChangePassword rejected: Validation failed ({string.Join("; ", errors)})");
                     return BadRequest(
                         new ApiResponse
                         {
@@ -1394,78 +1416,70 @@ namespace Khel_Akhel_Server.Controllers.Auth
                     );
                 }
 
-                // Fetch customer record
-                string fetchQuery =
-                    @"SELECT TOP 1 PasswordHash FROM drs_customer_mst WITH (NOLOCK) WHERE ID = @ID AND IsDeleted = 0";
-                DataTable dt = _db.ExecuteQuery(
-                    fetchQuery,
-                    new[] { new SqlParameter("@ID", customerId) }
-                );
-
-                if (dt.Rows.Count == 0)
+                // Email AND mobile must both match the same account
+                DataRow? account = FindAccountByEmailAndMobile(request.Email, request.MobileNo);
+                if (account == null)
                 {
                     sw.Stop();
-                    return NotFound(
+                    Logs.Warning("ChangePassword rejected | Email and mobile number do not match any account");
+                    return BadRequest(
                         new ApiResponse
                         {
                             Success = false,
-                            StatusCode = 404,
-                            Message = "CUSTOMER_NOT_FOUND",
-                            Errors = new List<string> { "Customer record not found." },
+                            StatusCode = 400,
+                            Message = "DETAILS_NOT_MATCHED",
+                            Errors = new List<string>
+                            {
+                                "The email address and mobile number do not match our records.",
+                            },
                         }
                     );
                 }
 
-                string currentHash = dt.Rows[0]["PasswordHash"]?.ToString() ?? "";
+                long customerId = Convert.ToInt64(account["ID"]);
+
+                // Respect the same temporary lock that sign-in uses after repeated failures
+                if (
+                    account["AccountLockedUntil"] != DBNull.Value
+                    && Convert.ToDateTime(account["AccountLockedUntil"]) > DateTime.Now
+                )
+                {
+                    sw.Stop();
+                    Logs.Warning($"ChangePassword rejected | Account locked | CustomerId:{customerId}");
+                    return BadRequest(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "ACCOUNT_LOCKED",
+                            Errors = new List<string>
+                            {
+                                "This account is temporarily locked. Please try again later or use Forgot Password.",
+                            },
+                        }
+                    );
+                }
+
+                string currentHash = account["PasswordHash"]?.ToString() ?? "";
                 if (!PasswordHelper.VerifyPassword(request.CurrentPassword, currentHash))
                 {
                     sw.Stop();
-                    Logs.Warning(
-                        $"ChangePassword failed | Current password invalid | CustomerId:{customerId}"
-                    );
+                    Logs.Warning($"ChangePassword failed | Existing password invalid | CustomerId:{customerId}");
                     return BadRequest(
                         new ApiResponse
                         {
                             Success = false,
                             StatusCode = 400,
                             Message = "INVALID_CREDENTIALS",
-                            Errors = new List<string> { "Current password is incorrect." },
+                            Errors = new List<string> { "Existing password is incorrect." },
                         }
                     );
                 }
 
-                string newHash = PasswordHelper.HashPassword(request.NewPassword);
-
-                // Update Password Hash & Revoke Active Refresh Tokens
-                _db.ExecuteNonQuery(
-                    @"
-                    UPDATE drs_customer_mst
-                    SET PasswordHash = @PasswordHash, ModifiedDate = GETDATE()
-                    WHERE ID = @ID AND IsDeleted = 0",
-                    new[]
-                    {
-                        new SqlParameter("@PasswordHash", newHash),
-                        new SqlParameter("@ID", customerId),
-                    }
-                );
-
-                await _refreshTokens.RevokeAllAsync(customerId, GetClientIpAddress());
-                DeleteRefreshTokenCookie();
-
-                await _audit.InsertAuditAsync(
-                    customerId,
-                    "Auth",
-                    "ChangePassword",
-                    "drs_customer_mst",
-                    customerId,
-                    null,
-                    null,
-                    GetClientIpAddress(),
-                    GetUserAgent()
-                );
+                await SaveNewPasswordAsync(customerId, request.NewPassword, "ChangePassword");
 
                 sw.Stop();
-                Logs.Info($"ChangePassword completed | CustomerId:{customerId}");
+                Logs.Info($"ChangePassword completed | CustomerId:{customerId} | Elapsed:{sw.ElapsedMilliseconds}ms");
 
                 return Ok(
                     new ApiResponse
@@ -1473,7 +1487,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                         Success = true,
                         StatusCode = 200,
                         Message = "PASSWORD_CHANGED",
-                        Data = null,
+                        Data = "Your password has been changed. Please sign in with your new password.",
                     }
                 );
             }

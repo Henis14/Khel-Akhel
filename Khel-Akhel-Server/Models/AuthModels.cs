@@ -40,7 +40,10 @@ namespace Khel_Akhel_Server.Models
 
     public class ForgetPasswordRequest
     {
-        public string UserName { get; set; } = string.Empty; // Email or MobileNo
+        public string Email { get; set; } = string.Empty;
+        public string MobileNo { get; set; } = string.Empty;
+        public string NewPassword { get; set; } = string.Empty;
+        public string ConfirmPassword { get; set; } = string.Empty;
         public string? CaptchaId { get; set; }
         public string? Captcha { get; set; }
     }
@@ -88,6 +91,8 @@ namespace Khel_Akhel_Server.Models
 
     public class ChangePasswordRequest
     {
+        public string Email { get; set; } = string.Empty;
+        public string MobileNo { get; set; } = string.Empty;
         public string CurrentPassword { get; set; } = string.Empty;
         public string NewPassword { get; set; } = string.Empty;
         public string ConfirmPassword { get; set; } = string.Empty;

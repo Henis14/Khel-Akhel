@@ -130,8 +130,11 @@
           <div class="form-grid">
             <!-- Heading -->
             <div class="form-group span-full">
-              <label class="form-label" for="heading">
-                Section Heading <span class="required">*</span>
+              <label class="form-label label-with-count" for="heading">
+                <span>Project Heading <span class="required">*</span></span>
+                <small class="char-count" [class.near]="charCount('heading') > 180"
+                  >{{ charCount('heading') }} / 200</small
+                >
               </label>
               <input
                 id="heading"
@@ -150,7 +153,12 @@
 
             <!-- Subheading -->
             <div class="form-group span-full">
-              <label class="form-label" for="subheading">Subheading / Secondary Statement</label>
+              <label class="form-label label-with-count" for="subheading">
+                <span>Subheading / Secondary Statement</span>
+                <small class="char-count" [class.near]="charCount('subheading') > 225"
+                  >{{ charCount('subheading') }} / 250</small
+                >
+              </label>
               <input
                 id="subheading"
                 type="text"
@@ -162,14 +170,25 @@
 
             <!-- Content Type / Discipline -->
             <div class="form-group span-half">
-              <label class="form-label" for="contentType">Content Discipline / Category</label>
-              <input
-                id="contentType"
-                type="text"
-                class="form-control"
-                formControlName="contentType"
-                placeholder="Enter discipline or category (e.g. Visual Art, Architecture, Philosophy)..."
-              />
+              <label class="form-label" for="contentType">Discipline / Section</label>
+              <select id="contentType" class="form-control" formControlName="contentType">
+                <option value="">Select where this project belongs…</option>
+                @for (g of contentTypeGroups; track g.group) {
+                  <optgroup [label]="g.group">
+                    @for (t of g.types; track t) {
+                      <option [value]="t">{{ t }}</option>
+                    }
+                  </optgroup>
+                }
+                @if (legacyContentType) {
+                  <optgroup label="Current value">
+                    <option [value]="legacyContentType">{{ legacyContentType }}</option>
+                  </optgroup>
+                }
+              </select>
+              <span class="field-hint">
+                Matches the storefront Projects menu, so visitors can filter by this section.
+              </span>
             </div>
 
             <!-- Project / Event Title -->
@@ -232,8 +251,26 @@
 
           <app-image-gallery-editor
             [existingImages]="initialExistingImages"
+            [layoutType]="selectedLayout"
             (imagesChanged)="onImagesChanged($event)"
           ></app-image-gallery-editor>
+
+          @if (currentEditorImages.length > 0) {
+            <div class="layout-live-preview">
+              <div class="llp-head">
+                <span class="llp-title">How it will look</span>
+                <span class="llp-layout">{{ selectedLayoutTitle }}</span>
+              </div>
+              <div class="llp-stage">
+                <app-gallery-renderer
+                  [images]="livePreviewImages"
+                  [layoutType]="selectedLayout"
+                  [interactive]="false"
+                  [sectionTitle]="form.get('heading')?.value"
+                ></app-gallery-renderer>
+              </div>
+            </div>
+          }
         </section>
 
         <!-- 4. Narrative Descriptions -->
@@ -251,8 +288,11 @@
           <div class="form-grid">
             <!-- Short Description -->
             <div class="form-group span-full">
-              <label class="form-label" for="shortDescription">
-                Short Lead Summary (max 1000 characters)
+              <label class="form-label label-with-count" for="shortDescription">
+                <span>Short Lead Summary</span>
+                <small class="char-count" [class.near]="charCount('shortDescription') > 900"
+                  >{{ charCount('shortDescription') }} / 1000</small
+                >
               </label>
               <textarea
                 id="shortDescription"
@@ -275,6 +315,7 @@
                 rows="6"
                 placeholder="Extended artistic commentary, materials experimentation notes, scenography details, or philosophy..."
               ></textarea>
+              <span class="field-hint">Leave a blank line between paragraphs — they display as separate paragraphs on the site.</span>
             </div>
           </div>
         </section>

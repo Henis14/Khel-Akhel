@@ -115,7 +115,7 @@
                 />
               </div>
               @if (stockForm.get('quantity')?.touched && stockForm.get('quantity')?.invalid) {
-                <div class="invalid-feedback">Quantity must be at least 1.</div>
+                <div class="invalid-feedback">Quantity must be a positive whole number (at least 1).</div>
               }
             </div>
           </div>

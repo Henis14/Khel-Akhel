@@ -12,6 +12,7 @@ import { AuthService } from '../../../common/services/auth.service';
 import { BreadcrumbComponent } from '../../../common/components/breadcrumb/breadcrumb';
 import { BreadcrumbItem } from '../../../common/models/breadcrumb.model';
 import { PaginationComponent } from '../../../common/components/pagination/pagination';
+import { CustomValidators } from '../../../common/validators/custom.validators';
 
 export interface PasswordResetItem {
   requestId: string;
@@ -84,11 +85,25 @@ export class PasswordResetRequestsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.verifyForm = this.fb.group({
-      adminNotes: ['', [Validators.required, Validators.minLength(5)]],
+      adminNotes: [
+        '',
+        [
+          CustomValidators.requiredNonEmpty,
+          Validators.minLength(5),
+          Validators.maxLength(1000),
+        ],
+      ],
     });
 
     this.rejectForm = this.fb.group({
-      adminNotes: ['', [Validators.required, Validators.minLength(5)]],
+      adminNotes: [
+        '',
+        [
+          CustomValidators.requiredNonEmpty,
+          Validators.minLength(5),
+          Validators.maxLength(1000),
+        ],
+      ],
     });
 
     this.searchSubscription = this.searchSubject

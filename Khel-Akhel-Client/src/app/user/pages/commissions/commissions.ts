@@ -20,6 +20,7 @@ import { RouterLink } from '@angular/router';
 import { map, startWith } from 'rxjs';
 import { ApiService } from '../../../common/services/api.service';
 import { AuthService } from '../../../common/services/auth.service';
+import { CustomValidators } from '../../../common/validators/custom.validators';
 import { REGEX_PATTERNS } from '../../../common/constants/regex.constants';
 import { validateImageFile } from '../../../common/utils/file-validation.util';
 
@@ -79,25 +80,43 @@ export class CommissionsComponent implements OnInit {
   readonly today = new Date().toISOString().slice(0, 10);
 
   readonly form = this.fb.nonNullable.group({
-    fullName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(150)]],
-    mobileNo: ['', [Validators.required, Validators.pattern(REGEX_PATTERNS.MOBILE)]],
+    fullName: [
+      '',
+      [CustomValidators.requiredNonEmpty, Validators.minLength(2), Validators.maxLength(150)],
+    ],
+    mobileNo: [
+      '',
+      [CustomValidators.requiredNonEmpty, Validators.pattern(REGEX_PATTERNS.MOBILE)],
+    ],
     email: [
       '',
-      [Validators.required, Validators.pattern(REGEX_PATTERNS.EMAIL), Validators.maxLength(255)],
+      [
+        CustomValidators.requiredNonEmpty,
+        Validators.pattern(REGEX_PATTERNS.EMAIL),
+        Validators.maxLength(255),
+      ],
     ],
-    category: ['', Validators.required],
+    category: ['', CustomValidators.requiredNonEmpty],
     otherCategoryDescription: ['', Validators.maxLength(255)],
-    expectedTimeline: ['', [Validators.required, notInPast]],
+    expectedTimeline: ['', [CustomValidators.requiredNonEmpty, notInPast]],
     projectLocation: [
       '',
-      [Validators.required, Validators.minLength(2), Validators.maxLength(255)],
+      [CustomValidators.requiredNonEmpty, Validators.minLength(2), Validators.maxLength(255)],
     ],
     projectDescription: [
       '',
-      [Validators.required, Validators.maxLength(MAX_CHARS), maxWords(MAX_WORDS)],
+      [
+        CustomValidators.requiredNonEmpty,
+        Validators.minLength(5),
+        Validators.maxLength(MAX_CHARS),
+        maxWords(MAX_WORDS),
+      ],
     ],
     keywords: ['', Validators.maxLength(500)],
-    captcha: ['', [Validators.required, Validators.pattern(/^[A-Za-z0-9]{5}$/)]],
+    captcha: [
+      '',
+      [CustomValidators.requiredNonEmpty, Validators.pattern(/^[A-Za-z0-9]{5}$/)],
+    ],
     website: [''], // honeypot, stays empty for people
   });
 

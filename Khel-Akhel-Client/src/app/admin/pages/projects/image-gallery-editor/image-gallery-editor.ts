@@ -10,7 +10,14 @@ import {
   inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ProjectImage, ProjectImageOrderDto } from '../../../models/project.model';
+import {
+  LayoutFit,
+  LayoutSlot,
+  ProjectImage,
+  ProjectImageOrderDto,
+  getLayoutFit,
+  getLayoutSlot,
+} from '../../../models/project.model';
 import { AdminProjectService } from '../../../services/admin-project.service';
 import { validateImageFile } from '../../../../common/utils/file-validation.util';
 
@@ -36,6 +43,8 @@ export class ImageGalleryEditorComponent implements OnInit, OnChanges, OnDestroy
   private projectService = inject(AdminProjectService);
 
   @Input() existingImages: ProjectImage[] = [];
+  /** Gallery layout chosen in the form — drives slot labels, crop hints and the fit meter. */
+  @Input() layoutType: string = 'grid-3';
   @Output() imagesChanged = new EventEmitter<{
     allImages: EditorImageItem[];
     newFiles: File[];
@@ -54,6 +63,9 @@ export class ImageGalleryEditorComponent implements OnInit, OnChanges, OnDestroy
   dragOverIndex: number | null = null;
   errorMessage: string | null = null;
   private isDestroyed = false;
+
+  /** Natural width/height ratio of each thumbnail, keyed by item id (filled on image load). */
+  naturalRatios: Record<string, number> = {};
 
   ngOnInit(): void {
     this.syncExistingImages();
@@ -264,6 +276,51 @@ export class ImageGalleryEditorComponent implements OnInit, OnChanges, OnDestroy
         });
       }
     });
+  }
+
+  /* ---------- Layout guidance ---------- */
+
+  slotFor(index: number): LayoutSlot {
+    return getLayoutSlot(this.layoutType, index);
+  }
+
+  get layoutFit(): LayoutFit {
+    return getLayoutFit(this.layoutType, this.items.length);
+  }
+
+  onThumbLoad(event: Event, id: string): void {
+    const img = event.target as HTMLImageElement;
+    if (img?.naturalWidth && img?.naturalHeight) {
+      this.naturalRatios[id] = img.naturalWidth / img.naturalHeight;
+    }
+  }
+
+  orientationOf(id: string): 'Landscape' | 'Portrait' | 'Square' | '' {
+    const r = this.naturalRatios[id];
+    if (!r) return '';
+    if (r > 1.12) return 'Landscape';
+    if (r < 0.89) return 'Portrait';
+    return 'Square';
+  }
+
+  /** True when the photo's shape differs enough from its frame that a large part will be cropped. */
+  isCropRisk(id: string, index: number): boolean {
+    const r = this.naturalRatios[id];
+    const slot = this.slotFor(index);
+    if (!r || !slot.ratio) return false;
+    return Math.abs(Math.log(r / slot.ratio)) > Math.log(1.55);
+  }
+
+  get cropRiskCount(): number {
+    return this.items.filter((it, i) => this.isCropRisk(it.id, i)).length;
+  }
+
+  /** Move an image to position #1 — the cover used on the storefront project list. */
+  setAsCover(index: number): void {
+    if (index <= 0 || index >= this.items.length) return;
+    const [item] = this.items.splice(index, 1);
+    this.items.unshift(item);
+    this.recalculateOrders();
   }
 
   formatFileSize(bytes: number): string {

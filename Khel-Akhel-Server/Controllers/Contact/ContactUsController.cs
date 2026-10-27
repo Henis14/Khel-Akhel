@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Security.Claims;
 using Khel_Akhel_Server.BL.Common;
 using Khel_Akhel_Server.BL.Services;
@@ -85,7 +85,9 @@ namespace Khel_Akhel_Server.Controllers.Contact
                 if (!string.IsNullOrWhiteSpace(request.Website))
                 {
                     sw.Stop();
-                    Logs.Warning($"Honeypot triggered for SubmitInquiry from IP {GetClientIpAddress()}");
+                    Logs.Warning(
+                        $"Honeypot triggered for SubmitInquiry from IP {GetClientIpAddress()}"
+                    );
                     return Ok(
                         new ApiResponse
                         {
@@ -97,7 +99,8 @@ namespace Khel_Akhel_Server.Controllers.Contact
                                 EncryptedInquiryId = string.Empty,
                                 FullName = request.FullName,
                                 Email = request.Email,
-                                ConfirmationMessage = "Your inquiry has been received. Our team will contact you shortly.",
+                                ConfirmationMessage =
+                                    "Your inquiry has been received. Our team will contact you shortly.",
                             },
                         }
                     );

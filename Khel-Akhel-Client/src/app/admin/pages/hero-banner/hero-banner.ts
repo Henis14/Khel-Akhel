@@ -228,6 +228,16 @@ export class HeroBannerComponent implements OnInit {
     this.uploadValidationError = null;
     const current = this.currentConfigurationType;
 
+    if (this.uploadTitle && this.uploadTitle.trim().length > 200) {
+      this.uploadValidationError = 'Title cannot exceed 200 characters.';
+      return;
+    }
+
+    if (this.uploadDisplayOrder < 0 || !Number.isInteger(Number(this.uploadDisplayOrder))) {
+      this.uploadValidationError = 'Display order must be a non-negative integer (0 or greater).';
+      return;
+    }
+
     // Check if mode conflicts with existing configuration
     if (this.uploadMode === 'images' && current === 'video' && !this.uploadReplaceExisting) {
       this.uploadValidationError =
@@ -370,6 +380,16 @@ export class HeroBannerComponent implements OnInit {
 
   submitEdit(): void {
     if (!this.itemToEdit) return;
+
+    if (this.editTitle && this.editTitle.trim().length > 200) {
+      this.editValidationError = 'Title cannot exceed 200 characters.';
+      return;
+    }
+
+    if (this.editDisplayOrder < 0 || !Number.isInteger(Number(this.editDisplayOrder))) {
+      this.editValidationError = 'Display order must be a non-negative integer (0 or greater).';
+      return;
+    }
 
     this.isSubmitting.set(true);
     this.editValidationError = null;

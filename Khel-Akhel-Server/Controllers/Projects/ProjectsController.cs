@@ -24,7 +24,9 @@ namespace Khel_Akhel_Server.Controllers.Projects
         private const int MaxAllowedImages = 15;
         private const long MaxImageSizeInBytes = 5 * 1024 * 1024; // 5MB per file
 
-        private static readonly HashSet<string> AllowedLayouts = new(StringComparer.OrdinalIgnoreCase)
+        private static readonly HashSet<string> AllowedLayouts = new(
+            StringComparer.OrdinalIgnoreCase
+        )
         {
             "grid-3",
             "grid-2",
@@ -32,7 +34,12 @@ namespace Khel_Akhel_Server.Controllers.Projects
             "featured",
             "full-width",
             "masonry",
-            "asymmetric"
+            "asymmetric",
+            "grid-4",
+            "bento",
+            "split",
+            "staggered",
+            "carousel",
         };
 
         public ProjectsController(
@@ -83,7 +90,8 @@ namespace Khel_Akhel_Server.Controllers.Projects
         {
             string uploadsRoot = Path.Combine(
                 _env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"),
-                "uploads", "projects"
+                "uploads",
+                "projects"
             );
             if (!Directory.Exists(uploadsRoot))
             {
@@ -148,7 +156,9 @@ namespace Khel_Akhel_Server.Controllers.Projects
                 DisplayOrder =
                     row["DisplayOrder"] != DBNull.Value ? Convert.ToInt32(row["DisplayOrder"]) : 0,
                 LayoutType =
-                    row.Table.Columns.Contains("LayoutType") && row["LayoutType"] != DBNull.Value && !string.IsNullOrWhiteSpace(row["LayoutType"]?.ToString())
+                    row.Table.Columns.Contains("LayoutType")
+                    && row["LayoutType"] != DBNull.Value
+                    && !string.IsNullOrWhiteSpace(row["LayoutType"]?.ToString())
                         ? row["LayoutType"].ToString()!
                         : "grid-3",
                 IsPublished = Convert.ToBoolean(row["IsPublished"]),
@@ -193,7 +203,9 @@ namespace Khel_Akhel_Server.Controllers.Projects
                 DisplayOrder =
                     row["DisplayOrder"] != DBNull.Value ? Convert.ToInt32(row["DisplayOrder"]) : 0,
                 LayoutType =
-                    row.Table.Columns.Contains("LayoutType") && row["LayoutType"] != DBNull.Value && !string.IsNullOrWhiteSpace(row["LayoutType"]?.ToString())
+                    row.Table.Columns.Contains("LayoutType")
+                    && row["LayoutType"] != DBNull.Value
+                    && !string.IsNullOrWhiteSpace(row["LayoutType"]?.ToString())
                         ? row["LayoutType"].ToString()!
                         : "grid-3",
                 Images = images,
@@ -697,7 +709,10 @@ namespace Khel_Akhel_Server.Controllers.Projects
                 );
             }
 
-            if (!_encryption.TryDecrypt(request.EncryptedProjectId, out long projectId) || projectId <= 0)
+            if (
+                !_encryption.TryDecrypt(request.EncryptedProjectId, out long projectId)
+                || projectId <= 0
+            )
             {
                 sw.Stop();
                 Logs.Warning(
@@ -1263,6 +1278,7 @@ namespace Khel_Akhel_Server.Controllers.Projects
             if (!_encryption.TryDecrypt(encryptedProjectId, out long projectId) || projectId <= 0)
             {
                 sw.Stop();
+                Logs.Warning($"Project GetById rejected | Invalid encryptedProjectId: {encryptedProjectId}");
                 return BadRequest(
                     new ApiResponse
                     {
@@ -1289,6 +1305,7 @@ namespace Khel_Akhel_Server.Controllers.Projects
                 if (dt.Rows.Count == 0)
                 {
                     sw.Stop();
+                    Logs.Warning($"Project GetById rejected | Project not found | ProjectId: {projectId}");
                     return NotFound(
                         new ApiResponse
                         {
@@ -1307,6 +1324,7 @@ namespace Khel_Akhel_Server.Controllers.Projects
                 var response = MapProjectDetail(dt.Rows[0], images);
 
                 sw.Stop();
+                Logs.Info($"Project GetById completed successfully | ProjectId: {projectId} Images: {images.Count} Elapsed: {sw.ElapsedMilliseconds}ms");
                 return Ok(
                     new ApiResponse
                     {
@@ -1391,7 +1409,9 @@ namespace Khel_Akhel_Server.Controllers.Projects
                 if (!string.IsNullOrWhiteSpace(request.ContentType))
                 {
                     whereClause += " AND a.ContentType LIKE @ContentType";
-                    parameters.Add(new SqlParameter("@ContentType", $"%{request.ContentType.Trim()}%"));
+                    parameters.Add(
+                        new SqlParameter("@ContentType", $"%{request.ContentType.Trim()}%")
+                    );
                 }
 
                 if (request.IsPublished.HasValue)
@@ -1408,11 +1428,15 @@ namespace Khel_Akhel_Server.Controllers.Projects
 
                 string orderByClause = (request.SortBy?.Trim().ToLowerInvariant()) switch
                 {
-                    "orderdesc" or "order_desc" or "displayorder_desc" => "ORDER BY a.DisplayOrder DESC, a.ID DESC",
-                    "orderasc" or "order_asc" or "displayorder" or "displayorder_asc" => "ORDER BY a.DisplayOrder ASC, a.ID ASC",
-                    "newest" or "date" or "createddate" or "date_desc" => "ORDER BY a.CreatedDate DESC, a.ID DESC",
+                    "orderdesc" or "order_desc" or "displayorder_desc" =>
+                        "ORDER BY a.DisplayOrder DESC, a.ID DESC",
+                    "orderasc" or "order_asc" or "displayorder" or "displayorder_asc" =>
+                        "ORDER BY a.DisplayOrder ASC, a.ID ASC",
+                    "newest" or "date" or "createddate" or "date_desc" =>
+                        "ORDER BY a.CreatedDate DESC, a.ID DESC",
                     "oldest" or "date_asc" => "ORDER BY a.CreatedDate ASC, a.ID ASC",
-                    "headingasc" or "heading" or "heading_asc" => "ORDER BY a.Heading ASC, a.ID ASC",
+                    "headingasc" or "heading" or "heading_asc" =>
+                        "ORDER BY a.Heading ASC, a.ID ASC",
                     "heading_desc" or "headingdesc" => "ORDER BY a.Heading DESC, a.ID DESC",
                     _ => "ORDER BY a.DisplayOrder ASC, a.ID ASC",
                 };
@@ -1586,6 +1610,7 @@ namespace Khel_Akhel_Server.Controllers.Projects
             if (!_encryption.TryDecrypt(targetEncryptedId, out long projectId) || projectId <= 0)
             {
                 sw.Stop();
+                Logs.Warning($"Project TogglePublish rejected | Invalid targetEncryptedId: {targetEncryptedId}");
                 return BadRequest(
                     new ApiResponse
                     {
@@ -1608,6 +1633,7 @@ namespace Khel_Akhel_Server.Controllers.Projects
                 if (currentPubObj == null || currentPubObj == DBNull.Value)
                 {
                     sw.Stop();
+                    Logs.Warning($"Project TogglePublish rejected | Project not found | ProjectId: {projectId}");
                     return NotFound(
                         new ApiResponse
                         {
@@ -1709,6 +1735,7 @@ namespace Khel_Akhel_Server.Controllers.Projects
             if (!_encryption.TryDecrypt(encryptedProjectId, out long projectId) || projectId <= 0)
             {
                 sw.Stop();
+                Logs.Warning($"Project Delete rejected | Invalid encryptedProjectId: {encryptedProjectId}");
                 return BadRequest(
                     new ApiResponse
                     {
@@ -1735,6 +1762,7 @@ namespace Khel_Akhel_Server.Controllers.Projects
                 {
                     await tran.RollbackAsync();
                     sw.Stop();
+                    Logs.Warning($"Project Delete rejected | Project not found | ProjectId: {projectId}");
                     return NotFound(
                         new ApiResponse
                         {
@@ -1872,6 +1900,7 @@ namespace Khel_Akhel_Server.Controllers.Projects
             if (request == null || request.Images == null || request.Images.Count == 0)
             {
                 sw.Stop();
+                Logs.Warning("Project UploadImages rejected | Reason: Missing files or null request body");
                 return BadRequest(
                     new ApiResponse
                     {
@@ -1883,9 +1912,13 @@ namespace Khel_Akhel_Server.Controllers.Projects
                 );
             }
 
-            if (!_encryption.TryDecrypt(request.EncryptedProjectId, out long projectId) || projectId <= 0)
+            if (
+                !_encryption.TryDecrypt(request.EncryptedProjectId, out long projectId)
+                || projectId <= 0
+            )
             {
                 sw.Stop();
+                Logs.Warning($"Project UploadImages rejected | Reason: Invalid encryptedProjectId: {request.EncryptedProjectId}");
                 return BadRequest(
                     new ApiResponse
                     {
@@ -1907,6 +1940,7 @@ namespace Khel_Akhel_Server.Controllers.Projects
             if (exists == 0)
             {
                 sw.Stop();
+                Logs.Warning($"Project UploadImages rejected | Project not found | ProjectId: {projectId}");
                 return NotFound(
                     new ApiResponse
                     {
@@ -2132,6 +2166,7 @@ namespace Khel_Akhel_Server.Controllers.Projects
             if (!_encryption.TryDecrypt(encryptedImageId, out long imageId) || imageId <= 0)
             {
                 sw.Stop();
+                Logs.Warning($"Project DeleteImage rejected | Invalid encryptedImageId: {encryptedImageId}");
                 return BadRequest(
                     new ApiResponse
                     {
@@ -2154,6 +2189,7 @@ namespace Khel_Akhel_Server.Controllers.Projects
                 if (dt.Rows.Count == 0)
                 {
                     sw.Stop();
+                    Logs.Warning($"Project DeleteImage rejected | Image not found | ImageId: {imageId}");
                     return NotFound(
                         new ApiResponse
                         {
@@ -2212,7 +2248,9 @@ namespace Khel_Akhel_Server.Controllers.Projects
                 );
 
                 sw.Stop();
-                Logs.Info($"Project DeleteImage completed | ImageId: {imageId} | projectId: {projectId}");
+                Logs.Info(
+                    $"Project DeleteImage completed | ImageId: {imageId} | projectId: {projectId}"
+                );
 
                 return Ok(
                     new ApiResponse
@@ -2256,7 +2294,9 @@ namespace Khel_Akhel_Server.Controllers.Projects
         [Authorize(Roles = "Admin")]
         [HttpPut("images/reorder")]
         [HttpPost("images/reorder")]
-        public async Task<IActionResult> ReorderImages([FromBody] ProjectImageReorderRequest? request)
+        public async Task<IActionResult> ReorderImages(
+            [FromBody] ProjectImageReorderRequest? request
+        )
         {
             Logs.Info("Project ReorderImages API started");
             var sw = Stopwatch.StartNew();
@@ -2264,6 +2304,7 @@ namespace Khel_Akhel_Server.Controllers.Projects
             if (request == null || request.ImageOrders == null || request.ImageOrders.Count == 0)
             {
                 sw.Stop();
+                Logs.Warning("Project ReorderImages rejected | Reason: Missing items or null request body");
                 return BadRequest(
                     new ApiResponse
                     {
@@ -2278,9 +2319,13 @@ namespace Khel_Akhel_Server.Controllers.Projects
                 );
             }
 
-            if (!_encryption.TryDecrypt(request.EncryptedProjectId, out long projectId) || projectId <= 0)
+            if (
+                !_encryption.TryDecrypt(request.EncryptedProjectId, out long projectId)
+                || projectId <= 0
+            )
             {
                 sw.Stop();
+                Logs.Warning($"Project ReorderImages rejected | Reason: Invalid encryptedProjectId: {request.EncryptedProjectId}");
                 return BadRequest(
                     new ApiResponse
                     {

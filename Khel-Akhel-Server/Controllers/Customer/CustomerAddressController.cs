@@ -1,4 +1,4 @@
-using System.Data;
+﻿using System.Data;
 using System.Diagnostics;
 using System.Security.Claims;
 using Khel_Akhel_Server.BL.Common;
@@ -90,6 +90,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                 if (customerId <= 0)
                 {
                     sw.Stop();
+                    Logs.Warning("CustomerAddressCreate rejected | Unauthorized: Invalid current user identifier");
                     return Unauthorized(
                         new ApiResponse
                         {
@@ -395,6 +396,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                 )
                 {
                     sw.Stop();
+                    Logs.Warning($"CustomerAddressUpdate rejected | Invalid encrypted address ID: {request.EncryptedAddressId}");
                     return BadRequest(
                         new ApiResponse
                         {
@@ -425,6 +427,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                 if (dt.Rows.Count == 0)
                 {
                     sw.Stop();
+                    Logs.Warning($"CustomerAddressUpdate rejected | Address record not found | AddressId:{addressId}");
                     return NotFound(
                         new ApiResponse
                         {
@@ -833,6 +836,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                 if (!_encryption.TryDecrypt(encryptedId, out long addressId) || addressId <= 0)
                 {
                     sw.Stop();
+                    Logs.Warning($"GetCustomerAddressById rejected | Invalid encrypted address ID: {encryptedId}");
                     return BadRequest(
                         new ApiResponse
                         {
@@ -863,6 +867,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                 if (dt.Rows.Count == 0)
                 {
                     sw.Stop();
+                    Logs.Warning($"GetCustomerAddressById rejected | Address record not found | AddressId:{addressId}");
                     return NotFound(
                         new ApiResponse
                         {
@@ -1083,6 +1088,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                 )
                 {
                     sw.Stop();
+                    Logs.Warning($"CustomerAddressSoftDelete rejected | Invalid encrypted address ID: {targetEncryptedId}");
                     return BadRequest(
                         new ApiResponse
                         {
@@ -1105,6 +1111,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                 if (dt.Rows.Count == 0)
                 {
                     sw.Stop();
+                    Logs.Warning($"CustomerAddressSoftDelete rejected | Address not found | AddressId:{addressId}");
                     return NotFound(
                         new ApiResponse
                         {
@@ -1123,6 +1130,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                 if (ownerCustomerId != customerId && !IsCurrentUserAdmin())
                 {
                     sw.Stop();
+                    Logs.Warning($"CustomerAddressSoftDelete forbidden | Caller:{customerId} Owner:{ownerCustomerId}");
                     return StatusCode(
                         403,
                         new ApiResponse

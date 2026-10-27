@@ -7,6 +7,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { map, startWith } from 'rxjs';
 import { ApiService } from '../../../common/services/api.service';
 import { AuthService } from '../../../common/services/auth.service';
+import { CustomValidators } from '../../../common/validators/custom.validators';
 import { REGEX_PATTERNS } from '../../../common/constants/regex.constants';
 
 interface ContactSubmitted {
@@ -59,11 +60,28 @@ export class Contact {
   readonly mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(STUDIO_LOCATION)}`;
 
   readonly form = this.fb.nonNullable.group({
-    fullName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(150)]],
-    mobileNumber: ['', [Validators.required, internationalMobile]],
-    email: ['', [Validators.required, Validators.pattern(REGEX_PATTERNS.EMAIL), Validators.maxLength(254)]],
+    fullName: [
+      '',
+      [CustomValidators.requiredNonEmpty, Validators.minLength(2), Validators.maxLength(150)],
+    ],
+    mobileNumber: ['', [CustomValidators.requiredNonEmpty, internationalMobile]],
+    email: [
+      '',
+      [
+        CustomValidators.requiredNonEmpty,
+        Validators.pattern(REGEX_PATTERNS.EMAIL),
+        Validators.maxLength(254),
+      ],
+    ],
     companyName: ['', Validators.maxLength(200)],
-    serviceDescription: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(MAX_MESSAGE)]],
+    serviceDescription: [
+      '',
+      [
+        CustomValidators.requiredNonEmpty,
+        Validators.minLength(5),
+        Validators.maxLength(MAX_MESSAGE),
+      ],
+    ],
     website: [''], // honeypot
   });
 

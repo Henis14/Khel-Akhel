@@ -1,4 +1,4 @@
-using System.Data;
+﻿using System.Data;
 using System.Diagnostics;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -187,6 +187,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                 }
 
                 sw.Stop();
+                Logs.Info($"PasswordResetAdmin.GetRequests completed successfully | TotalRecords:{totalRecords} PageIndex:{pageIndex} Status:{status}");
                 return Ok(new ApiResponse
                 {
                     Success = true,
@@ -233,6 +234,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                 if (request == null || string.IsNullOrWhiteSpace(request.AdminNotes))
                 {
                     sw.Stop();
+                    Logs.Warning("PasswordResetAdmin.IssueLinkForRequest rejected: Verification notes are required");
                     return BadRequest(new ApiResponse
                     {
                         Success = false,
@@ -245,6 +247,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                 if (!_encryption.TryDecrypt(encryptedRequestId, out long requestId))
                 {
                     sw.Stop();
+                    Logs.Warning($"PasswordResetAdmin.IssueLinkForRequest rejected: Failed to decrypt RequestId '{encryptedRequestId}'");
                     return BadRequest(new ApiResponse
                     {
                         Success = false,
@@ -267,6 +270,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                 if (dt.Rows.Count == 0)
                 {
                     sw.Stop();
+                    Logs.Warning($"PasswordResetAdmin.IssueLinkForRequest rejected: RequestId {requestId} not found");
                     return NotFound(new ApiResponse
                     {
                         Success = false,
@@ -298,6 +302,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                 if (currentStatus != "PENDING" && currentStatus != "LINK_ISSUED" && currentStatus != "EXPIRED")
                 {
                     sw.Stop();
+                    Logs.Warning($"PasswordResetAdmin.IssueLinkForRequest rejected: Invalid status '{currentStatus}' for RequestId {requestId}");
                     return BadRequest(new ApiResponse
                     {
                         Success = false,
@@ -423,6 +428,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                 if (request == null || string.IsNullOrWhiteSpace(request.AdminNotes))
                 {
                     sw.Stop();
+                    Logs.Warning("PasswordResetAdmin.RejectRequest rejected: Rejection notes are required");
                     return BadRequest(new ApiResponse
                     {
                         Success = false,
@@ -435,6 +441,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                 if (!_encryption.TryDecrypt(encryptedRequestId, out long requestId))
                 {
                     sw.Stop();
+                    Logs.Warning($"PasswordResetAdmin.RejectRequest rejected: Failed to decrypt RequestId '{encryptedRequestId}'");
                     return BadRequest(new ApiResponse
                     {
                         Success = false,
@@ -456,6 +463,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                 if (dt.Rows.Count == 0)
                 {
                     sw.Stop();
+                    Logs.Warning($"PasswordResetAdmin.RejectRequest rejected: RequestId {requestId} not found");
                     return NotFound(new ApiResponse
                     {
                         Success = false,
@@ -534,6 +542,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                 if (request == null || string.IsNullOrWhiteSpace(request.AdminNotes))
                 {
                     sw.Stop();
+                    Logs.Warning("PasswordResetAdmin.IssueLinkForCustomer rejected: Verification notes are required");
                     return BadRequest(new ApiResponse
                     {
                         Success = false,
@@ -546,6 +555,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                 if (!_encryption.TryDecrypt(encryptedCustomerId, out long targetCustomerId))
                 {
                     sw.Stop();
+                    Logs.Warning($"PasswordResetAdmin.IssueLinkForCustomer rejected: Failed to decrypt CustomerId '{encryptedCustomerId}'");
                     return BadRequest(new ApiResponse
                     {
                         Success = false,
@@ -566,6 +576,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                 if (dt.Rows.Count == 0)
                 {
                     sw.Stop();
+                    Logs.Warning($"PasswordResetAdmin.IssueLinkForCustomer rejected: CustomerId {targetCustomerId} not found");
                     return NotFound(new ApiResponse
                     {
                         Success = false,
@@ -595,6 +606,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                 if (!isActive)
                 {
                     sw.Stop();
+                    Logs.Warning($"PasswordResetAdmin.IssueLinkForCustomer rejected: Account disabled for CustomerId {targetCustomerId}");
                     return BadRequest(new ApiResponse
                     {
                         Success = false,

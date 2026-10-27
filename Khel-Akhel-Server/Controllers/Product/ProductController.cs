@@ -79,6 +79,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                 )
                 {
                     sw.Stop();
+                    Logs.Warning($"ProductCreate rejected | Invalid encrypted category ID: {request.EncryptedCategoryId}");
                     return BadRequest(
                         new ApiResponse
                         {
@@ -101,6 +102,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                     )
                     {
                         sw.Stop();
+                        Logs.Warning($"ProductCreate rejected | Invalid encrypted subcategory ID: {request.EncryptedSubCategoryId}");
                         return BadRequest(
                             new ApiResponse
                             {
@@ -124,6 +126,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                     if (dtSubCat.Rows.Count == 0)
                     {
                         sw.Stop();
+                        Logs.Warning($"ProductCreate rejected | Subcategory not found or inactive | SubCategoryId:{decSubId}");
                         return BadRequest(
                             new ApiResponse
                             {
@@ -141,6 +144,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                     if (Convert.ToInt64(dtSubCat.Rows[0]["product_category_id"]) != categoryId)
                     {
                         sw.Stop();
+                        Logs.Warning($"ProductCreate rejected | Subcategory {decSubId} does not belong to Category {categoryId}");
                         return BadRequest(
                             new ApiResponse
                             {
@@ -444,6 +448,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                 )
                 {
                     sw.Stop();
+                    Logs.Warning($"ProductUpdate rejected | Invalid encrypted product ID: {request.EncryptedProductId}");
                     return BadRequest(
                         new ApiResponse
                         {
@@ -471,6 +476,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                 if (dt.Rows.Count == 0)
                 {
                     sw.Stop();
+                    Logs.Warning($"ProductUpdate rejected | Product not found | ProductId:{productId}");
                     return NotFound(
                         new ApiResponse
                         {
@@ -499,6 +505,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                     )
                     {
                         sw.Stop();
+                        Logs.Warning($"ProductUpdate rejected | Invalid encrypted category ID: {request.EncryptedCategoryId}");
                         return BadRequest(
                             new ApiResponse
                             {
@@ -846,6 +853,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                 )
                 {
                     sw.Stop();
+                    Logs.Warning($"ProductSoftDelete rejected | Invalid encrypted product ID: {targetEncryptedId}");
                     return BadRequest(
                         new ApiResponse
                         {
@@ -866,6 +874,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                 if (exists == 0)
                 {
                     sw.Stop();
+                    Logs.Warning($"ProductSoftDelete rejected | Product not found or already deleted | ProductId:{productId}");
                     return NotFound(
                         new ApiResponse
                         {
@@ -940,6 +949,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                 if (!_encryption.TryDecrypt(encryptedId, out long productId) || productId <= 0)
                 {
                     sw.Stop();
+                    Logs.Warning($"GetProductById rejected | Invalid encrypted product ID: {encryptedId}");
                     return BadRequest(
                         new ApiResponse
                         {
@@ -974,6 +984,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                 if (dt.Rows.Count == 0)
                 {
                     sw.Stop();
+                    Logs.Warning($"GetProductById rejected | Product not found | ProductId:{productId}");
                     return NotFound(
                         new ApiResponse
                         {

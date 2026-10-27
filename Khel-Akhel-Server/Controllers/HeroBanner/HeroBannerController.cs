@@ -148,6 +148,7 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
             [FromQuery] bool? admin
         )
         {
+            Logs.Info("GetPublicHeroMedia API started");
             var sw = Stopwatch.StartNew();
 
             try
@@ -174,6 +175,7 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
                 }
 
                 sw.Stop();
+                Logs.Info($"GetPublicHeroMedia completed | Count: {list.Count} | ElapsedMs: {sw.ElapsedMilliseconds}");
                 return Ok(
                     new ApiResponse
                     {
@@ -211,6 +213,7 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
         [HttpGet("admin/list")]
         public async Task<IActionResult> GetAdminHeroMediaList()
         {
+            Logs.Info("GetAdminHeroMediaList API started");
             var sw = Stopwatch.StartNew();
 
             try
@@ -230,6 +233,7 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
                 }
 
                 sw.Stop();
+                Logs.Info($"GetAdminHeroMediaList completed | Count: {list.Count} | ElapsedMs: {sw.ElapsedMilliseconds}");
                 return Ok(
                     new ApiResponse
                     {
@@ -262,6 +266,7 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
         [HttpGet("{id}")]
         public async Task<IActionResult> GetHeroBannerById(string id)
         {
+            Logs.Info($"GetHeroBannerById API started | Id: {id}");
             var sw = Stopwatch.StartNew();
 
             try
@@ -269,6 +274,7 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
                 if (!TryResolveBannerId(id, out long bannerId))
                 {
                     sw.Stop();
+                    Logs.Warning($"GetHeroBannerById rejected | Invalid Banner ID: {id}");
                     return BadRequest(
                         new ApiResponse
                         {
@@ -293,6 +299,7 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
                 if (dt.Rows.Count == 0)
                 {
                     sw.Stop();
+                    Logs.Warning($"GetHeroBannerById rejected | Banner not found | Id: {id} BannerId: {bannerId}");
                     return NotFound(
                         new ApiResponse
                         {
@@ -309,6 +316,7 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
 
                 var response = MapHeroBanner(dt.Rows[0]);
                 sw.Stop();
+                Logs.Info($"GetHeroBannerById completed successfully | BannerId: {bannerId} | ElapsedMs: {sw.ElapsedMilliseconds}");
 
                 return Ok(
                     new ApiResponse
@@ -350,6 +358,7 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
             if (request == null)
             {
                 sw.Stop();
+                Logs.Warning("CreateHeroMedia rejected | Request payload cannot be empty");
                 return BadRequest(
                     new ApiResponse
                     {
@@ -365,6 +374,7 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
             if (request.IsImage == true && request.IsVideo == true)
             {
                 sw.Stop();
+                Logs.Warning("CreateHeroMedia rejected | Both IsImage and IsVideo cannot be true simultaneously");
                 return BadRequest(
                     new ApiResponse
                     {
@@ -383,6 +393,7 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
             if (request.IsImage == false && request.IsVideo == false)
             {
                 sw.Stop();
+                Logs.Warning("CreateHeroMedia rejected | Both IsImage and IsVideo cannot be false");
                 return BadRequest(
                     new ApiResponse
                     {
@@ -839,6 +850,7 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
             if (!TryResolveBannerId(id, out long bannerId))
             {
                 sw.Stop();
+                Logs.Warning($"UpdateHeroMedia rejected | Invalid Banner ID: {id}");
                 return BadRequest(
                     new ApiResponse
                     {
@@ -853,6 +865,7 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
             if (request == null)
             {
                 sw.Stop();
+                Logs.Warning($"UpdateHeroMedia rejected | Request payload cannot be empty | Id: {id}");
                 return BadRequest(
                     new ApiResponse
                     {
@@ -897,6 +910,7 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
                 {
                     tran.Rollback();
                     sw.Stop();
+                    Logs.Warning($"UpdateHeroMedia rejected | Banner not found | Id: {id} BannerId: {bannerId}");
                     return NotFound(
                         new ApiResponse
                         {
@@ -1101,6 +1115,7 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
             if (!TryResolveBannerId(id, out long bannerId))
             {
                 sw.Stop();
+                Logs.Warning($"DeleteHeroMedia rejected | Invalid Banner ID: {id}");
                 return BadRequest(
                     new ApiResponse
                     {
@@ -1124,6 +1139,7 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
                 if (dt.Rows.Count == 0)
                 {
                     sw.Stop();
+                    Logs.Warning($"DeleteHeroMedia rejected | Banner not found | Id: {id} BannerId: {bannerId}");
                     return NotFound(
                         new ApiResponse
                         {
@@ -1148,6 +1164,7 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
                 SafeDeletePhysicalFile(mediaUrl);
 
                 sw.Stop();
+                Logs.Info($"DeleteHeroMedia completed successfully | BannerId: {bannerId} | ElapsedMs: {sw.ElapsedMilliseconds}");
                 return Ok(
                     new ApiResponse
                     {
@@ -1187,11 +1204,13 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
             [FromBody] HeroBannerStatusUpdateRequest? request
         )
         {
+            Logs.Info($"UpdateHeroMediaStatus API started | Id: {id}");
             var sw = Stopwatch.StartNew();
 
             if (!TryResolveBannerId(id, out long bannerId))
             {
                 sw.Stop();
+                Logs.Warning($"UpdateHeroMediaStatus rejected | Invalid Banner ID: {id}");
                 return BadRequest(
                     new ApiResponse
                     {
@@ -1206,6 +1225,7 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
             if (request == null)
             {
                 sw.Stop();
+                Logs.Warning($"UpdateHeroMediaStatus rejected | Request body cannot be null | Id: {id}");
                 return BadRequest(
                     new ApiResponse
                     {
@@ -1239,6 +1259,7 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
                 if (dt.Rows.Count == 0)
                 {
                     sw.Stop();
+                    Logs.Warning($"UpdateHeroMediaStatus rejected | Banner not found | Id: {id} BannerId: {bannerId}");
                     return NotFound(
                         new ApiResponse
                         {
@@ -1255,6 +1276,7 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
 
                 var response = MapHeroBanner(dt.Rows[0]);
                 sw.Stop();
+                Logs.Info($"UpdateHeroMediaStatus completed successfully | BannerId: {bannerId} IsActive: {request.IsActive} | ElapsedMs: {sw.ElapsedMilliseconds}");
 
                 return Ok(
                     new ApiResponse
