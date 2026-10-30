@@ -11,15 +11,16 @@ $ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   --pad: max(clamp(1.25rem, 4vw, 3rem), env(safe-area-inset-left, 0px));
   box-sizing: border-box;
   width: 100%;
-  max-width: calc(1080px + 2 * clamp(1.25rem, 4vw, 3rem));
+  max-width: calc(1140px + 2 * clamp(1.25rem, 4vw, 3rem));
   margin-inline: auto;
   padding-inline: var(--pad);
 }
 
 %caps {
   font-family: var(--user-font-sans);
+  font-size: var(--user-fs-eyebrow, 0.75rem);
   font-weight: 600;
-  letter-spacing: 0.14em;
+  letter-spacing: var(--user-tracking-caps, 0.09em);
   text-transform: uppercase;
 }
 
@@ -58,14 +59,13 @@ $ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  margin: 0 0 1.1rem;
-  font-size: 0.6875rem;
+  margin: 0 0 1rem;
   color: var(--user-rani, #b8336a);
 
   &::before {
     content: '';
-    width: 5px;
-    height: 5px;
+    width: 6px;
+    height: 6px;
     background: var(--user-haldi, #f2c230);
     transform: rotate(45deg);
   }
@@ -74,9 +74,9 @@ $ease: cubic-bezier(0.22, 0.61, 0.36, 1);
 .pj-title {
   margin: 0;
   font-family: var(--user-font-serif);
-  font-size: clamp(2.35rem, 4.6vw, 3.75rem);
+  font-size: var(--user-fs-page-title);
   font-weight: 400;
-  line-height: 1.04;
+  line-height: var(--user-lh-title, 1.02);
   letter-spacing: -0.015em;
 
   em {
@@ -88,8 +88,8 @@ $ease: cubic-bezier(0.22, 0.61, 0.36, 1);
 .pj-lede {
   max-width: 34rem;
   margin: 1.25rem 0 0;
-  font-size: 0.9375rem;
-  line-height: 1.75;
+  font-size: var(--user-fs-lede, 1rem);
+  line-height: var(--user-lh-lede, 1.7);
   color: var(--user-ink-slate, #574e4b);
 }
 
@@ -124,10 +124,10 @@ $ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   border: 0;
   background: none;
   font-family: var(--user-font-sans);
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 500;
   letter-spacing: 0.01em;
-  color: var(--user-ink-mist, #8a817d);
+  color: var(--user-ink-slate, #574e4b);
   white-space: nowrap;
   cursor: pointer;
   transition: color 0.25s $ease;
@@ -183,15 +183,16 @@ $ease: cubic-bezier(0.22, 0.61, 0.36, 1);
 
 .pj-project {
   display: grid;
-  grid-template-columns: minmax(0, 300px) minmax(0, 560px);
+  grid-template-columns: minmax(0, 380px) minmax(0, 520px);
   justify-content: space-between;
-  gap: clamp(2.5rem, 6vw, 5.5rem);
-  padding-top: clamp(3rem, 7vw, 5.25rem);
+  align-items: start;
+  gap: clamp(2rem, 5vw, 4.5rem);
+  padding-top: clamp(2.5rem, 5vw, 3.75rem);
   scroll-margin-top: calc(var(--user-header-height, 80px) + 56px);
 
   /* divider between projects, aligned to the content edges */
   & + & {
-    margin-top: clamp(3rem, 7vw, 5.25rem);
+    margin-top: clamp(2.5rem, 5vw, 3.75rem);
     background: linear-gradient(var(--user-hairline, #eae3d8), var(--user-hairline, #eae3d8))
       no-repeat top center / calc(100% - 2 * var(--pad)) 1px;
   }
@@ -212,8 +213,16 @@ $ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   align-items: center;
   gap: 0.65rem;
   margin: 0 0 0.9rem;
-  font-size: 0.65rem;
   color: var(--user-rani, #b8336a);
+}
+
+/* 01, 02 … gives the archive a catalogue rhythm */
+.pj-num {
+  font-family: var(--user-font-serif);
+  font-size: 1.125rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--user-maroon, #45120a);
 }
 
 /* the ": : :" from daras.co.in, as three tiny diamonds */
@@ -240,9 +249,9 @@ $ease: cubic-bezier(0.22, 0.61, 0.36, 1);
 .pj-name {
   margin: 0;
   font-family: var(--user-font-serif);
-  font-size: clamp(1.5rem, 2.2vw, 1.85rem);
+  font-size: var(--user-fs-section-title);
   font-weight: 400;
-  line-height: 1.12;
+  line-height: 1.1;
   letter-spacing: -0.005em;
   color: var(--user-maroon, #45120a);
   text-wrap: balance;
@@ -251,7 +260,7 @@ $ease: cubic-bezier(0.22, 0.61, 0.36, 1);
 .pj-sub {
   margin: 0.5rem 0 0;
   font-family: var(--user-font-serif);
-  font-size: 1rem;
+  font-size: 1.125rem;
   font-style: italic;
   line-height: 1.45;
   color: var(--user-ink-slate, #574e4b);
@@ -266,20 +275,20 @@ $ease: cubic-bezier(0.22, 0.61, 0.36, 1);
 
   div {
     display: grid;
-    grid-template-columns: 3.25rem minmax(0, 1fr);
+    grid-template-columns: 4.5rem minmax(0, 1fr);
     align-items: baseline;
     gap: 0.5rem;
   }
 
   dt {
     @extend %caps;
-    font-size: 0.5625rem;
+    font-size: 0.6875rem;
     color: var(--user-ink-mist, #8a817d);
   }
 
   dd {
     margin: 0;
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
     line-height: 1.45;
     color: var(--user-ink-slate, #574e4b);
   }
@@ -287,8 +296,8 @@ $ease: cubic-bezier(0.22, 0.61, 0.36, 1);
 
 .pj-lead {
   margin: 1.1rem 0 0;
-  font-size: 0.875rem;
-  line-height: 1.75;
+  font-size: 0.9375rem;
+  line-height: var(--user-lh-lede, 1.7);
   color: var(--user-ink-slate, #574e4b);
 }
 
@@ -308,8 +317,8 @@ $ease: cubic-bezier(0.22, 0.61, 0.36, 1);
 
   p {
     margin: 0.85rem 0 0;
-    font-size: 0.875rem;
-    line-height: 1.75;
+    font-size: 0.9375rem;
+    line-height: var(--user-lh-lede, 1.7);
     color: var(--user-ink-slate, #574e4b);
     white-space: pre-line;
   }
@@ -325,7 +334,7 @@ $ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   border: 0;
   border-bottom: 1px solid var(--user-haldi, #f2c230);
   background: none;
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   color: var(--user-maroon, #45120a);
   text-decoration: none;
   cursor: pointer;
@@ -367,13 +376,20 @@ $ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   margin: 1.1rem 0 0;
   padding: 0;
   list-style: none;
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   line-height: 1.7;
   color: var(--user-ink-mist, #8a817d);
 }
 
 .pj-photos {
   min-width: 0;
+}
+
+.pj-photo-count {
+  @extend %caps;
+  margin: 0.75rem 0 0;
+  font-size: 0.6875rem;
+  color: var(--user-ink-mist, #8a817d);
 }
 
 /* gallery — storefront tint on the shared renderer */
@@ -388,6 +404,12 @@ $ease: cubic-bezier(0.22, 0.61, 0.36, 1);
     .g-zoom {
       width: 30px;
       height: 30px;
+    }
+
+    /* single large frames stay modest in the preview */
+    .g-grid[data-layout='full-width'] .g-item,
+    .g-grid[data-layout='featured'] .g-item:first-child {
+      max-height: 340px;
     }
 
     .gallery-lightbox .lightbox-backdrop {
@@ -443,7 +465,7 @@ $ease: cubic-bezier(0.22, 0.61, 0.36, 1);
 .pj-state-title {
   margin: 0;
   font-family: var(--user-font-serif);
-  font-size: clamp(1.5rem, 2.6vw, 2rem);
+  font-size: var(--user-fs-section-title);
 }
 
 .pj-state-text {
@@ -459,11 +481,10 @@ $ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 44px;
+  min-height: 48px;
   padding: 0 1.5rem;
   border: 1px solid var(--user-maroon, #45120a);
   background: var(--user-maroon, #45120a);
-  font-size: 0.6875rem;
   color: #fff;
   text-decoration: none;
   cursor: pointer;
@@ -550,7 +571,7 @@ $ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   max-width: 26ch;
   margin: 0;
   font-family: var(--user-font-serif);
-  font-size: clamp(1.4rem, 2.6vw, 2rem);
+  font-size: var(--user-fs-section-title);
   line-height: 1.15;
 }
 
@@ -599,7 +620,7 @@ $ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   }
 
   .pj-photos {
-    max-width: 560px;
+    max-width: 520px;
   }
 }
 

@@ -4,14 +4,11 @@
 }
 
 .account-addresses-page {
-  padding: 2.5rem 1rem 5rem;
-  background-color: var(--user-bg, #fcfbf8);
-  min-height: calc(100vh - 240px);
+  padding: 0;
 }
 
 .addresses-container {
-  max-width: 1140px;
-  margin-inline: auto;
+  max-width: none;
 }
 
 /* ---------- Breadcrumb ---------- */
@@ -20,11 +17,11 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 0.8125rem;
-  color: var(--user-text-muted, #7e848d);
+  color: var(--user-ink-mist, #8a817d);
   margin-bottom: 1.5rem;
 
   .breadcrumb-link {
-    color: var(--user-text-muted, #7e848d);
+    color: var(--user-ink-mist, #8a817d);
     text-decoration: none;
     transition: color 0.2s ease;
 
@@ -38,7 +35,7 @@
   }
 
   .breadcrumb-current {
-    color: var(--user-text-primary, #25251f);
+    color: var(--user-maroon, #45120a);
     font-weight: 500;
   }
 }
@@ -63,17 +60,17 @@
   }
 
   .page-title {
-    font-family: var(--user-font-serif, 'Playfair Display', Georgia, serif);
-    font-size: 2rem;
-    font-weight: 600;
+    font-family: var(--user-font-serif);
+    font-size: var(--user-fs-section-title);
+    font-weight: 400;
     color: var(--user-maroon, #45120a);
     margin: 0 0 0.5rem;
-    line-height: 1.2;
+    line-height: 1.1;
   }
 
   .page-subtitle {
     font-size: 0.9375rem;
-    color: var(--user-text-secondary, #565c65);
+    color: var(--user-ink-slate, #574e4b);
     line-height: 1.55;
     margin: 0;
   }
@@ -86,12 +83,13 @@
   justify-content: center;
   gap: 0.5rem;
   font-family: inherit;
-  font-size: 0.8125rem;
+  font-size: var(--user-fs-eyebrow, 0.75rem);
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--user-tracking-caps, 0.09em);
   text-transform: uppercase;
-  padding: 0.75rem 1.4rem;
-  border-radius: 4px;
+  min-height: 48px;
+  padding: 0 1.5rem;
+  border-radius: 0;
   border: 1px solid transparent;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -117,8 +115,6 @@
   &:hover:not(:disabled) {
     background: #2f0b05;
     border-color: #2f0b05;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(69, 18, 10, 0.15);
   }
 }
 
@@ -135,12 +131,12 @@
 
 .btn-outline {
   background: transparent;
-  color: var(--user-text-secondary, #565c65);
+  color: var(--user-ink-slate, #574e4b);
   border-color: var(--user-hairline, #eae3d8);
 
   &:hover:not(:disabled) {
     background: var(--user-limewash, #f7f4ee);
-    color: var(--user-text-primary, #25251f);
+    color: var(--user-maroon, #45120a);
   }
 }
 
@@ -150,7 +146,7 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.875rem 1.25rem;
-  border-radius: 6px;
+  border-radius: 0;
   margin-bottom: 1.5rem;
   font-size: 0.875rem;
   line-height: 1.4;
@@ -200,7 +196,7 @@
   align-items: center;
   justify-content: center;
   padding: 4rem 1rem;
-  color: var(--user-text-muted, #7e848d);
+  color: var(--user-ink-mist, #8a817d);
 
   .spinner {
     width: 38px;
@@ -233,7 +229,7 @@
   padding: 4rem 1.5rem;
   background: var(--user-surface, #ffffff);
   border: 1px dashed var(--user-hairline, #eae3d8);
-  border-radius: 8px;
+  border-radius: 0;
   margin-top: 1rem;
 
   .empty-icon-wrap {
@@ -254,16 +250,16 @@
   }
 
   .empty-title {
-    font-family: var(--user-font-serif, 'Playfair Display', Georgia, serif);
+    font-family: var(--user-font-serif);
     font-size: 1.35rem;
-    color: var(--user-text-primary, #25251f);
+    color: var(--user-maroon, #45120a);
     margin: 0 0 0.5rem;
   }
 
   .empty-desc {
     max-width: 440px;
     font-size: 0.9375rem;
-    color: var(--user-text-secondary, #565c65);
+    color: var(--user-ink-slate, #574e4b);
     line-height: 1.6;
     margin: 0 0 1.75rem;
   }
@@ -279,9 +275,6 @@
     grid-template-columns: repeat(2, 1fr);
   }
 
-  @media (min-width: 1040px) {
-    grid-template-columns: repeat(3, 1fr);
-  }
 }
 
 /* ---------- Address Card ---------- */
@@ -290,7 +283,7 @@
   flex-direction: column;
   background: var(--user-surface, #ffffff);
   border: 1px solid var(--user-hairline, #eae3d8);
-  border-radius: 8px;
+  border-radius: 0;
   padding: 1.5rem;
   position: relative;
   transition: all 0.25s ease;
@@ -324,20 +317,20 @@
     .badge-title {
       font-size: 0.75rem;
       font-weight: 700;
-      letter-spacing: 0.06em;
+      letter-spacing: var(--user-tracking-caps, 0.09em);
       text-transform: uppercase;
       background: var(--user-limewash, #f7f4ee);
       color: var(--user-maroon, #45120a);
       padding: 0.25rem 0.65rem;
-      border-radius: 4px;
+      border-radius: 0;
     }
 
     .badge-type {
       font-size: 0.75rem;
-      color: var(--user-text-muted, #7e848d);
-      background: #f1ede5;
-      padding: 0.25rem 0.5rem;
-      border-radius: 4px;
+      color: var(--user-ink-mist, #8a817d);
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 0;
     }
 
     .badge-default {
@@ -346,11 +339,11 @@
       gap: 0.3rem;
       font-size: 0.75rem;
       font-weight: 600;
-      letter-spacing: 0.04em;
+      letter-spacing: var(--user-tracking-caps, 0.09em);
       text-transform: uppercase;
-      background: #fff2db;
-      color: #925807;
-      border: 1px solid #f9d89b;
+      background: rgba(242, 194, 48, 0.16);
+      color: var(--user-maroon, #45120a);
+      border: 1px solid rgba(242, 194, 48, 0.55);
       padding: 0.2rem 0.55rem;
       border-radius: 999px;
 
@@ -369,9 +362,11 @@
     gap: 0.5rem;
 
     .recipient-name {
-      font-size: 1.05rem;
-      font-weight: 600;
-      color: var(--user-text-primary, #25251f);
+      font-family: var(--user-font-serif);
+      font-size: var(--user-fs-card-title, 1.375rem);
+      font-weight: 400;
+      line-height: 1.2;
+      color: var(--user-maroon, #45120a);
       margin: 0;
     }
 
@@ -380,7 +375,7 @@
       align-items: center;
       gap: 0.45rem;
       font-size: 0.875rem;
-      color: var(--user-text-secondary, #565c65);
+      color: var(--user-ink-slate, #574e4b);
       margin: 0 0 0.5rem;
 
       .detail-icon {
@@ -394,34 +389,34 @@
     .address-lines {
       font-size: 0.875rem;
       line-height: 1.55;
-      color: var(--user-text-secondary, #565c65);
+      color: var(--user-ink-slate, #574e4b);
 
       .line {
         margin: 0 0 0.2rem;
 
         &.landmark {
-          color: var(--user-text-muted, #7e848d);
+          color: var(--user-ink-mist, #8a817d);
           font-style: italic;
 
           .landmark-tag {
             font-style: normal;
             font-weight: 500;
-            color: var(--user-text-secondary, #565c65);
+            color: var(--user-ink-slate, #574e4b);
           }
         }
       }
 
       .location-summary {
         font-weight: 500;
-        color: var(--user-text-primary, #25251f);
+        color: var(--user-maroon, #45120a);
         margin: 0.4rem 0 0.2rem;
       }
 
       .country-line {
         font-size: 0.8125rem;
-        color: var(--user-text-muted, #7e848d);
+        color: var(--user-ink-mist, #8a817d);
         text-transform: uppercase;
-        letter-spacing: 0.04em;
+        letter-spacing: var(--user-tracking-caps, 0.09em);
         margin: 0;
       }
     }
@@ -454,7 +449,7 @@
       font-family: inherit;
       font-size: 0.75rem;
       font-weight: 600;
-      letter-spacing: 0.04em;
+      letter-spacing: var(--user-tracking-caps, 0.09em);
       text-transform: uppercase;
       cursor: pointer;
       padding: 0.35rem 0;
@@ -482,10 +477,10 @@
       font-family: inherit;
       font-size: 0.8125rem;
       font-weight: 500;
-      color: var(--user-text-secondary, #565c65);
+      color: var(--user-ink-slate, #574e4b);
       cursor: pointer;
       padding: 0.35rem 0.5rem;
-      border-radius: 4px;
+      border-radius: 0;
       transition: all 0.2s ease;
 
       .action-svg {
@@ -494,7 +489,7 @@
       }
 
       &:hover:not(:disabled) {
-        color: var(--user-text-primary, #25251f);
+        color: var(--user-maroon, #45120a);
         background: var(--user-limewash, #f7f4ee);
       }
 
@@ -530,7 +525,7 @@
   max-width: 640px;
   max-height: 90vh;
   background: var(--user-surface, #ffffff);
-  border-radius: 10px;
+  border-radius: 0;
   box-shadow: 0 20px 45px rgba(0, 0, 0, 0.2);
   z-index: 1001;
   display: flex;
@@ -547,9 +542,9 @@
     background: var(--user-bg, #fcfbf8);
 
     .modal-title {
-      font-family: var(--user-font-serif, 'Playfair Display', Georgia, serif);
+      font-family: var(--user-font-serif);
       font-size: 1.25rem;
-      font-weight: 600;
+      font-weight: 400;
       color: var(--user-maroon, #45120a);
       margin: 0;
     }
@@ -559,13 +554,13 @@
       border: none;
       font-size: 1.6rem;
       line-height: 1;
-      color: var(--user-text-muted, #7e848d);
+      color: var(--user-ink-mist, #8a817d);
       cursor: pointer;
       padding: 0 0.25rem;
       transition: color 0.2s ease;
 
       &:hover:not(:disabled) {
-        color: var(--user-text-primary, #25251f);
+        color: var(--user-maroon, #45120a);
       }
     }
   }
@@ -621,7 +616,7 @@
   .form-label {
     font-size: 0.8125rem;
     font-weight: 600;
-    color: var(--user-text-primary, #25251f);
+    color: var(--user-maroon, #45120a);
     margin-bottom: 0.4rem;
     display: flex;
     align-items: center;
@@ -634,7 +629,7 @@
     .optional-hint {
       font-weight: 400;
       font-size: 0.75rem;
-      color: var(--user-text-muted, #7e848d);
+      color: var(--user-ink-mist, #8a817d);
     }
 
     .loading-state-hint {
@@ -647,10 +642,10 @@
   .form-control {
     font-family: inherit;
     font-size: 0.875rem;
-    color: var(--user-text-primary, #25251f);
+    color: var(--user-maroon, #45120a);
     background: #ffffff;
     border: 1px solid var(--user-hairline, #eae3d8);
-    border-radius: 4px;
+    border-radius: 0;
     padding: 0.65rem 0.85rem;
     outline: none;
     transition: all 0.2s ease;
@@ -708,7 +703,7 @@
     .check-box-text {
       font-size: 0.875rem;
       font-weight: 500;
-      color: var(--user-text-primary, #25251f);
+      color: var(--user-maroon, #45120a);
     }
   }
 }
@@ -734,5 +729,38 @@
     border-top-color: #ffffff;
     border-radius: 50%;
     animation: spin 0.6s linear infinite;
+  }
+}
+
+/* ---------- Delete dialog: storefront type instead of the admin defaults ---------- */
+:host ::ng-deep app-confirmation-dialog {
+  .modal-backdrop {
+    background-color: var(--user-scrim, rgba(26, 15, 12, 0.45));
+  }
+
+  .modal-content {
+    border-color: var(--user-hairline, #eae3d8);
+    border-radius: 0;
+  }
+
+  .modal-header h3 {
+    font-family: var(--user-font-serif);
+    font-size: var(--user-fs-card-title, 1.375rem);
+    font-weight: 400;
+    color: var(--user-maroon, #45120a);
+  }
+
+  .modal-body p {
+    font-family: var(--user-font-sans);
+    color: var(--user-ink-slate, #574e4b);
+  }
+
+  .btn {
+    border-radius: 0;
+    font-family: var(--user-font-sans);
+    font-size: var(--user-fs-eyebrow, 0.75rem);
+    font-weight: 600;
+    letter-spacing: var(--user-tracking-caps, 0.09em);
+    text-transform: uppercase;
   }
 }

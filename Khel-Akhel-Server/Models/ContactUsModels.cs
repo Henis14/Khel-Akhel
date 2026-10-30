@@ -107,5 +107,55 @@ namespace Khel_Akhel_Server.Models
         public string ServiceDescription { get; set; } = string.Empty;
         public DateTime CreatedDate { get; set; }
     }
+
+    public class ContactInquiryFilterRequest
+    {
+        public int PageIndex { get; set; } = 1;
+        public int PageSize { get; set; } = 10;
+        public string? Search { get; set; }
+        public bool? IsActive { get; set; }
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
+        public string? SortBy { get; set; }
+    }
+
+    public class ContactInquiryDetailResponse
+    {
+        public string EncryptedInquiryId { get; set; } = string.Empty;
+        public string FullName { get; set; } = string.Empty;
+        public string MobileNumber { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string? CompanyName { get; set; }
+        public string ServiceDescription { get; set; } = string.Empty;
+        public string? CustomerAccountNo { get; set; }
+        public string? IpAddress { get; set; }
+        public string? UserAgent { get; set; }
+        public bool IsActive { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+    }
+
+    public class ContactInquiryListResponse
+    {
+        public List<ContactInquiryDetailResponse> Items { get; set; } = new();
+        public int TotalRecords { get; set; }
+        public int PageIndex { get; set; }
+        public int PageSize { get; set; }
+        public int TotalPages => PageSize > 0 ? (int)Math.Ceiling((double)TotalRecords / PageSize) : 0;
+    }
+
+    public class ContactInquiryStatusUpdateRequest
+    {
+        public string EncryptedInquiryId { get; set; } = string.Empty;
+        public bool IsActive { get; set; }
+    }
+
+    public class ContactInquirySummaryResponse
+    {
+        public int TotalInquiries { get; set; }
+        public int ActiveInquiries { get; set; }
+        public int InactiveInquiries { get; set; }
+        public int TodayInquiries { get; set; }
+    }
     #endregion
 }

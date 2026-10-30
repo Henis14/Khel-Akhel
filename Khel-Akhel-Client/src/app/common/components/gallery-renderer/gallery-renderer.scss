@@ -92,6 +92,37 @@ $ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   pointer-events: none;
 }
 
+.g-more {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.2rem;
+  background: rgba(40, 14, 8, 0.58);
+  color: #fff;
+  text-align: center;
+  pointer-events: none;
+  transition: background-color 0.3s ease;
+}
+
+.g-item:hover .g-more {
+  background: rgba(40, 14, 8, 0.7);
+}
+
+.g-more-count {
+  font-family: var(--user-font-serif, Georgia, serif);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  line-height: 1;
+}
+
+.g-more-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
 .g-caption {
   position: absolute;
   left: 0;

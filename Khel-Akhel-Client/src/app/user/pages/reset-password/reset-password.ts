@@ -66,6 +66,12 @@ export class ResetPasswordComponent implements OnInit {
       confirmPassword: ['', [CustomValidators.requiredNonEmpty]],
     });
 
+    // Signed-in customer changing their password: their email is already known
+    const signedInEmail = this.authService.currentUser()?.email;
+    if (!rawToken && signedInEmail) {
+      this.resetForm.patchValue({ email: signedInEmail });
+    }
+
     if (rawToken) {
       // Admin-issued link: identity was already verified by the studio — only a new password is needed
       ['email', 'mobileNo', 'currentPassword'].forEach((c) => this.resetForm.get(c)?.disable());

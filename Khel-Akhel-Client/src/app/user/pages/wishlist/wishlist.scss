@@ -1,0 +1,327 @@
+/* ==========================================================================
+   Wishlist: intro + one row per saved piece
+   ========================================================================== */
+:host {
+  display: block;
+  color: var(--user-maroon, #45120a);
+  background: var(--user-gallery-white, #fff);
+}
+
+%caps {
+  font-family: var(--user-font-sans);
+  font-size: var(--user-fs-eyebrow, 0.75rem);
+  font-weight: 600;
+  letter-spacing: var(--user-tracking-caps, 0.09em);
+  text-transform: uppercase;
+}
+
+.wl-wrap {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1080px;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 2.8vw, 2.75rem);
+}
+
+/* ---------- intro ---------- */
+.wl-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  align-items: end;
+  gap: 1.5rem clamp(2rem, 6vw, 5rem);
+  padding-top: clamp(2.5rem, 6vw, 4.5rem);
+  padding-bottom: clamp(2rem, 4vw, 3rem);
+}
+
+.wl-eyebrow {
+  @extend %caps;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0 0 1rem;
+  color: var(--user-rani, #b8336a);
+
+  &::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: var(--user-haldi, #f2c230);
+    transform: rotate(45deg);
+  }
+}
+
+.wl-title {
+  margin: 0;
+  font-family: var(--user-font-serif);
+  font-size: var(--user-fs-page-title);
+  font-weight: 400;
+  line-height: var(--user-lh-title, 1.02);
+  letter-spacing: -0.01em;
+
+  em {
+    font-style: italic;
+  }
+}
+
+.wl-lede {
+  max-width: 28rem;
+  margin: 0;
+  padding-left: 1.25rem;
+  border-left: 1px solid var(--user-hairline, #eae3d8);
+  font-size: var(--user-fs-lede, 1rem);
+  line-height: var(--user-lh-lede, 1.7);
+  color: var(--user-ink-slate, #574e4b);
+}
+
+/* ---------- list ---------- */
+.wl-body {
+  padding-top: clamp(1.5rem, 3vw, 2.25rem);
+  padding-bottom: clamp(3.5rem, 7vw, 5.5rem);
+}
+
+.wl-count {
+  @extend %caps;
+  margin: 0 0 0.75rem;
+  color: var(--user-ink-mist, #8a817d);
+}
+
+.wl-notice {
+  margin: 0 0 1.25rem;
+  padding: 0.8rem 1rem;
+  border-left: 3px solid var(--user-haldi, #f2c230);
+  background: var(--user-limewash, #f7f4ee);
+  font-size: 0.9rem;
+}
+
+.wl-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--user-hairline, #eae3d8);
+}
+
+.wl-item {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(1rem, 3vw, 2rem);
+  padding-block: 1.25rem;
+  border-bottom: 1px solid var(--user-hairline, #eae3d8);
+
+  &.is-out .wl-media img {
+    opacity: 0.55;
+    filter: grayscale(0.4);
+  }
+}
+
+.wl-media {
+  display: block;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: var(--user-limewash, #f7f4ee);
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.wl-info {
+  min-width: 0;
+}
+
+.wl-cat {
+  @extend %caps;
+  margin: 0 0 0.3rem;
+  color: var(--user-ink-mist, #8a817d);
+}
+
+.wl-name {
+  margin: 0;
+  font-family: var(--user-font-serif);
+  font-size: var(--user-fs-card-title, 1.375rem);
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.wl-desc {
+  margin: 0.35rem 0 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--user-ink-slate, #574e4b);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.wl-price {
+  margin: 0.55rem 0 0;
+  font-size: 1rem;
+  font-weight: 600;
+
+  s {
+    margin-left: 0.5rem;
+    font-weight: 400;
+    color: var(--user-ink-mist, #8a817d);
+  }
+}
+
+.wl-stock {
+  @extend %caps;
+  margin: 0.4rem 0 0;
+  color: var(--user-kesar, #e07b2e);
+}
+
+.wl-actions {
+  display: grid;
+  justify-items: end;
+  gap: 0.6rem;
+}
+
+.wl-btn {
+  @extend %caps;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 1.4rem;
+  border: 1px solid var(--user-maroon, #45120a);
+  background: var(--user-maroon, #45120a);
+  color: #fff;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: #2e0c06;
+  }
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.6;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--user-haldi, #f2c230);
+    outline-offset: 3px;
+  }
+}
+
+.wl-remove {
+  @extend %caps;
+  padding: 0 0 0.15rem;
+  border: 0;
+  border-bottom: 1px solid var(--user-hairline, #eae3d8);
+  background: none;
+  color: var(--user-ink-slate, #574e4b);
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    color: var(--user-rani, #b8336a);
+    border-color: var(--user-rani, #b8336a);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+  }
+}
+
+/* ---------- states ---------- */
+.wl-state {
+  display: grid;
+  justify-items: center;
+  gap: 0.6rem;
+  padding-block: clamp(3rem, 8vw, 5rem);
+  text-align: center;
+}
+
+.wl-state-title {
+  margin: 0;
+  font-family: var(--user-font-serif);
+  font-size: var(--user-fs-section-title);
+  line-height: 1.15;
+}
+
+.wl-state-text {
+  max-width: 28rem;
+  margin: 0 0 0.75rem;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--user-ink-slate, #574e4b);
+}
+
+.sk {
+  display: block;
+  background: linear-gradient(
+    90deg,
+    var(--user-cream, #f3ebdd) 0%,
+    var(--user-limewash, #f7f4ee) 50%,
+    var(--user-cream, #f3ebdd) 100%
+  );
+  background-size: 200% 100%;
+  animation: wl-shimmer 1.4s ease-in-out infinite;
+}
+
+.sk-line {
+  height: 0.75rem;
+  width: 100%;
+  margin-bottom: 0.7rem;
+}
+
+.sk-short {
+  width: 25%;
+}
+
+.sk-mid {
+  width: 55%;
+}
+
+.sk-title {
+  height: 1.4rem;
+  width: 70%;
+}
+
+@keyframes wl-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+/* ---------- responsive ---------- */
+@media (max-width: 760px) {
+  .wl-intro {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .wl-lede {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .wl-item {
+    grid-template-columns: 88px minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .wl-actions {
+    grid-column: 2;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-items: start;
+    gap: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sk {
+    animation: none;
+  }
+}

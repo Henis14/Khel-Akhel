@@ -98,6 +98,11 @@
       background-color: var(--admin-surface-alt, #eef1f4);
       color: var(--admin-primary, #263541);
     }
+
+    &.icon-inquiries {
+      background-color: var(--admin-surface-alt, #eef1f4);
+      color: #0d9488;
+    }
   }
 
   .stat-info {

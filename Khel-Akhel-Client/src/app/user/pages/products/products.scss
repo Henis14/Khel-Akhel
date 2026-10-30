@@ -51,7 +51,7 @@ $ease: cubic-bezier(0.22, 0.61, 0.36, 1);
 .shop-title {
   margin: 0;
   font-family: var(--user-font-serif);
-  font-size: clamp(2.5rem, 5.4vw, 4.75rem);
+  font-size: var(--user-fs-page-title);
   font-weight: 400;
   line-height: 1;
   letter-spacing: -0.01em;
@@ -68,8 +68,8 @@ $ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   padding-left: 1.25rem;
   border-left: 1px solid var(--user-hairline, #eae3d8);
   color: var(--user-ink-slate, #574e4b);
-  font-size: 0.9375rem;
-  line-height: 1.7;
+  font-size: var(--user-fs-lede, 1rem);
+  line-height: var(--user-lh-lede, 1.7);
 }
 
 /* ---------- category chips ---------- */

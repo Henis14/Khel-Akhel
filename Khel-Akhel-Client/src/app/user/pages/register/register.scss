@@ -7,7 +7,7 @@
   font-family: var(--user-font-sans);
   font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--user-tracking-caps, 0.09em);
   text-transform: uppercase;
 }
 
@@ -53,7 +53,7 @@
   margin: 0;
   color: var(--user-maroon, #45120a);
   font-family: var(--user-font-serif);
-  font-size: clamp(2.1rem, 3.4vw, 2.6rem);
+  font-size: var(--user-fs-form-title);
   font-weight: 400;
   line-height: 1;
 }

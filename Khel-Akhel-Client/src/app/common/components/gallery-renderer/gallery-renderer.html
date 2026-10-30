@@ -2,7 +2,7 @@
   @if (images.length > 0) {
     @switch (mode()) {
       @case ('grid') {
-        <div class="g-grid" [attr.data-layout]="layout()" [attr.data-count]="images.length">
+        <div class="g-grid" [attr.data-layout]="layout()" [attr.data-count]="shown().length">
           @for (cell of cells(); track cell.index) {
             <figure
               class="g-item"
@@ -69,7 +69,7 @@
       @case ('strip') {
         <div class="g-strip-wrap">
           <div class="g-strip" #strip [style.--strip-h]="stripHeight() + 'px'" tabindex="0">
-            @for (img of images; track img.imageUrl + $index; let i = $index) {
+            @for (img of shown(); track img.imageUrl + $index; let i = $index) {
               <figure
                 class="g-item"
                 [class.interactive]="interactive"
@@ -82,7 +82,7 @@
               </figure>
             }
           </div>
-          @if (images.length > 1) {
+          @if (shown().length > 1) {
             <div class="g-strip-nav">
               <button type="button" (click)="scrollStrip(strip, -1)" aria-label="Scroll photographs left">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 18l-6-6 6-6" /></svg>
@@ -97,7 +97,7 @@
 
       @case ('masonry') {
         <div class="g-masonry" [style.column-count]="masonryColumns()">
-          @for (img of images; track img.imageUrl + $index; let i = $index) {
+          @for (img of shown(); track img.imageUrl + $index; let i = $index) {
             <figure
               class="g-item g-item--natural"
               [class.interactive]="interactive"
@@ -141,6 +141,12 @@
     }
     @if (img.caption) {
       <figcaption class="g-caption">{{ img.caption }}</figcaption>
+    }
+    @if (hiddenCount() > 0 && i === shown().length - 1) {
+      <span class="g-more">
+        <span class="g-more-count">+{{ hiddenCount() }}</span>
+        <span class="g-more-label">View all {{ images.length }}</span>
+      </span>
     }
   </ng-template>
 

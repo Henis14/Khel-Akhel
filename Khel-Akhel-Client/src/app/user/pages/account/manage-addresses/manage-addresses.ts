@@ -1,7 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { UserAddressService } from '../../../services/user-address.service';
 import { LocationService } from '../../../../common/services/location.service';
 import { AuthService } from '../../../../common/services/auth.service';
@@ -18,7 +17,7 @@ import { CountryResponse, StateResponse } from '../../../../common/models/locati
 @Component({
   selector: 'app-manage-addresses',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, ConfirmationDialogComponent],
+  imports: [CommonModule, ReactiveFormsModule, ConfirmationDialogComponent],
   templateUrl: './manage-addresses.html',
   styleUrl: './manage-addresses.scss',
 })

@@ -49,9 +49,9 @@
 }
 
 .error-code-badge {
-  font-family: Georgia, 'Times New Roman', Cambria, serif;
+  font-family: var(--user-font-serif, Georgia, serif);
   font-size: clamp(4.5rem, 12vw, 6.5rem);
-  font-weight: 800;
+  font-weight: 400;
   line-height: 1;
   letter-spacing: -0.03em;
   color: var(--ka-terracotta, #b45132);
@@ -60,9 +60,9 @@
 }
 
 .not-found-title {
-  font-family: Georgia, 'Times New Roman', Cambria, serif;
-  font-size: clamp(1.6rem, 3.5vw, 2.1rem);
-  font-weight: 700;
+  font-family: var(--user-font-serif, Georgia, serif);
+  font-size: clamp(1.75rem, 3.5vw, 2.25rem);
+  font-weight: 400;
   color: var(--ka-navy, #1f3557);
   letter-spacing: -0.015em;
   line-height: 1.25;

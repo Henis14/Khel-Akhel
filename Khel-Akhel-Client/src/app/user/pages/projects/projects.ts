@@ -69,6 +69,9 @@ export class ProjectsComponent {
 
   readonly skeletons = [1, 2];
 
+  /** Photographs shown per project before "+N" — the lightbox still holds every one. */
+  readonly previewCount = 6;
+
   /** Disciplines that have projects, in the order of the site menu. */
   readonly disciplines = computed<Discipline[]>(() => {
     const map = new Map<string, Discipline>();

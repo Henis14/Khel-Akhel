@@ -54,7 +54,7 @@
 .cm-title {
   margin: 0;
   font-family: var(--user-font-serif);
-  font-size: clamp(2.5rem, 5vw, 4.25rem);
+  font-size: var(--user-fs-page-title);
   font-weight: 400;
   line-height: 1.02;
   text-wrap: balance;

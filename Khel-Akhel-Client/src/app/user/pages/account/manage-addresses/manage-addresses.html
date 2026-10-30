@@ -1,20 +1,11 @@
 <section class="account-addresses-page">
   <div class="container addresses-container">
-    <!-- Breadcrumb & Top Bar -->
-    <nav class="account-breadcrumb" aria-label="Breadcrumb">
-      <a routerLink="/" class="breadcrumb-link">Home</a>
-      <span class="breadcrumb-separator" aria-hidden="true">/</span>
-      <a routerLink="/account" class="breadcrumb-link">My Account</a>
-      <span class="breadcrumb-separator" aria-hidden="true">/</span>
-      <span class="breadcrumb-current" aria-current="page">Saved Addresses</span>
-    </nav>
-
     <!-- Header Section -->
     <div class="addresses-header">
       <div class="header-text">
-        <h1 class="page-title">Saved Addresses</h1>
+        <h2 class="page-title">Saved addresses</h2>
         <p class="page-subtitle">
-          Manage your delivery and billing locations for smooth, express checkout on every handcrafted order.
+          Delivery and billing addresses for checkout. Your default address is filled in first.
         </p>
       </div>
       <button
@@ -36,7 +27,7 @@
           <line x1="10" y1="4" x2="10" y2="16"></line>
           <line x1="4" y1="10" x2="16" y2="10"></line>
         </svg>
-        <span>Add New Address</span>
+        <span>Add address</span>
       </button>
     </div>
 
@@ -117,13 +108,13 @@
             <circle cx="32" cy="24" r="3" />
           </svg>
         </div>
-        <h2 class="empty-title">No Saved Addresses Found</h2>
+        <h2 class="empty-title">No saved addresses yet</h2>
         <p class="empty-desc">
           You haven't added any shipping or billing addresses to your account yet. Add your preferred
           delivery address to speed up future checkouts.
         </p>
         <button type="button" class="btn btn-primary" (click)="openAddModal()">
-          + Add Your First Address
+          Add your first address
         </button>
       </div>
     }

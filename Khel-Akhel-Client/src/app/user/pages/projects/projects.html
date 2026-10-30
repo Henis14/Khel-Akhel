@@ -71,7 +71,7 @@
         }
       </div>
     } @else {
-      @for (v of views(); track v.project.slug) {
+      @for (v of views(); track v.project.slug; let n = $index) {
         <section
           class="pj-wrap pj-project"
           [id]="'project-' + v.project.slug"
@@ -82,6 +82,7 @@
           <div class="pj-info">
             <div class="pj-info-inner">
               <p class="pj-kicker">
+                <span class="pj-num" aria-hidden="true">{{ (n + 1).toString().padStart(2, '0') }}</span>
                 <span class="pj-mark" aria-hidden="true"><i></i><i></i><i></i></span>
                 @if (v.project.contentType) {
                   <span>{{ v.project.contentType }}</span>
@@ -180,8 +181,12 @@
                 [layoutType]="v.project.layoutType"
                 [interactive]="true"
                 [sectionTitle]="v.project.heading"
+                [limit]="previewCount"
                 [gap]="6"
               ></app-gallery-renderer>
+              <p class="pj-photo-count">
+                {{ v.gallery.length }} {{ v.gallery.length === 1 ? 'photograph' : 'photographs' }}
+              </p>
             }
           </div>
         </section>

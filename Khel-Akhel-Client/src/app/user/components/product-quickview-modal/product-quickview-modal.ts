@@ -95,7 +95,6 @@ export class ProductQuickviewModal implements OnInit, AfterViewInit, OnDestroy {
     if (p.isBestSeller) t.push('Bestseller');
     if (p.isTrending) t.push('Trending');
     if (p.isCustomerFavourite) t.push('Customer favourite');
-    if (p.isFeatured) t.push('Studio pick');
     return t;
   });
 

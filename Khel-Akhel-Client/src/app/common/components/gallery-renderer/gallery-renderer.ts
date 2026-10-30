@@ -104,6 +104,25 @@ export class GalleryRendererComponent implements AfterViewInit, OnDestroy {
     return this._layout();
   }
 
+  /**
+   * Show only the first N photographs (0 = all). The last visible tile carries a
+   * "+N" badge and the lightbox still steps through every photograph.
+   */
+  @Input() set limit(value: number | null | undefined) {
+    this._limit.set(Math.max(0, Math.floor(Number(value) || 0)));
+  }
+  private readonly _limit = signal<number>(0);
+
+  /** The photographs drawn on the page (a prefix of `images`, so indexes match). */
+  readonly shown = computed<GalleryImageItem[]>(() => {
+    const all = this._images();
+    const l = this._limit();
+    return l > 0 && all.length > l ? all.slice(0, l) : all;
+  });
+
+  /** How many photographs are only reachable through the lightbox. */
+  readonly hiddenCount = computed(() => this._images().length - this.shown().length);
+
   @Input() interactive = true;
   @Input() sectionTitle = '';
   /** Space between photos in px (daras.co.in uses a tight 4–8px). */
@@ -128,7 +147,7 @@ export class GalleryRendererComponent implements AfterViewInit, OnDestroy {
 
   /** Staggered columns: photos dealt left-to-right into columns; every other column is offset. */
   readonly staggerColumns = computed<{ index: number }[][]>(() => {
-    const n = this._images().length;
+    const n = this.shown().length;
     const count = Math.max(1, Math.min(this.tier() === 'sm' ? 2 : 3, n));
     const cols: { index: number }[][] = Array.from({ length: count }, () => []);
     for (let i = 0; i < n; i++) cols[i % count].push({ index: i });
@@ -142,13 +161,13 @@ export class GalleryRendererComponent implements AfterViewInit, OnDestroy {
 
   readonly masonryColumns = computed(() => {
     const t = this.tier();
-    const n = this._images().length;
+    const n = this.shown().length;
     const cols = t === 'lg' ? 3 : t === 'md' ? 2 : 1;
     return Math.max(1, Math.min(cols, n));
   });
 
   readonly cells = computed<GridCell[]>(() => {
-    const imgs = this._images();
+    const imgs = this.shown();
     const tier = this.tier();
     const layout = this._layout();
     if (!imgs.length) return [];
@@ -183,7 +202,7 @@ export class GalleryRendererComponent implements AfterViewInit, OnDestroy {
   });
 
   readonly justifiedRows = computed<JustifiedRow[]>(() => {
-    const imgs = this._images();
+    const imgs = this.shown();
     if (!imgs.length) return [];
     const target = this.tier() === 'lg' ? 3.2 : this.tier() === 'md' ? 2.3 : 1.4;
     const rows: JustifiedRow[] = [];

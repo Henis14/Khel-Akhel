@@ -1,0 +1,410 @@
+<div class="contact-inquiries-page">
+  <!-- Page Header -->
+  <div class="page-header">
+    <app-breadcrumb [items]="breadcrumbs"></app-breadcrumb>
+    <div class="header-content">
+      <div class="header-titles">
+        <h1>Contact Inquiries</h1>
+        <p class="subtitle">
+          Review and manage messages and studio service inquiries submitted from the Contact page
+        </p>
+      </div>
+      <div class="header-badges">
+        <span class="inquiries-pill" title="Total received inquiries">
+          <span class="count-number">{{ summary.totalInquiries || totalRecords }}</span> Total
+        </span>
+        @if (summary.todayInquiries > 0) {
+          <span class="inquiries-pill today-pill" title="Inquiries received today">
+            <span class="count-number">{{ summary.todayInquiries }}</span> Today
+          </span>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Feedback Alerts -->
+  @if (successMessage) {
+    <div class="alert alert-success">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+      <span>{{ successMessage }}</span>
+    </div>
+  }
+
+  @if (errorMessage) {
+    <div class="alert alert-danger">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span>{{ errorMessage }}</span>
+    </div>
+  }
+
+  @if (copyFeedback) {
+    <div class="toast-feedback">
+      {{ copyFeedback }}
+    </div>
+  }
+
+  <!-- Compact Search & Filter Toolbar -->
+  <div class="filter-card card">
+    <div class="filter-toolbar">
+      <div class="filter-row filter-row-primary">
+        <!-- Search Box -->
+        <div class="filter-item search-item">
+          <label class="filter-label" for="search-input">Search Inquiries</label>
+          <div class="input-with-icon">
+            <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input
+              id="search-input"
+              type="text"
+              class="form-control"
+              placeholder="Search by name, email, phone, company, or message..."
+              [value]="searchQuery"
+              (input)="onSearchInput($any($event.target).value)"
+              (keydown.enter)="applyFilters()"
+            />
+          </div>
+        </div>
+
+        <!-- Sort By Dropdown -->
+        <div class="filter-item sort-item">
+          <label class="filter-label" for="sort-select">Sort By</label>
+          <select
+            id="sort-select"
+            class="form-control"
+            [value]="sortBy"
+            (change)="onSortChange($any($event.target).value)"
+          >
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="name_asc">Name (A &rarr; Z)</option>
+            <option value="name_desc">Name (Z &rarr; A)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Toolbar Actions Row -->
+      <div class="filter-row filter-row-secondary">
+        <div class="filter-actions">
+          <button
+            type="button"
+            class="btn btn-primary btn-sm filter-btn"
+            title="Apply Filters"
+            (click)="applyFilters()"
+            [disabled]="loading"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+            </svg>
+            <span>Apply</span>
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-secondary btn-sm filter-btn"
+            title="Reset All Filters"
+            (click)="resetFilters()"
+            [disabled]="loading || !hasActiveFilters"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="1 4 1 10 7 10"></polyline>
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+            </svg>
+            <span>Reset</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data Table Card -->
+  <div class="table-card card">
+    @if (loading) {
+      <div class="table-loader-wrap">
+        <app-loader text="Loading contact inquiries..."></app-loader>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="table inquiries-table">
+          <thead>
+            <tr>
+              <th class="col-customer">Sender / Company</th>
+              <th class="col-contact">Contact Details</th>
+              <th class="col-message">Inquiry / Message</th>
+              <th class="col-date">Received On</th>
+              <th class="col-actions text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of inquiries; track item.encryptedInquiryId) {
+              <tr class="inquiry-row" (click)="openDetail(item)">
+                <!-- Sender -->
+                <td class="col-customer">
+                  <div class="customer-info">
+                    <span class="customer-name font-weight-600">{{ item.fullName }}</span>
+                    @if (item.companyName) {
+                      <span class="company-badge" title="Company Name">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                        </svg>
+                        {{ item.companyName }}
+                      </span>
+                    }
+                    @if (item.customerAccountNo) {
+                      <span class="registered-badge" title="Registered Customer">
+                        ACC: {{ item.customerAccountNo }}
+                      </span>
+                    }
+                  </div>
+                </td>
+
+                <!-- Contact Details -->
+                <td class="col-contact">
+                  <div class="contact-details" (click)="$event.stopPropagation()">
+                    <a
+                      [href]="'mailto:' + item.email"
+                      class="contact-link email-link"
+                      title="Send email"
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <polyline points="22,6 12,13 2,6"></polyline>
+                      </svg>
+                      <span>{{ item.email }}</span>
+                    </a>
+                    <a
+                      [href]="'tel:' + item.mobileNumber"
+                      class="contact-link phone-link"
+                      title="Call phone"
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                      </svg>
+                      <span>{{ item.mobileNumber }}</span>
+                    </a>
+                  </div>
+                </td>
+
+                <!-- Message Snippet -->
+                <td class="col-message">
+                  <div class="message-preview" [title]="item.serviceDescription">
+                    {{ item.serviceDescription }}
+                  </div>
+                </td>
+
+                <!-- Received Date -->
+                <td class="col-date">
+                  <div class="date-cell">
+                    <span class="primary-date">{{ item.createdDate | date: 'mediumDate' }}</span>
+                    <span class="secondary-time">{{ item.createdDate | date: 'shortTime' }}</span>
+                  </div>
+                </td>
+
+                <!-- Actions -->
+                <td class="col-actions text-right" (click)="$event.stopPropagation()">
+                  <div class="action-buttons">
+                    <button
+                      type="button"
+                      class="btn-icon"
+                      title="View Full Inquiry"
+                      (click)="openDetail(item)"
+                    >
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
+                    </button>
+
+                    <button
+                      type="button"
+                      class="btn-icon btn-icon-danger"
+                      title="Delete Inquiry"
+                      (click)="promptDelete(item, $event)"
+                    >
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+
+            @if (inquiries.length === 0) {
+              <tr>
+                <td colspan="5" class="empty-row text-center">
+                  <div class="empty-state">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <h3>No Contact Inquiries Found</h3>
+                    <p class="text-muted">
+                      @if (hasActiveFilters) {
+                        No inquiries match the current search or filter criteria. Try resetting your filters.
+                      } @else {
+                        No contact inquiries have been submitted through the website yet.
+                      }
+                    </p>
+                    @if (hasActiveFilters) {
+                      <button type="button" class="btn btn-secondary btn-sm" (click)="resetFilters()">
+                        Clear Filters
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      @if (totalRecords > 0) {
+        <div class="pagination-footer">
+          <app-pagination
+            [pageIndex]="pageIndex"
+            [pageSize]="pageSize"
+            [totalRecords]="totalRecords"
+            (pageChange)="onPageChange($event)"
+          ></app-pagination>
+        </div>
+      }
+    }
+  </div>
+
+  <!-- Detail Modal -->
+  @if (isDetailOpen && selectedInquiry) {
+    <div class="modal-backdrop" (click)="closeDetail()">
+      <div class="detail-modal card" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title-wrap">
+            <span class="modal-eyebrow">Contact Inquiry Dossier</span>
+            <h2>{{ selectedInquiry.fullName }}</h2>
+          </div>
+          <button type="button" class="btn-close" (click)="closeDetail()" aria-label="Close modal">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          @if (detailLoading) {
+            <div class="modal-loader">
+              <app-loader text="Refreshing details..."></app-loader>
+            </div>
+          }
+
+          <div class="modal-grid">
+            <!-- Left Info Panel -->
+            <div class="info-panel">
+              <div class="info-group">
+                <span class="info-label">Full Name</span>
+                <span class="info-value font-weight-600">{{ selectedInquiry.fullName }}</span>
+              </div>
+
+              @if (selectedInquiry.companyName) {
+                <div class="info-group">
+                  <span class="info-label">Company / Organization</span>
+                  <span class="info-value">{{ selectedInquiry.companyName }}</span>
+                </div>
+              }
+
+              <div class="info-group">
+                <span class="info-label">Email Address</span>
+                <div class="info-value-with-copy">
+                  <a [href]="'mailto:' + selectedInquiry.email" class="value-link">
+                    {{ selectedInquiry.email }}
+                  </a>
+                  <button
+                    type="button"
+                    class="btn-copy"
+                    title="Copy Email"
+                    (click)="copyToClipboard(selectedInquiry.email, 'Email')"
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div class="info-group">
+                <span class="info-label">Phone Number</span>
+                <div class="info-value-with-copy">
+                  <a [href]="'tel:' + selectedInquiry.mobileNumber" class="value-link">
+                    {{ selectedInquiry.mobileNumber }}
+                  </a>
+                  <button
+                    type="button"
+                    class="btn-copy"
+                    title="Copy Phone"
+                    (click)="copyToClipboard(selectedInquiry.mobileNumber, 'Phone')"
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div class="info-group">
+                <span class="info-label">Submission Date & Time</span>
+                <span class="info-value">{{ selectedInquiry.createdDate | date: 'fullDate' }} at {{ selectedInquiry.createdDate | date: 'mediumTime' }}</span>
+              </div>
+
+              @if (selectedInquiry.ipAddress) {
+                <div class="info-group">
+                  <span class="info-label">Client IP Address</span>
+                  <span class="info-value font-mono">{{ selectedInquiry.ipAddress }}</span>
+                </div>
+              }
+            </div>
+
+            <!-- Right Message Panel -->
+            <div class="message-panel">
+              <div class="message-box-wrap">
+                <span class="info-label">Service Description / Message Content</span>
+                <div class="full-message-content">
+                  {{ selectedInquiry.serviceDescription }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" (click)="closeDetail()">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Confirmation Dialog -->
+  <app-confirmation-dialog
+    [isOpen]="isConfirmOpen"
+    [title]="confirmTitle"
+    [message]="confirmMessage"
+    confirmText="Yes, Delete"
+    cancelText="Cancel"
+    [isDanger]="true"
+    [isSubmitting]="statusSubmitting"
+    (confirm)="onConfirmAction()"
+    (cancel)="onCancelConfirm()"
+  ></app-confirmation-dialog>
+</div>

@@ -1,0 +1,49 @@
+<div class="acc">
+  <header class="acc-wrap acc-intro">
+    <nav class="acc-crumbs" aria-label="Breadcrumb">
+      <a routerLink="/">Home</a>
+      <span aria-hidden="true">/</span>
+      <span aria-current="page">My account</span>
+    </nav>
+
+    <div class="acc-intro-row">
+      <div>
+        <p class="acc-eyebrow">My account</p>
+        <h1 class="acc-title">
+          @if (firstName()) {
+            Hello, <em>{{ firstName() }}</em>
+          } @else {
+            Welcome <em>back</em>
+          }
+        </h1>
+        @if (email()) {
+          <p class="acc-email">Signed in as {{ email() }}</p>
+        }
+      </div>
+      <button type="button" class="acc-signout" (click)="signOut()">Sign out</button>
+    </div>
+  </header>
+
+  <div class="acc-wrap acc-body">
+    <nav class="acc-nav" aria-label="Account sections">
+      <ul>
+        @for (item of nav; track item.link) {
+          <li>
+            <a
+              [routerLink]="item.link"
+              routerLinkActive="is-active"
+              [routerLinkActiveOptions]="{ exact: item.exact }"
+              ariaCurrentWhenActive="page"
+            >
+              {{ item.label }}
+            </a>
+          </li>
+        }
+      </ul>
+    </nav>
+
+    <div class="acc-main">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>

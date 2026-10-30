@@ -1,0 +1,106 @@
+<div class="wl">
+  <header class="wl-wrap wl-intro">
+    <div>
+      <p class="wl-eyebrow">Wishlist</p>
+      <h1 class="wl-title">Saved <em>for later</em></h1>
+    </div>
+    <p class="wl-lede">
+      Pieces you marked with the heart. Each one is made by hand in small numbers, so add it to your
+      bag when you are ready.
+    </p>
+  </header>
+
+  <div class="wl-wrap wl-body">
+    @if (notice()) {
+      <p class="wl-notice" role="status">{{ notice() }}</p>
+    }
+
+    @if (loading()) {
+      <ul class="wl-list" aria-busy="true" aria-label="Loading your wishlist">
+        @for (s of skeletons; track s) {
+          <li class="wl-item">
+            <span class="wl-media sk"></span>
+            <div class="wl-info">
+              <span class="sk sk-line sk-short"></span>
+              <span class="sk sk-line sk-title"></span>
+              <span class="sk sk-line sk-mid"></span>
+            </div>
+          </li>
+        }
+      </ul>
+    } @else if (error()) {
+      <div class="wl-state">
+        <p class="wl-state-title">We couldn't load your wishlist.</p>
+        <p class="wl-state-text">Please check your connection and try again.</p>
+        <button type="button" class="wl-btn" (click)="load()">Try again</button>
+      </div>
+    } @else if (items().length === 0) {
+      <div class="wl-state">
+        <p class="wl-state-title">Nothing saved yet.</p>
+        <p class="wl-state-text">Tap the heart on any piece in the shop and it will wait for you here.</p>
+        <a class="wl-btn" routerLink="/products">Browse the shop</a>
+      </div>
+    } @else {
+      <p class="wl-count">{{ items().length }} {{ items().length === 1 ? 'piece' : 'pieces' }}</p>
+
+      <ul class="wl-list">
+        @for (item of items(); track item.productCode) {
+          <li class="wl-item" [class.is-out]="!canBuy(item)">
+            <div class="wl-media">
+              @if (image(item)) {
+                <img [src]="image(item)" [alt]="item.productName" loading="lazy" />
+              }
+            </div>
+
+            <div class="wl-info">
+              @if (item.categoryName) {
+                <p class="wl-cat">{{ item.categoryName }}</p>
+              }
+              <h2 class="wl-name">{{ item.productName }}</h2>
+              @if (item.shortDescription) {
+                <p class="wl-desc">{{ item.shortDescription }}</p>
+              }
+              <p class="wl-price">
+                {{ price(item.sellingPrice) }}
+                @if (hasDiscount(item)) {
+                  <s>{{ price(item.mrp) }}</s>
+                }
+              </p>
+              @if (!canBuy(item)) {
+                <p class="wl-stock">{{ item.isActive ? 'Out of stock' : 'No longer available' }}</p>
+              }
+            </div>
+
+            <div class="wl-actions">
+              @if (canBuy(item)) {
+                @if (auth.isAuthenticated()) {
+                  <button
+                    type="button"
+                    class="wl-btn"
+                    [disabled]="busy() === item.productCode"
+                    (click)="moveToBag(item)"
+                  >
+                    {{ busy() === item.productCode ? 'Adding…' : 'Move to bag' }}
+                  </button>
+                } @else {
+                  <a class="wl-btn" routerLink="/login" [queryParams]="{ returnUrl: '/wishlist' }">
+                    Sign in to buy
+                  </a>
+                }
+              }
+              <button
+                type="button"
+                class="wl-remove"
+                [disabled]="busy() === item.productCode"
+                (click)="remove(item)"
+                [attr.aria-label]="'Remove ' + item.productName + ' from wishlist'"
+              >
+                Remove
+              </button>
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</div>

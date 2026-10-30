@@ -154,6 +154,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./admin/pages/hero-banner/hero-banner').then((m) => m.HeroBannerComponent),
       },
+      {
+        path: 'contact-inquiries',
+        loadComponent: () =>
+          import('./admin/pages/contact-inquiries/contact-inquiries').then(
+            (m) => m.ContactInquiriesComponent,
+          ),
+      },
       // Backward compatibility redirects for legacy /admin/about URLs
       {
         path: 'about',
@@ -265,8 +272,14 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'wishlist',
+        loadComponent: () => import('./user/pages/wishlist/wishlist').then((m) => m.Wishlist),
+      },
+      {
         path: 'account',
         canActivate: [userGuard],
+        loadComponent: () =>
+          import('./user/pages/account/account-shell/account-shell').then((m) => m.AccountShell),
         children: [
           {
             path: '',

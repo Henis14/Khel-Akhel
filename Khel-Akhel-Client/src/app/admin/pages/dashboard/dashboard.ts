@@ -8,6 +8,7 @@ import { AdminProductService } from '../../services/admin-product.service';
 import { AdminProductStockService } from '../../services/admin-product-stock.service';
 import { AdminCommissionedProjectService } from '../../services/admin-commissioned-project.service';
 import { AdminProjectService } from '../../services/admin-project.service';
+import { AdminContactInquiryService } from '../../services/admin-contact-inquiry.service';
 import { BreadcrumbComponent } from '../../../common/components/breadcrumb/breadcrumb';
 import { BreadcrumbItem } from '../../../common/models/breadcrumb.model';
 import { AppLoaderComponent } from '../../../common/components/app-loader/app-loader';
@@ -30,6 +31,7 @@ export class AdminDashboardComponent implements OnInit {
   private stockService = inject(AdminProductStockService);
   private commissionService = inject(AdminCommissionedProjectService);
   private projectService = inject(AdminProjectService);
+  private inquiryService = inject(AdminContactInquiryService);
   private cdr = inject(ChangeDetectorRef);
 
   loading = true;
@@ -41,6 +43,8 @@ export class AdminDashboardComponent implements OnInit {
   totalStockRecords = 0;
   totalCommissionRequests = 0;
   totalProjects = 0;
+  totalContactInquiries = 0;
+  activeContactInquiries = 0;
 
   recentProducts: any[] = [];
 
@@ -59,6 +63,7 @@ export class AdminDashboardComponent implements OnInit {
       stock: this.stockService.getList({ pageIndex: 1, pageSize: 1 }),
       commissions: this.commissionService.getList({ pageIndex: 1, pageSize: 1 }),
       projects: this.projectService.getList({ pageIndex: 1, pageSize: 1 }),
+      inquiries: this.inquiryService.getSummary(),
     }).subscribe({
       next: (res) => {
         this.loading = false;
@@ -80,6 +85,10 @@ export class AdminDashboardComponent implements OnInit {
         }
         if (res.projects.success && res.projects.data) {
           this.totalProjects = res.projects.data.totalRecords;
+        }
+        if (res.inquiries.success && res.inquiries.data) {
+          this.totalContactInquiries = res.inquiries.data.totalInquiries;
+          this.activeContactInquiries = res.inquiries.data.activeInquiries;
         }
         this.cdr.markForCheck();
       },

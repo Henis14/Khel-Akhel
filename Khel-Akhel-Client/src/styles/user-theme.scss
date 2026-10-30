@@ -83,6 +83,19 @@
   --user-fs-caption: 0.75rem;
   --user-fs-button: 0.875rem;
 
+  /* Storefront page scale: every customer page uses these, so titles,
+     eyebrows and intro text read the same from page to page.
+     Instrument Serif ships in one weight (400): never bold it. */
+  --user-fs-page-title: clamp(2.5rem, 5vw, 4.25rem); /* page h1 */
+  --user-fs-form-title: clamp(2rem, 3.4vw, 2.5rem); /* sign-in / form card h1 */
+  --user-fs-section-title: clamp(1.6rem, 2.6vw, 2.125rem); /* h2 inside a page */
+  --user-fs-card-title: 1.375rem; /* card / item heading */
+  --user-fs-lede: 1rem; /* intro paragraph under a title */
+  --user-fs-eyebrow: 0.75rem; /* spaced capitals */
+  --user-tracking-caps: 0.09em;
+  --user-lh-title: 1.02;
+  --user-lh-lede: 1.7;
+
   /* Line Heights & Letter Spacing */
   --user-lh-tight: 1.2;
   --user-lh-heading: 1.3;
