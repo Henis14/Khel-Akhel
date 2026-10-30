@@ -599,3 +599,63 @@ $ease: cubic-bezier(0.22, 0.61, 0.36, 1);
 @media (prefers-reduced-motion: reduce) {
   .ink[pathLength] { animation: none; }
 }
+
+/* ==========================================================================
+   Refinements: larger editorial title, flatter cards, quieter decoration
+   ========================================================================== */
+.ct-eyebrow {
+  color: var(--ka-kattha);
+  letter-spacing: var(--ka-tracking-label);
+}
+
+.ct-title {
+  font-size: clamp(2.75rem, 1.6rem + 4.4vw, 5.75rem);
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+
+  em {
+    color: var(--ka-kattha);
+  }
+}
+
+.ct-lede {
+  font-size: var(--ka-fs-lede);
+  font-weight: 300;
+  color: var(--ka-ink-soft);
+}
+
+.ct-kite {
+  opacity: 0.85;
+}
+
+.ct-tile {
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background: var(--ka-limewash);
+  }
+}
+
+.ct-tile-value {
+  font-family: var(--ka-serif);
+  font-size: clamp(1.25rem, 1.1rem + 0.5vw, 1.5rem);
+}
+
+.ct-card {
+  background: #fffdf9;
+  border-color: var(--ka-hairline);
+  box-shadow: none;
+}
+
+.ct-heading {
+  font-size: clamp(2rem, 1.6rem + 1.4vw, 2.75rem);
+  letter-spacing: -0.01em;
+}
+
+.ct-studio {
+  background: var(--ka-limewash);
+}
+
+.ct-map-card {
+  box-shadow: 0 24px 48px -28px rgba(36, 29, 26, 0.35);
+}

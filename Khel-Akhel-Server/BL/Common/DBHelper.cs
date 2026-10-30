@@ -217,6 +217,29 @@ namespace Khel_Akhel_Server.BL.Common
             }
         }
 
+        public async Task<int> ExecuteNonQueryAsync(
+            string query,
+            SqlParameter[]? parameters = null
+        )
+        {
+            ValidateQuerySafety(query);
+
+            try
+            {
+                using SqlConnection con = await GetOpenConnectionAsync();
+                using SqlCommand cmd = new SqlCommand(query, con);
+
+                AddParametersToCommand(cmd, parameters);
+
+                return await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex)
+            {
+                Logs.Error("Database ExecuteNonQueryAsync failed", ex);
+                throw;
+            }
+        }
+
         public async Task<object?> ExecuteScalarAsync(
             string query,
             SqlParameter[]? parameters = null

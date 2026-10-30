@@ -1,36 +1,69 @@
-<main class="not-found-wrapper" role="main" aria-labelledby="not-found-heading">
-  <div class="card not-found-card">
-    <div class="brand-eyebrow" aria-label="Brand">
-      <span class="brand-name">Khel-Akhel</span>
-      <span class="brand-dot" aria-hidden="true">&bull;</span>
-      <span class="brand-studio">Studio &amp; Living</span>
+@if (isAdmin) {
+  <main class="not-found-wrapper" role="main" aria-labelledby="not-found-heading">
+    <div class="card not-found-card">
+      <div class="brand-eyebrow" aria-label="Brand">
+        <span class="brand-name">Khel-Akhel</span>
+        <span class="brand-dot" aria-hidden="true">&bull;</span>
+        <span class="brand-studio">Studio &amp; Living</span>
+      </div>
+
+      <div class="error-code-badge" aria-hidden="true">404</div>
+
+      <h1 id="not-found-heading" class="not-found-title">Page Not Found</h1>
+
+      <p class="not-found-message">
+        The page or collection you are looking for might have been moved, renamed, or is temporarily
+        unavailable.
+      </p>
+
+      <div class="not-found-actions">
+        <a routerLink="/" class="btn btn-primary" aria-label="Return to Khel-Akhel home page">
+          Return to Home
+        </a>
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="goBack()"
+          aria-label="Go back to previous page"
+        >
+          Go Back
+        </button>
+      </div>
+
+      <div class="not-found-craft-note">
+        <p>Art Prints &bull; Photography &bull; Lighting &bull; Murals &bull; Contemporary Living</p>
+      </div>
     </div>
+  </main>
+} @else {
+  <main class="ka-404" role="main" aria-labelledby="ka404Title">
+    <a routerLink="/" class="ka-404-logo" aria-label="Khel Akhel home">
+      <img src="/logo-ink.png" alt="Khel Akhel" width="640" height="117" />
+    </a>
 
-    <div class="error-code-badge" aria-hidden="true">404</div>
+    <div class="ka-404-body">
+      <svg class="ka-404-art" viewBox="0 0 240 120" aria-hidden="true">
+        <path class="ka-404-path" d="M8 92c26 0 30-46 58-46s28 52 56 52 30-70 58-70 30 40 52 40" />
+        <circle class="ka-404-dot" cx="232" cy="68" r="5" />
+      </svg>
 
-    <h1 id="not-found-heading" class="not-found-title">Page Not Found</h1>
+      <p class="ka-404-label">Page not found</p>
+      <h1 id="ka404Title" class="ka-404-title">This path has <em>wandered off.</em></h1>
+      <p class="ka-404-text">
+        The page you are looking for may have moved, or it was never here. Every path in the studio
+        leads somewhere, so try one of these.
+      </p>
 
-    <p class="not-found-message">
-      The page or collection you are looking for might have been moved, renamed, or is temporarily
-      unavailable.
-    </p>
+      <nav class="ka-404-links" aria-label="Where to go next">
+        <a routerLink="/">Home</a>
+        <a routerLink="/products">The shop</a>
+        <a routerLink="/projects">Projects</a>
+        <a routerLink="/contact">Contact</a>
+      </nav>
 
-    <div class="not-found-actions">
-      <a routerLink="/" class="btn btn-primary" aria-label="Return to Khel-Akhel home page">
-        Return to Home
-      </a>
-      <button
-        type="button"
-        class="btn btn-secondary"
-        (click)="goBack()"
-        aria-label="Go back to previous page"
-      >
-        Go Back
+      <button type="button" class="ka-404-back" (click)="goBack()">
+        <span aria-hidden="true">←</span> Go back
       </button>
     </div>
-
-    <div class="not-found-craft-note">
-      <p>Art Prints &bull; Photography &bull; Lighting &bull; Murals &bull; Contemporary Living</p>
-    </div>
-  </div>
-</main>
+  </main>
+}

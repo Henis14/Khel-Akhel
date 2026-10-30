@@ -1197,7 +1197,7 @@ namespace Khel_Akhel_Server.Controllers.commissionedProjects
                         ModifiedDate = GETDATE()
                     WHERE ID = @ID AND IsDeleted = 0;";
 
-                _db.ExecuteNonQuery(
+                await _db.ExecuteNonQueryAsync(
                     updateSql,
                     new[]
                     {

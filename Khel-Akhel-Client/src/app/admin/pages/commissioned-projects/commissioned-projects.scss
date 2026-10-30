@@ -53,8 +53,8 @@
   gap: 0.75rem;
 
   &-primary {
-    grid-template-columns: 2fr 1.2fr 1fr;
-    align-items: flex-end;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+    align-items: end;
   }
 
   &-secondary {
@@ -700,7 +700,7 @@
 
   .filter-row-primary,
   .filter-row-secondary {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .search-item,
@@ -731,7 +731,7 @@
 
   .filter-actions {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     width: 100%;
     height: auto;
 

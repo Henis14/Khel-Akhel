@@ -60,7 +60,7 @@ namespace Khel_Akhel_Server.BL.Services
                     new SqlParameter("@UserAgent", (object?)userAgent ?? DBNull.Value)
                 };
 
-                await Task.Run(() => _db.ExecuteNonQuery(query, parameters));
+                await _db.ExecuteNonQueryAsync(query, parameters);
             }
             catch (Exception ex)
             {

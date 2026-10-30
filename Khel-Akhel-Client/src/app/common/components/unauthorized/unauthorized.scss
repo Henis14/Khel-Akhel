@@ -15,7 +15,7 @@
   background: var(--ka-surface, #fbf9f4);
   border: 1px solid var(--ka-border, #d9d3c6);
   border-radius: var(--admin-radius-lg, 12px);
-  box-shadow: 0 4px 16px rgba(31, 53, 87, 0.08);
+  box-shadow: none;
 
   .error-code {
     font-size: 4rem;

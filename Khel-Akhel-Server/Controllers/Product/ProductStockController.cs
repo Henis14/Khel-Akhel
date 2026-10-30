@@ -11,6 +11,7 @@ using static Khel_Akhel_Server.Models.CommonResponse;
 
 namespace Khel_Akhel_Server.Controllers.Product
 {
+    [InvalidatesPublicCache(PublicCacheRegions.Products)]
     [ApiController]
     [Route("api/product-stock")]
     [Authorize(Roles = "Admin")]
@@ -126,7 +127,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                 string checkProductQuery =
                     @"SELECT COUNT(1) FROM drs_product_mst WITH (NOLOCK) WHERE ID = @ID AND IsDeleted = 0 AND IsActive = 1";
                 int productExists = Convert.ToInt32(
-                    _db.ExecuteScalar(
+                    await _db.ExecuteScalarAsync(
                         checkProductQuery,
                         new[] { new SqlParameter("@ID", productId) }
                     ) ?? 0
@@ -147,7 +148,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                     );
                 }
 
-                using SqlConnection con = _db.GetOpenConnection();
+                using SqlConnection con = await _db.GetOpenConnectionAsync();
                 using SqlTransaction tx = con.BeginTransaction();
 
                 try
@@ -177,7 +178,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                         using SqlCommand uCmd = new(updateStock, con, tx);
                         uCmd.Parameters.AddWithValue("@AvailableQty", newAvailable);
                         uCmd.Parameters.AddWithValue("@ID", stockId);
-                        uCmd.ExecuteNonQuery();
+                        await uCmd.ExecuteNonQueryAsync();
                     }
                     else
                     {
@@ -193,7 +194,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                         using SqlCommand iCmd = new(insertStock, con, tx);
                         iCmd.Parameters.AddWithValue("@ProductId", productId);
                         iCmd.Parameters.AddWithValue("@AvailableQty", newAvailable);
-                        stockId = Convert.ToInt64(iCmd.ExecuteScalar());
+                        stockId = Convert.ToInt64(await iCmd.ExecuteScalarAsync());
                     }
 
                     tx.Commit();
@@ -324,7 +325,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                     );
                 }
 
-                using SqlConnection con = _db.GetOpenConnection();
+                using SqlConnection con = await _db.GetOpenConnectionAsync();
                 using SqlTransaction tx = con.BeginTransaction();
 
                 try
@@ -354,7 +355,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                         uCmd.Parameters.AddWithValue("@AvailableQty", request.AvailableQuantity);
                         uCmd.Parameters.AddWithValue("@ReservedQty", request.ReservedQuantity);
                         uCmd.Parameters.AddWithValue("@ID", stockId);
-                        uCmd.ExecuteNonQuery();
+                        await uCmd.ExecuteNonQueryAsync();
                     }
                     else
                     {
@@ -368,7 +369,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                         iCmd.Parameters.AddWithValue("@ProductId", productId);
                         iCmd.Parameters.AddWithValue("@AvailableQty", request.AvailableQuantity);
                         iCmd.Parameters.AddWithValue("@ReservedQty", request.ReservedQuantity);
-                        stockId = Convert.ToInt64(iCmd.ExecuteScalar());
+                        stockId = Convert.ToInt64(await iCmd.ExecuteScalarAsync());
                     }
 
                     tx.Commit();
@@ -440,7 +441,7 @@ namespace Khel_Akhel_Server.Controllers.Product
         #region Get Product Stock List API
         [HttpGet("list")]
         [HttpPost("list")]
-        public IActionResult GetAllProductStock(
+        public async Task<IActionResult> GetAllProductStock(
             [FromQuery] ProductStockListRequest? queryRequest,
             [FromBody] ProductStockListRequest? bodyRequest
         )
@@ -484,7 +485,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                 string countQuery =
                     $"SELECT COUNT(1) FROM drs_product_mst p WITH (NOLOCK) LEFT JOIN drs_product_stock_mst s WITH (NOLOCK) ON s.product_id = p.ID AND s.IsDeleted = 0 {whereClause}";
                 int totalRecords = Convert.ToInt32(
-                    _db.ExecuteScalar(countQuery, parameters.ToArray()) ?? 0
+                    await _db.ExecuteScalarAsync(countQuery, parameters.ToArray()) ?? 0
                 );
 
                 string listQuery =
@@ -496,7 +497,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                     ORDER BY p.ID DESC
                     OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY";
 
-                DataTable dt = _db.ExecuteQuery(listQuery, parameters.ToArray());
+                DataTable dt = await _db.ExecuteQueryAsync(listQuery, parameters.ToArray());
 
                 var stockList = new List<ProductStockResponse>();
                 foreach (DataRow row in dt.Rows)

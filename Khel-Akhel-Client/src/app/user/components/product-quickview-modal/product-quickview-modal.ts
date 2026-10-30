@@ -24,6 +24,7 @@ import { ProductResponse } from '../../../admin/models/product.model';
 import { UserProductService } from '../../services/user-product.service';
 import { WishlistState } from '../../services/wishlist-state';
 import { CartState } from '../../services/cart-state';
+import { PageVisitTracker } from '../../services/page-visit-tracker';
 import { AuthService } from '../../../common/services/auth.service';
 
 type StockState = 'in' | 'low' | 'out';
@@ -50,6 +51,7 @@ export class ProductQuickviewModal implements OnInit, AfterViewInit, OnDestroy {
   private renderer = inject(Renderer2);
   private document = inject(DOCUMENT);
   private destroyRef = inject(DestroyRef);
+  private pageVisits = inject(PageVisitTracker);
 
   /** Product as shown on the card; full details are refreshed on open */
   @Input({ required: true }) set product(val: ProductResponse) {
@@ -71,7 +73,7 @@ export class ProductQuickviewModal implements OnInit, AfterViewInit, OnDestroy {
   readonly cartMessage = signal('');
   readonly wishBusy = signal(false);
   readonly closing = signal(false);
-  readonly openSection = signal<'description' | 'details' | null>('description');
+  readonly openSection = signal<'description' | 'details' | 'care' | null>('description');
 
   readonly p = computed(() => this.detail() ?? this._product());
   readonly images = computed(() =>
@@ -111,6 +113,7 @@ export class ProductQuickviewModal implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit(): void {
     this.previouslyFocused = this.document.activeElement as HTMLElement | null;
     this.renderer.setStyle(this.document.body, 'overflow', 'hidden');
+    this.pageVisits.trackProductView();
 
     this.productService
       .getProductById(this.product.encryptedProductId)
@@ -217,7 +220,7 @@ export class ProductQuickviewModal implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  toggleSection(id: 'description' | 'details'): void {
+  toggleSection(id: 'description' | 'details' | 'care'): void {
     this.openSection.update((cur) => (cur === id ? null : id));
   }
 

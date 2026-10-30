@@ -11,6 +11,7 @@ using static Khel_Akhel_Server.Models.CommonResponse;
 
 namespace Khel_Akhel_Server.Controllers.HeroBanner
 {
+    [InvalidatesPublicCache(PublicCacheRegions.HeroBanners)]
     [ApiController]
     [Route("api/hero-banner")]
     public class HeroBannerController : ControllerBase
@@ -96,6 +97,21 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
             };
         }
 
+        private Task AuditHeroAsync(string action, long? bannerId, string? newValue)
+        {
+            return _audit.InsertAuditAsync(
+                GetAuthenticatedUserId(),
+                "HeroBanner",
+                action,
+                "HeroBanners",
+                bannerId,
+                null,
+                newValue,
+                GetClientIpAddress(),
+                GetUserAgent()
+            );
+        }
+
         private string GetUploadsDirectory()
         {
             string webRoot =
@@ -141,6 +157,7 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
         #endregion
 
         #region GET: Public Retrieve Active Hero Media
+        [PublicResponseCache(PublicCacheRegions.HeroBanners, 300, SkipForAdmin = true)]
         [HttpGet]
         [HttpGet("public")]
         public async Task<IActionResult> GetPublicHeroMedia(
@@ -777,6 +794,12 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
                     SafeDeletePhysicalFile(oldUrl);
                 }
 
+                await AuditHeroAsync(
+                    "Create",
+                    null,
+                    $"Items:{createdResponses.Count} Mode:{(isImageMode ? "Image" : "Video")}"
+                );
+
                 sw.Stop();
                 Logs.Info($"CreateHeroMedia succeeded | Created {createdResponses.Count} items");
 
@@ -1056,6 +1079,8 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
                     SafeDeletePhysicalFile(oldMediaUrlToDelete);
                 }
 
+                await AuditHeroAsync("Update", bannerId, null);
+
                 sw.Stop();
                 return Ok(
                     new ApiResponse
@@ -1158,10 +1183,12 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
 
                 string deleteSql =
                     @"UPDATE HeroBanners SET IsDeleted = 1, UpdatedAt = GETDATE() WHERE Id = @Id;";
-                _db.ExecuteNonQuery(deleteSql, new[] { new SqlParameter("@Id", bannerId) });
+                await _db.ExecuteNonQueryAsync(deleteSql, new[] { new SqlParameter("@Id", bannerId) });
 
                 // Safely delete associated physical file
                 SafeDeletePhysicalFile(mediaUrl);
+
+                await AuditHeroAsync("Delete", bannerId, null);
 
                 sw.Stop();
                 Logs.Info($"DeleteHeroMedia completed successfully | BannerId: {bannerId} | ElapsedMs: {sw.ElapsedMilliseconds}");
@@ -1275,6 +1302,8 @@ namespace Khel_Akhel_Server.Controllers.HeroBanner
                 }
 
                 var response = MapHeroBanner(dt.Rows[0]);
+                await AuditHeroAsync("StatusUpdate", bannerId, $"IsActive:{request.IsActive}");
+
                 sw.Stop();
                 Logs.Info($"UpdateHeroMediaStatus completed successfully | BannerId: {bannerId} IsActive: {request.IsActive} | ElapsedMs: {sw.ElapsedMilliseconds}");
 

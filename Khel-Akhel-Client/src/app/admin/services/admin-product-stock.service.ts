@@ -26,10 +26,6 @@ export class AdminProductStockService {
     return this.api.get<ProductStockListResponse>('product-stock/list', params);
   }
 
-  getById(encryptedStockId: string): Observable<ApiResponse<ProductStockResponse>> {
-    return this.api.get<ProductStockResponse>(`product-stock/${encryptedStockId}`);
-  }
-
   addStock(request: ProductStockAddRequest): Observable<ApiResponse<ProductStockResponse>> {
     return this.api.post<ProductStockResponse>('product-stock/add', request);
   }

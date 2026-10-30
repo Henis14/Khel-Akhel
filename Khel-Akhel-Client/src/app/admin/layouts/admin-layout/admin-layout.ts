@@ -1,5 +1,5 @@
 import { Component, DestroyRef, HostListener, OnInit, computed, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DOCUMENT } from '@angular/common';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
@@ -20,6 +20,7 @@ export class AdminLayoutComponent implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
   private destroyRef = inject(DestroyRef);
+  private document = inject(DOCUMENT);
 
   /** open = full sidebar on desktop / drawer visible on mobile */
   sidebarOpen = typeof window === 'undefined' || window.innerWidth > MOBILE_BREAKPOINT;
@@ -38,6 +39,7 @@ export class AdminLayoutComponent implements OnInit {
   settingsMenuOpen = false;
 
   ngOnInit(): void {
+    this.loadIconFont();
     this.openMenusForUrl(this.router.url);
 
     this.router.events
@@ -135,5 +137,16 @@ export class AdminLayoutComponent implements OnInit {
         this.router.navigate(['/admin/login']);
       },
     });
+  }
+
+  private loadIconFont(): void {
+    const id = 'admin-bootstrap-icons';
+    if (this.document.getElementById(id)) return;
+    const link = this.document.createElement('link');
+    link.id = id;
+    link.rel = 'stylesheet';
+    link.href = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css';
+    link.crossOrigin = 'anonymous';
+    this.document.head.appendChild(link);
   }
 }

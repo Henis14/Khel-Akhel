@@ -1,0 +1,201 @@
+<section class="ws" aria-labelledby="wsTitle">
+  <div class="ws-head">
+    <div class="ws-titles">
+      <h2 id="wsTitle">Website statistics</h2>
+      <p class="ws-sub">
+        Storefront page visits, counted without cookies or personal data.
+        @if (summary(); as s) {
+          <span class="ws-period">{{ periodLabel(s) }}</span>
+        }
+      </p>
+    </div>
+
+    <div class="ws-ranges" role="group" aria-label="Date range">
+      @for (r of ranges; track r.value) {
+        <button
+          type="button"
+          class="ws-range"
+          [class.is-active]="range() === r.value"
+          [attr.aria-pressed]="range() === r.value"
+          (click)="selectRange(r.value)"
+        >
+          {{ r.label }}
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (range() === 'custom') {
+    <form class="ws-custom" (submit)="$event.preventDefault(); applyCustom()">
+      <div class="ws-field">
+        <label for="wsStart">From</label>
+        <input
+          id="wsStart"
+          type="date"
+          class="form-control"
+          name="wsStart"
+          [max]="today"
+          [value]="customStart()"
+          (change)="customStart.set($any($event.target).value)"
+        />
+      </div>
+      <div class="ws-field">
+        <label for="wsEnd">To</label>
+        <input
+          id="wsEnd"
+          type="date"
+          class="form-control"
+          name="wsEnd"
+          [max]="today"
+          [value]="customEnd()"
+          (change)="customEnd.set($any($event.target).value)"
+        />
+      </div>
+      <button type="submit" class="btn btn-primary btn-sm ws-apply" [disabled]="!!customInvalid() || loading()">
+        Apply
+      </button>
+      @if (customInvalid(); as msg) {
+        <p class="ws-custom-error" role="alert">{{ msg }}</p>
+      }
+    </form>
+  }
+
+  @if (loading()) {
+    <div class="ws-state">Loading website statistics...</div>
+  } @else if (errorMessage()) {
+    <div class="alert alert-danger ws-error">
+      <span>{{ errorMessage() }}</span>
+      <button type="button" class="btn btn-secondary btn-sm" (click)="load()">Try again</button>
+    </div>
+  } @else if (summary(); as s) {
+    <div class="ws-kpis">
+      <div class="ws-kpi">
+        <span class="ws-kpi-label">Page views</span>
+        <span class="ws-kpi-value">{{ s.totalVisits | number }}</span>
+        <span class="ws-kpi-note">
+          @if (trend() !== null) {
+            <span class="ws-trend" [class.is-up]="trend()! > 0" [class.is-down]="trend()! < 0">
+              {{ trend()! > 0 ? '▲' : trend()! < 0 ? '▼' : '' }} {{ trend()! > 0 ? '+' : '' }}{{ trend() }}%
+            </span>
+            vs {{ previousLabel(s) }}
+          } @else {
+            No visits in the {{ previousLabel(s) }}
+          }
+        </span>
+      </div>
+
+      <div class="ws-kpi">
+        <span class="ws-kpi-label">Unique page views</span>
+        <span class="ws-kpi-value">{{ s.totalUniqueVisits | number }}</span>
+        <span class="ws-kpi-note">First view of a page per browser tab per day</span>
+      </div>
+
+      <div class="ws-kpi">
+        <span class="ws-kpi-label">Average per day</span>
+        <span class="ws-kpi-value">{{ s.averageDailyVisits | number: '1.0-1' }}</span>
+        <span class="ws-kpi-note">Over {{ s.totalDays }} {{ s.totalDays === 1 ? 'day' : 'days' }}</span>
+      </div>
+
+      <div class="ws-kpi">
+        <span class="ws-kpi-label">Most visited</span>
+        <span class="ws-kpi-value ws-kpi-text">{{ topPage()?.pageName || 'None yet' }}</span>
+        <span class="ws-kpi-note">
+          @if (topPage(); as top) {
+            {{ top.visits | number }} views, {{ top.sharePercent }}% of all
+          } @else {
+            No page views in this period
+          }
+        </span>
+      </div>
+    </div>
+
+    <div class="ws-body" [class.has-chart]="showChart()">
+      @if (showChart()) {
+        <figure class="ws-chart" aria-labelledby="wsChartTitle">
+          <figcaption id="wsChartTitle" class="ws-block-title">Page views per day</figcaption>
+          <div class="ws-chart-scroll">
+          <div class="ws-chart-frame" (mouseleave)="activeBar.set(null)">
+            <svg
+              [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight"
+              role="img"
+              [attr.aria-label]="'Page views per day, ' + periodLabel(s)"
+            >
+              @for (t of yTicks(); track t.y) {
+                <line class="ws-grid" [attr.x1]="plotLeft" [attr.x2]="chartWidth" [attr.y1]="t.y" [attr.y2]="t.y" />
+                <text class="ws-axis" [attr.x]="plotLeft - 8" [attr.y]="t.y + 4" text-anchor="end">
+                  {{ t.value }}
+                </text>
+              }
+              @for (b of bars(); track b.day.date) {
+                <g
+                  class="ws-bar"
+                  [class.is-active]="activeBar() === b"
+                  (mouseenter)="activeBar.set(b)"
+                  (focus)="activeBar.set(b)"
+                  (blur)="activeBar.set(null)"
+                  tabindex="0"
+                  [attr.aria-label]="fullDate(b.day.date) + ': ' + b.day.visits + ' views'"
+                >
+                  <rect class="ws-hit" [attr.x]="b.x - 2" y="0" [attr.width]="b.width + 4" [attr.height]="plotBottom" />
+                  <path [attr.d]="barPath(b)" />
+                </g>
+                @if (b.showLabel) {
+                  <text class="ws-axis" [attr.x]="b.x + b.width / 2" [attr.y]="chartHeight - 8" text-anchor="middle">
+                    {{ b.label }}
+                  </text>
+                }
+              }
+            </svg>
+
+            @if (activeBar(); as b) {
+              <div class="ws-tip" [style.left.%]="barTooltipLeft(b)">
+                <strong>{{ fullDate(b.day.date) }}</strong>
+                <span>{{ b.day.visits | number }} views</span>
+                <span>{{ b.day.uniqueVisits | number }} unique</span>
+              </div>
+            }
+          </div>
+          </div>
+        </figure>
+      }
+
+      <div class="ws-pages">
+        <h3 class="ws-block-title">Views by page</h3>
+        <div class="table-responsive">
+          <table class="table ws-table">
+            <thead>
+              <tr>
+                <th>Page</th>
+                <th class="text-right">Views</th>
+                <th class="text-right ws-col-unique">Unique</th>
+                <th class="ws-col-share">Share</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of s.pages; track p.pageKey) {
+                <tr [class.is-empty]="p.visits === 0">
+                  <td class="ws-page">{{ p.pageName }}</td>
+                  <td class="text-right ws-num">{{ p.visits | number }}</td>
+                  <td class="text-right ws-num ws-col-unique">{{ p.uniqueVisits | number }}</td>
+                  <td class="ws-col-share">
+                    <span class="ws-share">
+                      <span class="ws-share-track">
+                        <span class="ws-share-fill" [style.width.%]="(p.visits / maxPageVisits()) * 100"></span>
+                      </span>
+                      <span class="ws-share-value">{{ p.sharePercent }}%</span>
+                    </span>
+                  </td>
+                </tr>
+              }
+              @if (s.pages.length === 0) {
+                <tr>
+                  <td colspan="4" class="text-center text-muted">No tracked pages are configured.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  }
+</section>

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using static Khel_Akhel_Server.Models.CommonResponse;
 
+[InvalidatesPublicCache(PublicCacheRegions.Faqs)]
 [ApiController]
 [Route("api/faq")]
 public class FAQController : ControllerBase
@@ -149,7 +150,7 @@ public class FAQController : ControllerBase
                     @DisplayOnFooter, 0, GETDATE()
                 );";
 
-            long id = Convert.ToInt64(_db.ExecuteScalar(sql, GetFaqParameters(request).ToArray()));
+            long id = Convert.ToInt64(await _db.ExecuteScalarAsync(sql, GetFaqParameters(request).ToArray()));
 
             await _audit.InsertAuditAsync(
                 GetAuthenticatedUserId(),
@@ -195,7 +196,7 @@ public class FAQController : ControllerBase
     #region Get Admin FAQ List API
     [Authorize(Roles = "Admin")]
     [HttpGet("admin/list")]
-    public IActionResult AdminList(
+    public async Task<IActionResult> AdminList(
         [FromQuery] string? search = null,
         [FromQuery] bool? isActive = null,
         [FromQuery] bool? isPublished = null
@@ -236,7 +237,7 @@ public class FAQController : ControllerBase
                 WHERE {string.Join(" AND ", conditions)}
                 ORDER BY DisplayOrder ASC, ID DESC;";
 
-            DataTable table = _db.ExecuteQuery(sql, parameters.ToArray());
+            DataTable table = await _db.ExecuteQueryAsync(sql, parameters.ToArray());
 
             var items = table.AsEnumerable().Select(row => MapFaq(row)).ToList();
 
@@ -271,7 +272,7 @@ public class FAQController : ControllerBase
     #region Get FAQ By Id API
     [Authorize(Roles = "Admin")]
     [HttpGet("admin/{encryptedFaqId}")]
-    public IActionResult GetById(string encryptedFaqId)
+    public async Task<IActionResult> GetById(string encryptedFaqId)
     {
         Logs.Info($"FAQ GetById API started | EncryptedFaqId:{encryptedFaqId}");
         try
@@ -295,7 +296,7 @@ public class FAQController : ControllerBase
                 FROM dbo.drs_faq_mst
                 WHERE ID = @ID AND IsDeleted = 0;";
 
-            DataTable table = _db.ExecuteQuery(sql, new[] { new SqlParameter("@ID", id) });
+            DataTable table = await _db.ExecuteQueryAsync(sql, new[] { new SqlParameter("@ID", id) });
 
             if (table.Rows.Count == 0)
             {
@@ -406,7 +407,7 @@ public class FAQController : ControllerBase
             var parameters = GetFaqParameters(request);
             parameters.Add(new SqlParameter("@ID", id));
 
-            int affected = Convert.ToInt32(_db.ExecuteScalar(sql, parameters.ToArray()) ?? 0);
+            int affected = Convert.ToInt32(await _db.ExecuteScalarAsync(sql, parameters.ToArray()) ?? 0);
 
             if (affected == 0)
             {
@@ -492,7 +493,7 @@ public class FAQController : ControllerBase
                 SELECT @@ROWCOUNT;";
 
             int affected = Convert.ToInt32(
-                _db.ExecuteScalar(sql, new[] { new SqlParameter("@ID", id) }) ?? 0
+                await _db.ExecuteScalarAsync(sql, new[] { new SqlParameter("@ID", id) }) ?? 0
             );
 
             if (affected == 0)
@@ -548,9 +549,10 @@ public class FAQController : ControllerBase
     #endregion
 
     #region Get Public FAQs API
+    [PublicResponseCache(PublicCacheRegions.Faqs, 300, SkipForAdmin = true)]
     [AllowAnonymous]
     [HttpGet("public")]
-    public IActionResult GetPublicFaqs([FromQuery] string location = "faq")
+    public async Task<IActionResult> GetPublicFaqs([FromQuery] string location = "faq")
     {
         Logs.Info($"FAQ GetPublicFaqs API started | Location:{location}");
         // Column names are selected from this fixed allowlist.
@@ -590,7 +592,7 @@ public class FAQController : ControllerBase
                   AND {displayColumn} = 1
                 ORDER BY DisplayOrder ASC, ID DESC;";
 
-            DataTable table = _db.ExecuteQuery(sql, Array.Empty<SqlParameter>());
+            DataTable table = await _db.ExecuteQueryAsync(sql, Array.Empty<SqlParameter>());
 
             var items = table.AsEnumerable().Select(row => MapFaq(row)).ToList();
 

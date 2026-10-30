@@ -1,0 +1,97 @@
+<!-- ============================ Khel-Akhel ============================ -->
+<section class="hs-intro" aria-labelledby="hsIntroTitle">
+  <div class="ka-wrap hs-intro-inner">
+    <p class="hs-intro-label ka-reveal" kaReveal><span>Khel-Akhel</span></p>
+
+    <h1 id="hsIntroTitle" class="hs-stanza">
+      <span class="ka-reveal" kaReveal>All that comes, comes <em>in play.</em></span>
+      <span class="ka-reveal" kaReveal="80">All that flows, flows.</span>
+      <span class="ka-reveal" kaReveal="160">All that goes, goes.</span>
+      <span class="ka-reveal" kaReveal="240"><em>All is One.</em></span>
+    </h1>
+
+    <svg class="hs-intro-mark ka-reveal" kaReveal="300" viewBox="0 0 120 16" aria-hidden="true">
+      <path d="M2 8c14 0 18-6 29-6s15 12 29 12 18-12 29-12 15 6 29 6" />
+    </svg>
+
+    <div class="hs-intro-body ka-reveal" kaReveal="340">
+      <p>
+        Khel-Akhel is a creative journey where art takes many forms, shaped by curiosity,
+        experimentation and the natural flow of making. There is no fixed beginning or end, only an
+        unfolding.
+      </p>
+      <p>
+        An invitation to play, explore and connect: to look, interact, participate, and perhaps
+        discover something new along the way.
+      </p>
+    </div>
+
+    <p class="hs-signature ka-reveal" kaReveal="380">
+      Darshan Singh Grewal<span>A creative world by DARAS</span>
+    </p>
+  </div>
+</section>
+
+<!-- ======================= From the studio ======================= -->
+@if (featured().length) {
+  <section class="hs-studio" aria-labelledby="hsStudioTitle">
+    <div class="ka-wrap">
+      <header class="hs-studio-head">
+        <div>
+          <p class="ka-label">From the studio</p>
+          <h2 id="hsStudioTitle" class="ka-h2">One piece <em>from every shelf</em></h2>
+        </div>
+        <a class="ka-link" routerLink="/products"
+          >Visit the shop <span class="ka-arrow" aria-hidden="true">→</span></a
+        >
+      </header>
+
+      <ul class="hs-studio-grid" role="list">
+        @for (p of featured(); track p.encryptedProductId; let i = $index) {
+          <li class="hs-piece" [class.is-sold-out]="p.availableQty <= 0">
+            <button
+              type="button"
+              class="hs-piece-hit"
+              (click)="open(p)"
+              [attr.aria-label]="'View ' + p.productName"
+            >
+              <span class="ka-frame hs-piece-media ka-reveal-img" [kaReveal]="(i % 4) * 90">
+                @if (image(p, 0)) {
+                  <img [src]="image(p, 0)" [alt]="p.productName" loading="lazy" decoding="async" />
+                  @if (image(p, 1)) {
+                    <img
+                      class="hs-piece-alt"
+                      [src]="image(p, 1)"
+                      alt=""
+                      aria-hidden="true"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  }
+                }
+              </span>
+              <span class="hs-piece-caption">
+                <span class="hs-piece-cat">{{ p.categoryName }}</span>
+                <span class="hs-piece-name">{{ p.productName }}</span>
+                <span class="hs-piece-price">
+                  @if (p.availableQty <= 0) {
+                    <span class="hs-sold">Sold</span>
+                  } @else {
+                    {{ price(p.sellingPrice) }}
+                    @if (hasDiscount(p)) {
+                      <s>{{ price(p.mrp) }}</s>
+                    }
+                  }
+                </span>
+              </span>
+            </button>
+          </li>
+        }
+      </ul>
+    </div>
+  </section>
+}
+
+@if (selected(); as product) {
+  <app-product-quickview-modal [product]="product" (closed)="close()" />
+}

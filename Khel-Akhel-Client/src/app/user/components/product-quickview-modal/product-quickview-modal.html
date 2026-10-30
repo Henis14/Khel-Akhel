@@ -93,9 +93,6 @@
                 <path d="M9 5l7 7-7 7" />
               </svg>
             </button>
-            <p class="qv-counter" aria-live="polite">
-              {{ activeIndex() + 1 }} / {{ images().length }}
-            </p>
           }
         } @else {
           <span class="qv-noimg">Image coming soon</span>
@@ -231,7 +228,7 @@
               aria-controls="qv-sec-description"
               (click)="toggleSection('description')"
             >
-              Description
+              The story
               <span class="qv-plus" aria-hidden="true"></span>
             </button>
             <div
@@ -285,6 +282,26 @@
                   </div>
                 }
               </dl>
+            </div>
+          </div>
+        </section>
+        <section class="qv-sec">
+          <button
+            type="button"
+            class="qv-sec-head"
+            [attr.aria-expanded]="openSection() === 'care'"
+            aria-controls="qv-sec-care"
+            (click)="toggleSection('care')"
+          >
+            Care &amp; shipping
+            <span class="qv-plus" aria-hidden="true"></span>
+          </button>
+          <div id="qv-sec-care" class="qv-sec-body" [class.is-open]="openSection() === 'care'">
+            <div class="qv-sec-inner">
+              <p class="qv-desc">
+                Wrapped in reusable cloth and shipped across India. Pay by UPI, card or net banking.
+                Want it in another size or finish? <a routerLink="/commissions">Ask for a commission</a>.
+              </p>
             </div>
           </div>
         </section>

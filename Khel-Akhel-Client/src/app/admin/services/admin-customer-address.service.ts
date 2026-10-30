@@ -31,10 +31,6 @@ export class AdminCustomerAddressService {
     return this.api.patch<CustomerAddressResponse>('customer-address/update', request);
   }
 
-  toggleActive(encryptedAddressId: string): Observable<ApiResponse<null>> {
-    return this.api.patch<null>(`customer-address/toggle-active/${encryptedAddressId}`);
-  }
-
   delete(encryptedAddressId: string): Observable<ApiResponse<null>> {
     return this.api.delete<null>(`customer-address/delete/${encryptedAddressId}`);
   }

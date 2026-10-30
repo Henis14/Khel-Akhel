@@ -41,10 +41,6 @@ export class AdminCustomerService {
     return this.api.patch<CustomerResponse>(`customer/update/${encryptedId}`, request);
   }
 
-  toggleActive(encryptedId: string): Observable<ApiResponse<null>> {
-    return this.api.patch<null>(`customer/toggle-active/${encryptedId}`);
-  }
-
   delete(encryptedId: string): Observable<ApiResponse<null>> {
     return this.api.delete<null>(`customer/delete/${encryptedId}`);
   }

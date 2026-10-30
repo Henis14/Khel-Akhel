@@ -13,8 +13,8 @@ $ease: cubic-bezier(0.22, 1, 0.36, 1);
 %caps {
   font-family: var(--user-font-sans);
   font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.09em;
+  font-weight: 500;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
@@ -25,7 +25,7 @@ $ease: cubic-bezier(0.22, 1, 0.36, 1);
   display: grid;
   place-items: center;
   padding: 1rem;
-  background: rgba(26, 15, 12, 0.5);
+  background: rgba(36, 29, 26, 0.42);
   animation: qv-fade 0.3s ease backwards;
 
   &.is-closing {
@@ -43,8 +43,8 @@ $ease: cubic-bezier(0.22, 1, 0.36, 1);
   max-height: calc(100vh - 2rem);
   max-height: calc(100dvh - 2rem);
   overflow: hidden;
-  color: var(--user-maroon, #45120a);
-  background: #fff;
+  color: var(--ka-ink);
+  background: var(--ka-paper);
   /* no transform at rest, so text stays crisp */
   animation: qv-in 0.45s $ease backwards;
 
@@ -132,7 +132,7 @@ $ease: cubic-bezier(0.22, 1, 0.36, 1);
   aspect-ratio: 4 / 5;
   padding: 0;
   border: 1px solid transparent;
-  background: #fff;
+  background: var(--ka-paper);
   cursor: pointer;
   opacity: 0.6;
   transition:
@@ -215,7 +215,7 @@ $ease: cubic-bezier(0.22, 1, 0.36, 1);
     height: 18px;
   }
   &:hover {
-    background: #fff;
+    background: var(--ka-paper);
   }
 
   &--prev {
@@ -257,7 +257,9 @@ $ease: cubic-bezier(0.22, 1, 0.36, 1);
 .qv-title {
   margin: 0 2.5rem 0 0;
   font-family: var(--user-font-serif);
-  font-size: clamp(1.9rem, 2.8vw, 2.6rem);
+  font-size: clamp(2rem, 1.4rem + 1.8vw, 2.75rem);
+  font-weight: 400;
+  letter-spacing: -0.01em;
   font-weight: 400;
   line-height: 1.05;
   text-wrap: balance;
@@ -331,7 +333,7 @@ $ease: cubic-bezier(0.22, 1, 0.36, 1);
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #4f7a4a;
+  background: var(--ka-moss);
 }
 
 .qv-stock--low {
@@ -409,14 +411,14 @@ $ease: cubic-bezier(0.22, 1, 0.36, 1);
     background: var(--user-maroon, #45120a);
 
     &:not(:disabled):hover {
-      background: #2e0c06;
+      background: var(--ka-kattha-deep);
     }
   }
 
   &--wish {
     grid-column: 1 / -1;
     color: var(--user-maroon, #45120a);
-    background: #fff;
+    background: var(--ka-paper);
 
     svg {
       width: 19px;
@@ -443,13 +445,13 @@ $ease: cubic-bezier(0.22, 1, 0.36, 1);
   gap: 0.4rem 0.9rem;
   margin: 0.85rem 0 0;
   padding: 0.75rem 0.9rem;
-  color: #2f5a2b;
-  background: #eef4ec;
+  color: var(--ka-moss);
+  background: rgba(86, 90, 48, 0.08);
   font-size: 0.8125rem;
 
   &--error {
-    color: #8d1f1f;
-    background: #fbefee;
+    color: var(--ka-alert);
+    background: rgba(163, 55, 42, 0.07);
   }
 }
 

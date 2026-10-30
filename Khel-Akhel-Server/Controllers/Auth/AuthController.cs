@@ -119,7 +119,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
             Response.Cookies.Delete(RefreshCookieName, cookieOptions);
         }
 
-        private void CheckAccountWideAlert(long customerId, string clientIp)
+        private async Task CheckAccountWideAlert(long customerId, string clientIp)
         {
             try
             {
@@ -131,7 +131,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                       AND IsSuccess = 0
                       AND CreatedDate >= DATEADD(MINUTE, -15, GETDATE())";
 
-                object? failuresObj = _db.ExecuteScalar(
+                object? failuresObj = await _db.ExecuteScalarAsync(
                     countQuery,
                     new[] { new SqlParameter("@CustomerId", customerId) }
                 );
@@ -150,7 +150,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                           AND Action = 'SuspiciousLoginActivity'
                           AND CreatedDate >= DATEADD(MINUTE, -15, GETDATE())";
 
-                    object? auditObj = _db.ExecuteScalar(
+                    object? auditObj = await _db.ExecuteScalarAsync(
                         recentAuditQuery,
                         new[] { new SqlParameter("@CustomerId", customerId) }
                     );
@@ -282,7 +282,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                 {
                     sw.Stop();
                     Logs.Warning(
-                        $"PortalLogin rejected | Invalid or expired CAPTCHA | Identifier:{request.UserName}"
+                        $"PortalLogin rejected | Invalid or expired CAPTCHA | IP:{GetClientIpAddress()}"
                     );
                     return BadRequest(
                         new ApiResponse
@@ -302,9 +302,9 @@ namespace Khel_Akhel_Server.Controllers.Auth
                     @"
                     SELECT TOP 1 ID, FirstName, LastName, Email, MobileNo, PasswordHash, IsAdmin, IsActive, FailedLoginAttempts, AccountLockedUntil
                     FROM drs_customer_mst
-                    WHERE (LOWER(Email) = LOWER(@UserName) OR MobileNo = @UserName) AND IsDeleted = 0";
+                    WHERE (Email = @UserName OR MobileNo = @UserName) AND IsDeleted = 0";
 
-                DataTable dt = _db.ExecuteQuery(
+                DataTable dt = await _db.ExecuteQueryAsync(
                     userLookupQuery,
                     new[] { new SqlParameter("@UserName", request.UserName) }
                 );
@@ -344,7 +344,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                               '1900-01-01'
                           )";
 
-                    object? countObj = _db.ExecuteScalar(
+                    object? countObj = await _db.ExecuteScalarAsync(
                         throttleQuery,
                         new[]
                         {
@@ -361,7 +361,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                     if (recentFailuresFromThisIp >= 5)
                     {
                         // Throttled: record failure row and return generic 401 without revealing password state
-                        _db.ExecuteNonQuery(
+                        await _db.ExecuteNonQueryAsync(
                             @"INSERT INTO drs_login_history_mst (customer_id, LoginType, DeviceInfo, IPAddress, IsSuccess, FailureReason, CreatedDate)
                               VALUES (@CustomerId, 'PASSWORD', @DeviceInfo, @IPAddress, 0, 'THROTTLED', GETDATE())",
                             new[]
@@ -375,7 +375,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                             }
                         );
 
-                        _db.ExecuteNonQuery(
+                        await _db.ExecuteNonQueryAsync(
                             @"UPDATE drs_customer_mst
                               SET FailedLoginAttempts = FailedLoginAttempts + 1,
                                   LastFailedLoginDate = GETDATE()
@@ -383,7 +383,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                             new[] { new SqlParameter("@ID", customerId.Value) }
                         );
 
-                        CheckAccountWideAlert(customerId.Value, clientIp);
+                        await CheckAccountWideAlert(customerId.Value, clientIp);
 
                         sw.Stop();
                         Logs.Warning(
@@ -398,7 +398,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                 {
                     if (userExists && customerId.HasValue)
                     {
-                        _db.ExecuteNonQuery(
+                        await _db.ExecuteNonQueryAsync(
                             @"INSERT INTO drs_login_history_mst (customer_id, LoginType, DeviceInfo, IPAddress, IsSuccess, FailureReason, CreatedDate)
                               VALUES (@CustomerId, 'PASSWORD', @DeviceInfo, @IPAddress, 0, 'INVALID_PASSWORD', GETDATE())",
                             new[]
@@ -412,7 +412,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                             }
                         );
 
-                        _db.ExecuteNonQuery(
+                        await _db.ExecuteNonQueryAsync(
                             @"UPDATE drs_customer_mst
                               SET FailedLoginAttempts = FailedLoginAttempts + 1,
                                   LastFailedLoginDate = GETDATE()
@@ -420,13 +420,11 @@ namespace Khel_Akhel_Server.Controllers.Auth
                             new[] { new SqlParameter("@ID", customerId.Value) }
                         );
 
-                        CheckAccountWideAlert(customerId.Value, clientIp);
+                        await CheckAccountWideAlert(customerId.Value, clientIp);
                     }
 
                     sw.Stop();
-                    Logs.Warning(
-                        $"PortalLogin failed | Invalid credentials | Identifier:{request.UserName}"
-                    );
+                    Logs.Warning($"PortalLogin failed | Invalid credentials | IP:{clientIp}");
                     return Unauthorized(GenericInvalidCredentialsResponse());
                 }
 
@@ -495,7 +493,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                 SetRefreshTokenCookie(refreshToken);
 
                 // Update Last Login & Reset Failed Login Attempts
-                _db.ExecuteNonQuery(
+                await _db.ExecuteNonQueryAsync(
                     @"
                     UPDATE drs_customer_mst
                     SET LastLogin = GETDATE(), FailedLoginAttempts = 0, AccountLockedUntil = NULL
@@ -504,7 +502,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                 );
 
                 // Record Login History Success
-                _db.ExecuteNonQuery(
+                await _db.ExecuteNonQueryAsync(
                     @"
                     INSERT INTO drs_login_history_mst (customer_id, LoginType, DeviceInfo, IPAddress, IsSuccess, CreatedDate)
                     VALUES (@CustomerId, 'PASSWORD', @DeviceInfo, @IPAddress, 1, GETDATE())",
@@ -717,7 +715,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
 
                 if (customerId > 0)
                 {
-                    _db.ExecuteNonQuery(
+                    await _db.ExecuteNonQueryAsync(
                         @"
                         INSERT INTO drs_login_history_mst (customer_id, LoginType, DeviceInfo, IPAddress, IsSuccess, CreatedDate)
                         VALUES (@CustomerId, 'LOGOUT', @DeviceInfo, @IPAddress, 1, GETDATE())",
@@ -812,13 +810,27 @@ namespace Khel_Akhel_Server.Controllers.Auth
         /// <summary>
         /// Finds an active account whose email AND mobile number both match the database record.
         /// </summary>
-        private DataRow? FindAccountByEmailAndMobile(string email, string mobileNo)
+        private static ApiResponse ChangePasswordMismatchResponse()
         {
-            DataTable dt = _db.ExecuteQuery(
+            return new ApiResponse
+            {
+                Success = false,
+                StatusCode = 400,
+                Message = "DETAILS_NOT_MATCHED",
+                Errors = new List<string>
+                {
+                    "The email address, mobile number or existing password is incorrect.",
+                },
+            };
+        }
+
+        private async Task<DataRow?> FindAccountByEmailAndMobile(string email, string mobileNo)
+        {
+            DataTable dt = await _db.ExecuteQueryAsync(
                 @"
                 SELECT TOP 1 ID, PasswordHash, IsAdmin, AccountLockedUntil
                 FROM drs_customer_mst
-                WHERE LOWER(Email) = LOWER(@Email)
+                WHERE Email = @Email
                   AND MobileNo = @MobileNo
                   AND IsDeleted = 0
                   AND IsActive = 1",
@@ -836,7 +848,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
         /// </summary>
         private async Task SaveNewPasswordAsync(long customerId, string newPassword, string auditAction)
         {
-            _db.ExecuteNonQuery(
+            await _db.ExecuteNonQueryAsync(
                 @"
                 UPDATE drs_customer_mst
                 SET PasswordHash = @PasswordHash,
@@ -941,7 +953,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                 }
 
                 // Email AND mobile must both match the same customer (admin accounts are excluded)
-                DataRow? account = FindAccountByEmailAndMobile(request.Email, request.MobileNo);
+                DataRow? account = await FindAccountByEmailAndMobile(request.Email, request.MobileNo);
                 if (account == null || Convert.ToBoolean(account["IsAdmin"]))
                 {
                     sw.Stop();
@@ -998,7 +1010,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
         [AllowAnonymous]
         [EnableRateLimiting("auth-login")]
         [HttpGet("reset-password/validate")]
-        public IActionResult ValidateResetToken([FromQuery] string? token)
+        public async Task<IActionResult> ValidateResetToken([FromQuery] string? token)
         {
             Logs.Info("ValidateResetToken API started");
             try
@@ -1032,7 +1044,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                       AND r.TokenExpiresUtc > GETUTCDATE()
                       AND r.IsDeleted = 0";
 
-                object? countObj = _db.ExecuteScalar(
+                object? countObj = await _db.ExecuteScalarAsync(
                     query,
                     new[] { new SqlParameter("@TokenHash", tokenHash) }
                 );
@@ -1416,29 +1428,17 @@ namespace Khel_Akhel_Server.Controllers.Auth
                     );
                 }
 
-                // Email AND mobile must both match the same account
-                DataRow? account = FindAccountByEmailAndMobile(request.Email, request.MobileNo);
+                string clientIp = GetClientIpAddress();
+                DataRow? account = await FindAccountByEmailAndMobile(request.Email, request.MobileNo);
                 if (account == null)
                 {
                     sw.Stop();
-                    Logs.Warning("ChangePassword rejected | Email and mobile number do not match any account");
-                    return BadRequest(
-                        new ApiResponse
-                        {
-                            Success = false,
-                            StatusCode = 400,
-                            Message = "DETAILS_NOT_MATCHED",
-                            Errors = new List<string>
-                            {
-                                "The email address and mobile number do not match our records.",
-                            },
-                        }
-                    );
+                    Logs.Warning($"ChangePassword rejected | Details not matched | IP:{clientIp}");
+                    return BadRequest(ChangePasswordMismatchResponse());
                 }
 
                 long customerId = Convert.ToInt64(account["ID"]);
 
-                // Respect the same temporary lock that sign-in uses after repeated failures
                 if (
                     account["AccountLockedUntil"] != DBNull.Value
                     && Convert.ToDateTime(account["AccountLockedUntil"]) > DateTime.Now
@@ -1460,20 +1460,62 @@ namespace Khel_Akhel_Server.Controllers.Auth
                     );
                 }
 
+                object? recentFailuresObj = await _db.ExecuteScalarAsync(
+                    @"
+                    SELECT COUNT(1)
+                    FROM drs_login_history_mst
+                    WHERE customer_id = @CustomerId
+                      AND IPAddress = @IPAddress
+                      AND LoginType = 'CHANGE_PASSWORD'
+                      AND IsSuccess = 0
+                      AND CreatedDate >= DATEADD(MINUTE, -15, GETDATE())",
+                    new[]
+                    {
+                        new SqlParameter("@CustomerId", customerId),
+                        new SqlParameter("@IPAddress", clientIp),
+                    }
+                );
+                int recentFailures =
+                    recentFailuresObj != null && recentFailuresObj != DBNull.Value
+                        ? Convert.ToInt32(recentFailuresObj)
+                        : 0;
+
                 string currentHash = account["PasswordHash"]?.ToString() ?? "";
-                if (!PasswordHelper.VerifyPassword(request.CurrentPassword, currentHash))
+                bool passwordValid =
+                    recentFailures < 5
+                    && PasswordHelper.VerifyPassword(request.CurrentPassword, currentHash);
+
+                if (!passwordValid)
                 {
-                    sw.Stop();
-                    Logs.Warning($"ChangePassword failed | Existing password invalid | CustomerId:{customerId}");
-                    return BadRequest(
-                        new ApiResponse
+                    await _db.ExecuteNonQueryAsync(
+                        @"INSERT INTO drs_login_history_mst (customer_id, LoginType, DeviceInfo, IPAddress, IsSuccess, FailureReason, CreatedDate)
+                          VALUES (@CustomerId, 'CHANGE_PASSWORD', NULL, @IPAddress, 0, @FailureReason, GETDATE())",
+                        new[]
                         {
-                            Success = false,
-                            StatusCode = 400,
-                            Message = "INVALID_CREDENTIALS",
-                            Errors = new List<string> { "Existing password is incorrect." },
+                            new SqlParameter("@CustomerId", customerId),
+                            new SqlParameter("@IPAddress", clientIp),
+                            new SqlParameter(
+                                "@FailureReason",
+                                recentFailures >= 5 ? "THROTTLED" : "INVALID_PASSWORD"
+                            ),
                         }
                     );
+
+                    await _db.ExecuteNonQueryAsync(
+                        @"UPDATE drs_customer_mst
+                          SET FailedLoginAttempts = FailedLoginAttempts + 1,
+                              LastFailedLoginDate = GETDATE()
+                          WHERE ID = @ID",
+                        new[] { new SqlParameter("@ID", customerId) }
+                    );
+
+                    await CheckAccountWideAlert(customerId, clientIp);
+
+                    sw.Stop();
+                    Logs.Warning(
+                        $"ChangePassword failed | {(recentFailures >= 5 ? "Throttled" : "Existing password invalid")} | CustomerId:{customerId} | IP:{clientIp}"
+                    );
+                    return BadRequest(ChangePasswordMismatchResponse());
                 }
 
                 await SaveNewPasswordAsync(customerId, request.NewPassword, "ChangePassword");

@@ -200,10 +200,10 @@ namespace Khel_Akhel_Server.Controllers.Customer
                     @"
                     SELECT COUNT(1)
                     FROM drs_customer_mst WITH (NOLOCK)
-                    WHERE LOWER(Email) = LOWER(@Email) AND IsDeleted = 0";
+                    WHERE Email = @Email AND IsDeleted = 0";
 
                 int emailExists = Convert.ToInt32(
-                    _db.ExecuteScalar(
+                    await _db.ExecuteScalarAsync(
                         checkEmailQuery,
                         new[] { new SqlParameter("@Email", request.Email) }
                     ) ?? 0
@@ -213,7 +213,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                 {
                     sw.Stop();
                     Logs.Warning(
-                        $"CustomerCreate duplicate email detected | Email:{request.Email}"
+                        "CustomerCreate duplicate email detected"
                     );
                     return Conflict(
                         new ApiResponse
@@ -237,7 +237,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                     WHERE MobileNo = @MobileNo AND IsDeleted = 0";
 
                 int mobileExists = Convert.ToInt32(
-                    _db.ExecuteScalar(
+                    await _db.ExecuteScalarAsync(
                         checkMobileQuery,
                         new[] { new SqlParameter("@MobileNo", request.MobileNo) }
                     ) ?? 0
@@ -247,7 +247,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                 {
                     sw.Stop();
                     Logs.Warning(
-                        $"CustomerCreate duplicate mobile detected | Mobile:{request.MobileNo}"
+                        "CustomerCreate duplicate mobile detected"
                     );
                     return Conflict(
                         new ApiResponse
@@ -266,7 +266,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                 // Hash Password & Insert with Auto-generated Account_no
                 string passwordHash = PasswordHelper.HashPassword(request.Password);
 
-                using SqlConnection con = _db.GetOpenConnection();
+                using SqlConnection con = await _db.GetOpenConnectionAsync();
                 using SqlTransaction tx = con.BeginTransaction();
 
                 string accountNo;
@@ -277,7 +277,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                     string genAccountNoQuery =
                         "SELECT 'DRC' + RIGHT('000000' + CAST(NEXT VALUE FOR dbo.Seq_CustomerAccount AS VARCHAR(6)), 6);";
                     using SqlCommand genCmd = new(genAccountNoQuery, con, tx);
-                    accountNo = Convert.ToString(genCmd.ExecuteScalar()) ?? string.Empty;
+                    accountNo = Convert.ToString(await genCmd.ExecuteScalarAsync()) ?? string.Empty;
 
                     if (!System.Text.RegularExpressions.Regex.IsMatch(accountNo, @"^DRC[0-9]{6}$"))
                     {
@@ -303,7 +303,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                     insertCmd.Parameters.AddWithValue("@MobileNo", request.MobileNo);
                     insertCmd.Parameters.AddWithValue("@PasswordHash", passwordHash);
 
-                    customerId = Convert.ToInt64(insertCmd.ExecuteScalar());
+                    customerId = Convert.ToInt64(await insertCmd.ExecuteScalarAsync());
 
                     tx.Commit();
                 }
@@ -480,7 +480,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                     FROM drs_customer_mst WITH (NOLOCK)
                     WHERE ID = @ID AND IsDeleted = 0";
 
-                DataTable dt = _db.ExecuteQuery(
+                DataTable dt = await _db.ExecuteQueryAsync(
                     selectQuery,
                     new[] { new SqlParameter("@ID", targetCustomerId) }
                 );
@@ -553,10 +553,10 @@ namespace Khel_Akhel_Server.Controllers.Customer
                         @"
                         SELECT COUNT(1)
                         FROM drs_customer_mst WITH (NOLOCK)
-                        WHERE LOWER(Email) = LOWER(@Email) AND ID <> @ID AND IsDeleted = 0";
+                        WHERE Email = @Email AND ID <> @ID AND IsDeleted = 0";
 
                     int dupEmail = Convert.ToInt32(
-                        _db.ExecuteScalar(
+                        await _db.ExecuteScalarAsync(
                             checkEmail,
                             new[]
                             {
@@ -569,7 +569,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                     if (dupEmail > 0)
                     {
                         sw.Stop();
-                        Logs.Warning($"CustomerUpdate duplicate email detected | Email:{newEmail} CustomerId:{targetCustomerId}");
+                        Logs.Warning($"CustomerUpdate duplicate email detected | CustomerId:{targetCustomerId}");
                         return Conflict(
                             new ApiResponse
                             {
@@ -595,7 +595,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                         WHERE MobileNo = @MobileNo AND ID <> @ID AND IsDeleted = 0";
 
                     int dupMobile = Convert.ToInt32(
-                        _db.ExecuteScalar(
+                        await _db.ExecuteScalarAsync(
                             checkMobile,
                             new[]
                             {
@@ -608,7 +608,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                     if (dupMobile > 0)
                     {
                         sw.Stop();
-                        Logs.Warning($"CustomerUpdate duplicate mobile detected | Mobile:{newMobileNo} CustomerId:{targetCustomerId}");
+                        Logs.Warning($"CustomerUpdate duplicate mobile detected | CustomerId:{targetCustomerId}");
                         return Conflict(
                             new ApiResponse
                             {
@@ -634,7 +634,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                         ModifiedDate = GETDATE()
                     WHERE ID = @ID AND IsDeleted = 0";
 
-                _db.ExecuteNonQuery(
+                await _db.ExecuteNonQueryAsync(
                     updateQuery,
                     new[]
                     {
@@ -787,7 +787,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                     FROM drs_customer_mst WITH (NOLOCK)
                     WHERE ID = @ID AND IsDeleted = 0";
 
-                DataTable dt = _db.ExecuteQuery(
+                DataTable dt = await _db.ExecuteQueryAsync(
                     checkQuery,
                     new[] { new SqlParameter("@ID", targetCustomerId) }
                 );
@@ -820,7 +820,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                         ModifiedDate = GETDATE()
                     WHERE ID = @ID";
 
-                _db.ExecuteNonQuery(
+                await _db.ExecuteNonQueryAsync(
                     deleteQuery,
                     new[] { new SqlParameter("@ID", targetCustomerId) }
                 );
@@ -874,7 +874,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
         #region Get Customer By Id API
         [Authorize]
         [HttpGet("{encryptedId}")]
-        public IActionResult GetCustomerById([FromRoute] string encryptedId)
+        public async Task<IActionResult> GetCustomerById([FromRoute] string encryptedId)
         {
             Logs.Info("GetCustomerById API started");
             var sw = Stopwatch.StartNew();
@@ -932,7 +932,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                     FROM drs_customer_mst WITH (NOLOCK)
                     WHERE ID = @ID AND IsDeleted = 0";
 
-                DataTable dt = _db.ExecuteQuery(
+                DataTable dt = await _db.ExecuteQueryAsync(
                     query,
                     new[] { new SqlParameter("@ID", requestedCustomerId) }
                 );
@@ -1007,7 +1007,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
         [Authorize(Roles = "Admin")]
         [HttpGet("list")]
         [HttpPost("list")]
-        public IActionResult GetAllCustomer(
+        public async Task<IActionResult> GetAllCustomer(
             [FromQuery] CustomerListRequest? queryRequest,
             [FromBody] CustomerListRequest? bodyRequest
         )
@@ -1053,7 +1053,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                 string countQuery =
                     $"SELECT COUNT(1) FROM drs_customer_mst WITH (NOLOCK) {whereClause}";
                 int totalRecords = Convert.ToInt32(
-                    _db.ExecuteScalar(countQuery, parameters.ToArray()) ?? 0
+                    await _db.ExecuteScalarAsync(countQuery, parameters.ToArray()) ?? 0
                 );
 
                 string listQuery =
@@ -1064,7 +1064,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                     ORDER BY ID DESC
                     OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY";
 
-                DataTable dt = _db.ExecuteQuery(listQuery, parameters.ToArray());
+                DataTable dt = await _db.ExecuteQueryAsync(listQuery, parameters.ToArray());
 
                 var customerList = new List<CustomerResponse>();
                 foreach (DataRow row in dt.Rows)

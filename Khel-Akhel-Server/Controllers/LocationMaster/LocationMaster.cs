@@ -22,8 +22,9 @@ namespace Khel_Akhel_Server.Controllers.LocationMaster
         }
 
         #region Get Countries API
+        [PublicResponseCache(PublicCacheRegions.Locations, 21600, SkipForAdmin = true)]
         [HttpGet("countries")]
-        public IActionResult GetCountries()
+        public async Task<IActionResult> GetCountries()
         {
             Logs.Info("GetCountries API started");
             var sw = Stopwatch.StartNew();
@@ -37,7 +38,7 @@ namespace Khel_Akhel_Server.Controllers.LocationMaster
                     WHERE IsActive = 1 AND IsDeleted = 0
                     ORDER BY CountryName ASC";
 
-                DataTable dt = _db.ExecuteQuery(query);
+                DataTable dt = await _db.ExecuteQueryAsync(query);
 
                 var countries = new List<CountryResponse>();
                 foreach (DataRow row in dt.Rows)
@@ -85,8 +86,9 @@ namespace Khel_Akhel_Server.Controllers.LocationMaster
         #endregion
 
         #region Get States API
+        [PublicResponseCache(PublicCacheRegions.Locations, 21600, SkipForAdmin = true)]
         [HttpGet("states")]
-        public IActionResult GetStates([FromQuery] long countryId)
+        public async Task<IActionResult> GetStates([FromQuery] long countryId)
         {
             Logs.Info($"GetStates API started | CountryId:{countryId}");
             var sw = Stopwatch.StartNew();
@@ -115,7 +117,7 @@ namespace Khel_Akhel_Server.Controllers.LocationMaster
                     WHERE country_id = @CountryId AND IsActive = 1 AND IsDeleted = 0
                     ORDER BY StateName ASC";
 
-                DataTable dt = _db.ExecuteQuery(
+                DataTable dt = await _db.ExecuteQueryAsync(
                     query,
                     new[] { new SqlParameter("@CountryId", countryId) }
                 );
@@ -168,8 +170,9 @@ namespace Khel_Akhel_Server.Controllers.LocationMaster
         #endregion
 
         #region Get Country By Id API
+        [PublicResponseCache(PublicCacheRegions.Locations, 21600, SkipForAdmin = true)]
         [HttpGet("countries/{id:long}")]
-        public IActionResult GetCountryById([FromRoute] long id)
+        public async Task<IActionResult> GetCountryById([FromRoute] long id)
         {
             Logs.Info($"GetCountryById API started | Id:{id}");
             try
@@ -193,7 +196,7 @@ namespace Khel_Akhel_Server.Controllers.LocationMaster
                     FROM dbo.drs_country_mst WITH (NOLOCK)
                     WHERE ID = @ID AND IsDeleted = 0";
 
-                DataTable dt = _db.ExecuteQuery(query, new[] { new SqlParameter("@ID", id) });
+                DataTable dt = await _db.ExecuteQueryAsync(query, new[] { new SqlParameter("@ID", id) });
 
                 if (dt.Rows.Count == 0)
                 {
@@ -245,8 +248,9 @@ namespace Khel_Akhel_Server.Controllers.LocationMaster
         #endregion
 
         #region Get State By Id API
+        [PublicResponseCache(PublicCacheRegions.Locations, 21600, SkipForAdmin = true)]
         [HttpGet("states/{id:long}")]
-        public IActionResult GetStateById([FromRoute] long id)
+        public async Task<IActionResult> GetStateById([FromRoute] long id)
         {
             Logs.Info($"GetStateById API started | Id:{id}");
             try
@@ -270,7 +274,7 @@ namespace Khel_Akhel_Server.Controllers.LocationMaster
                     FROM dbo.drs_state_mst WITH (NOLOCK)
                     WHERE ID = @ID AND IsDeleted = 0";
 
-                DataTable dt = _db.ExecuteQuery(query, new[] { new SqlParameter("@ID", id) });
+                DataTable dt = await _db.ExecuteQueryAsync(query, new[] { new SqlParameter("@ID", id) });
 
                 if (dt.Rows.Count == 0)
                 {

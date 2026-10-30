@@ -3,7 +3,7 @@
 }
 
 .user-home-page {
-  color: #fcfbf8;
+  color: var(--ka-ink);
 }
 
 .home-hero {
@@ -16,7 +16,8 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background-color: #121212;
+  color: var(--ka-on-dark);
+  background-color: #1b1512;
   background-position: center;
   background-size: cover;
   transition: background-image 0.6s ease;
@@ -52,7 +53,7 @@
     background-size: cover;
     background-position: center;
     opacity: 0;
-    transition: opacity 0.85s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: opacity 1.6s cubic-bezier(0.4, 0, 0.2, 1);
 
     &.active {
       opacity: 1;
@@ -60,62 +61,80 @@
   }
 }
 
-/* Carousel Controls */
+/* Carousel controls: thin ticks and quiet arrows, bottom right */
 .home-hero-carousel-nav {
   position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: 2rem;
+  right: var(--ka-gutter);
+  bottom: clamp(1.25rem, 3vw, 2.25rem);
   z-index: 2;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
+  color: var(--ka-on-dark);
 
   .carousel-nav-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(4px);
-    color: #ffffff;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
     cursor: pointer;
-    transition: all 0.2s ease;
+    opacity: 0.8;
+    transition:
+      opacity 0.2s ease,
+      transform 0.3s ease;
 
     &:hover {
-      background: rgba(0, 0, 0, 0.75);
-      border-color: rgba(255, 255, 255, 0.9);
-      transform: scale(1.08);
+      opacity: 1;
+    }
+
+    &.prev:hover {
+      transform: translateX(-3px);
+    }
+
+    &.next:hover {
+      transform: translateX(3px);
     }
   }
 
   .carousel-dots {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 6px;
 
     .carousel-dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      border: 1px solid rgba(255, 255, 255, 0.6);
-      background: rgba(255, 255, 255, 0.3);
-      cursor: pointer;
+      position: relative;
+      width: 28px;
+      height: 24px;
       padding: 0;
-      transition: all 0.2s ease;
+      border: 0;
+      background: none;
+      cursor: pointer;
 
-      &.active {
-        width: 24px;
-        border-radius: 9999px;
-        background: #ffffff;
-        border-color: #ffffff;
+      &::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        right: 0;
+        left: 0;
+        height: 1px;
+        background: rgba(250, 248, 243, 0.45);
+        transition:
+          height 0.3s ease,
+          background-color 0.3s ease;
       }
 
-      &:hover:not(.active) {
-        background: rgba(255, 255, 255, 0.7);
+      &.active::before {
+        height: 2px;
+        background: var(--ka-on-dark);
+      }
+
+      &:hover:not(.active)::before {
+        background: rgba(250, 248, 243, 0.8);
       }
     }
   }
@@ -127,7 +146,10 @@
     background-position: center;
   }
   .home-hero-carousel-nav {
-    bottom: 1.25rem;
+    right: auto;
+    left: 50%;
+    bottom: 1rem;
+    transform: translateX(-50%);
   }
 }
 

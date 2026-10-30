@@ -19,8 +19,20 @@ import {
   RouterOutlet,
 } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { catchError, of } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../../common/services/auth.service';
+import { UserProductService } from '../../services/user-product.service';
+import { CartState } from '../../services/cart-state';
+import { PageVisitTracker } from '../../services/page-visit-tracker';
+
+function slugify(value: string): string {
+  return (value || '')
+    .toLowerCase()
+    .replace(/&/g, ' ')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
 
 /* ---------- Navigation data shapes ---------- */
 export interface NavLinkItem {
@@ -55,12 +67,34 @@ export class UserLayoutComponent {
   @ViewChild('mobileMenuToggle') private mobileMenuToggle?: ElementRef<HTMLButtonElement>;
   @ViewChild('mobileNavDrawer') private mobileNavDrawer?: ElementRef<HTMLElement>;
   @ViewChild('storefrontHeader') private storefrontHeader?: ElementRef<HTMLElement>;
+  @ViewChild('accountWrap') private accountWrap?: ElementRef<HTMLElement>;
 
   readonly currentYear = new Date().getFullYear();
   public authService = inject(AuthService);
   private router = inject(Router);
   private destroyRef = inject(DestroyRef);
   private renderer = inject(Renderer2);
+  private productService = inject(UserProductService);
+  private cart = inject(CartState);
+  private pageVisits = inject(PageVisitTracker);
+
+  /** Items in the bag (updated by CartState whenever something is added) */
+  readonly cartCount = computed(() => this.cart.totalItems());
+
+  /** Shop categories from the API, in the admin's display order */
+  readonly shopCategories = signal<{ name: string; slug: string }[]>([]);
+
+  /** Footer shop links: live categories, or the original list until they load */
+  readonly footerCategories = computed(() => {
+    const live = this.shopCategories();
+    if (live.length) return live.slice(0, 4);
+    return [
+      { name: 'Art prints', slug: 'art-prints' },
+      { name: 'Lamps', slug: 'lamps' },
+      { name: 'Clothing', slug: 'clothing' },
+      { name: 'Gifts', slug: 'gifts' },
+    ];
+  });
 
   /** Sub-links (with query params) are highlighted only on an exact match */
   readonly exactMatch: IsActiveMatchOptions = {
@@ -74,7 +108,7 @@ export class UserLayoutComponent {
    * Primary navigation. Menus with `columns` open a mega panel on desktop and an
    * accordion in the mobile drawer.
    */
-  readonly menus: NavMenu[] = [
+  private readonly baseMenus: NavMenu[] = [
     {
       id: 'shop',
       label: 'Shop',
@@ -178,12 +212,36 @@ export class UserLayoutComponent {
     { id: 'contact', label: 'Contact', link: '/contact' },
   ];
 
+  /**
+   * Menus as shown. Once the category API answers, the Shop panel lists the
+   * real categories (so links always match the shop's ?category= filter);
+   * until then, or if it fails, the original columns stay.
+   */
+  readonly menus = computed<NavMenu[]>(() => {
+    const cats = this.shopCategories();
+    if (!cats.length) return this.baseMenus;
+    const perCol = Math.max(3, Math.ceil(cats.length / 3));
+    const columns: NavColumn[] = [];
+    for (let i = 0; i < cats.length && columns.length < 3; i += perCol) {
+      columns.push({
+        title: i === 0 ? 'Shop by form' : '',
+        links: cats.slice(i, i + perCol).map((c) => ({
+          label: c.name,
+          link: '/products',
+          queryParams: { category: c.slug },
+        })),
+      });
+    }
+    return this.baseMenus.map((m) => (m.id === 'shop' ? { ...m, columns } : m));
+  });
+
   /* ---------- State ---------- */
   readonly isMobileMenuOpen = signal<boolean>(false);
   readonly isHomePage = signal<boolean>(this.router.url.split(/[?#]/)[0] === '/');
   readonly isHeaderScrolled = signal<boolean>(false);
   readonly openMegaMenu = signal<string | null>(null);
   readonly openDrawerSection = signal<string | null>(null);
+  readonly isAccountMenuOpen = signal<boolean>(false);
 
   /** Header is transparent only on the home page, at the top, with no menu open */
   readonly isHeaderSolid = computed(
@@ -193,6 +251,22 @@ export class UserLayoutComponent {
   private megaCloseTimer?: ReturnType<typeof setTimeout>;
 
   constructor() {
+    this.pageVisits.start();
+
+    this.productService
+      .getCategories()
+      .pipe(
+        catchError(() => of([])),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((cats) =>
+        this.shopCategories.set(
+          cats
+            .filter((c) => c.isActive !== false && !!c.categoryName)
+            .map((c) => ({ name: c.categoryName.trim(), slug: slugify(c.categoryName) })),
+        ),
+      );
+
     this.router.events
       .pipe(
         filter((event): event is NavigationEnd => event instanceof NavigationEnd),
@@ -201,9 +275,9 @@ export class UserLayoutComponent {
       .subscribe(() => {
         this.closeMobileMenu();
         this.closeMegaMenu();
+        this.closeAccountMenu();
         this.isHomePage.set(this.router.url.split(/[?#]/)[0] === '/');
 
-        // Every page opens at the top (jump, not glide). In-page #anchors keep smooth scrolling.
         if (!this.router.parseUrl(this.router.url).fragment) {
           window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
         }
@@ -224,6 +298,7 @@ export class UserLayoutComponent {
   @HostListener('window:keydown.escape')
   onEscape(): void {
     this.closeMegaMenu();
+    this.closeAccountMenu();
     if (this.isMobileMenuOpen()) this.closeMobileMenu();
   }
 
@@ -232,6 +307,10 @@ export class UserLayoutComponent {
     const header = this.storefrontHeader?.nativeElement;
     if (header && !header.contains(event.target as Node)) {
       this.closeMegaMenu();
+    }
+    const account = this.accountWrap?.nativeElement;
+    if (account && !account.contains(event.target as Node)) {
+      this.closeAccountMenu();
     }
   }
 
@@ -303,7 +382,7 @@ export class UserLayoutComponent {
   openMobileMenu(): void {
     // Open the accordion of the section the visitor is currently in
     const path = this.router.url.split(/[?#]/)[0];
-    const current = this.menus.find((m) => m.columns && path.startsWith(m.link));
+    const current = this.menus().find((m) => m.columns && path.startsWith(m.link));
     this.openDrawerSection.set(current?.id ?? null);
 
     this.isMobileMenuOpen.set(true);
@@ -324,6 +403,21 @@ export class UserLayoutComponent {
     this.openDrawerSection.update((cur) => (cur === id ? null : id));
   }
 
+  /* ---------- Account menu ---------- */
+  toggleAccountMenu(): void {
+    this.closeMegaMenu();
+    this.isAccountMenuOpen.update((open) => !open);
+  }
+
+  closeAccountMenu(): void {
+    this.isAccountMenuOpen.set(false);
+  }
+
+  /** 2 -> "02" for the drawer's numbering */
+  pad(n: number): string {
+    return n.toString().padStart(2, '0');
+  }
+
   /* ---------- Scrolling helpers ---------- */
   scrollToTop(): void {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -338,6 +432,7 @@ export class UserLayoutComponent {
 
   logout(): void {
     this.closeMobileMenu();
+    this.closeAccountMenu();
     this.authService.logout().subscribe();
   }
 }

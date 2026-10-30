@@ -12,6 +12,7 @@ using static Khel_Akhel_Server.Models.CommonResponse;
 
 namespace Khel_Akhel_Server.Controllers.Projects
 {
+    [InvalidatesPublicCache(PublicCacheRegions.Projects)]
     [ApiController]
     [Route("api/projects")]
     public class ProjectsController : ControllerBase
@@ -1519,6 +1520,7 @@ namespace Khel_Akhel_Server.Controllers.Projects
         /// Public endpoint to fetch all active, published Project sections in configured DisplayOrder for dynamic website rendering.
         /// Excludes sensitive internal administrative fields and unpublished drafts.
         /// </summary>
+        [PublicResponseCache(PublicCacheRegions.Projects, 300, SkipForAdmin = true)]
         [AllowAnonymous]
         [HttpGet("public")]
         public async Task<IActionResult> GetPublishedPublicContent()
@@ -1657,7 +1659,7 @@ namespace Khel_Akhel_Server.Controllers.Projects
                     SET IsPublished = @IsPublished, ModifiedDate = GETDATE()
                     WHERE ID = @ID AND IsDeleted = 0;";
 
-                _db.ExecuteNonQuery(
+                await _db.ExecuteNonQueryAsync(
                     updateSql,
                     new[]
                     {
@@ -2209,7 +2211,7 @@ namespace Khel_Akhel_Server.Controllers.Projects
 
                 const string deleteSql =
                     "UPDATE drs_project_image_mst SET IsDeleted = 1, IsActive = 0, ModifiedDate = GETDATE() WHERE ID = @ID;";
-                _db.ExecuteNonQuery(deleteSql, new[] { new SqlParameter("@ID", imageId) });
+                await _db.ExecuteNonQueryAsync(deleteSql, new[] { new SqlParameter("@ID", imageId) });
 
                 // Delete physical file
                 if (!string.IsNullOrWhiteSpace(imagePath))

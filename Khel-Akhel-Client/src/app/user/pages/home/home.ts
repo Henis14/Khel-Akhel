@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { ApiService } from '../../../common/services/api.service';
 import { HeroBannerItem } from '../../../admin/models/hero-banner.model';
 import { environment } from '../../../../environments/environment';
+import { HomeStory } from './home-story/home-story';
 
 @Component({
   selector: 'app-user-home',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, HomeStory],
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })

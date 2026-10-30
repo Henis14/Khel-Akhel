@@ -10,6 +10,7 @@
     class="storefront-header"
     [class.is-homepage-header]="isHomePage()"
     [class.is-solid]="isHeaderSolid()"
+    [class.is-scrolled]="isHeaderScrolled()"
   >
     <div class="container storefront-header-inner">
       <!-- Left: menu toggle (mobile) + primary navigation (desktop) -->
@@ -25,11 +26,10 @@
         >
           <span class="hamburger-line"></span>
           <span class="hamburger-line"></span>
-          <span class="hamburger-line"></span>
         </button>
 
         <nav class="desktop-nav" aria-label="Primary navigation">
-          @for (menu of menus; track menu.id) {
+          @for (menu of menus(); track menu.id) {
             @if (menu.columns) {
               <div
                 class="nav-item"
@@ -65,7 +65,21 @@
 
       <!-- Centre: logo -->
       <a routerLink="/" class="brand-link" (click)="closeMobileMenu()" aria-label="Khel Akhel home">
-        <img class="brand-logo" src="/logo.png" alt="Khel Akhel" width="2988" height="948" />
+        <img
+          class="brand-logo brand-logo--ink"
+          src="/logo-ink.png"
+          alt="Khel Akhel"
+          width="640"
+          height="117"
+        />
+        <img
+          class="brand-logo brand-logo--light"
+          src="/logo-light.png"
+          alt=""
+          aria-hidden="true"
+          width="640"
+          height="117"
+        />
       </a>
 
       <!-- Right: utilities & account -->
@@ -83,7 +97,7 @@
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            stroke-width="1.3"
+            stroke-width="1.2"
             stroke-linejoin="round"
             aria-hidden="true"
           >
@@ -93,12 +107,109 @@
           </svg>
         </a>
 
+        <!-- Account: one icon, one small menu -->
+        <div class="account-wrap" #accountWrap>
+          @if (authService.isAuthenticated()) {
+            <button
+              type="button"
+              class="action-icon-link account-trigger"
+              [class.active]="isAccountMenuOpen()"
+              [attr.aria-expanded]="isAccountMenuOpen()"
+              aria-controls="accountMenu"
+              aria-label="Your account"
+              title="Your account"
+              (click)="toggleAccountMenu()"
+            >
+              <svg
+                class="action-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.2"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="8.5" r="3.6" />
+                <path d="M4.5 20c1.3-3.6 4.2-5.4 7.5-5.4s6.2 1.8 7.5 5.4" />
+              </svg>
+              <span class="account-dot" aria-hidden="true"></span>
+            </button>
+            <div
+              id="accountMenu"
+              class="account-menu"
+              [class.is-open]="isAccountMenuOpen()"
+              role="menu"
+              aria-label="Account"
+            >
+              <p class="account-menu-meta">Signed in as</p>
+              <p class="account-menu-email" [title]="authService.currentUser()?.email || ''">
+                {{ authService.currentUser()?.email }}
+              </p>
+              <a
+                role="menuitem"
+                routerLink="/account"
+                class="account-menu-link"
+                [routerLinkActiveOptions]="{ exact: true }"
+                routerLinkActive="active"
+                (click)="closeAccountMenu()"
+                >Account</a
+              >
+              <a
+                role="menuitem"
+                routerLink="/account/addresses"
+                class="account-menu-link"
+                routerLinkActive="active"
+                (click)="closeAccountMenu()"
+                >Addresses</a
+              >
+              <a
+                role="menuitem"
+                routerLink="/wishlist"
+                class="account-menu-link"
+                routerLinkActive="active"
+                (click)="closeAccountMenu()"
+                >Wishlist</a
+              >
+              <button
+                role="menuitem"
+                type="button"
+                class="account-menu-link account-menu-signout"
+                (click)="logout()"
+                aria-label="Sign out of account"
+              >
+                Sign out
+              </button>
+            </div>
+          } @else {
+            <a routerLink="/login" routerLinkActive="active" class="btn-auth-signin">Sign in</a>
+            <a
+              routerLink="/login"
+              class="action-icon-link account-icon-guest"
+              aria-label="Sign in"
+              title="Sign in"
+            >
+              <svg
+                class="action-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.2"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="8.5" r="3.6" />
+                <path d="M4.5 20c1.3-3.6 4.2-5.4 7.5-5.4s6.2 1.8 7.5 5.4" />
+              </svg>
+            </a>
+          }
+        </div>
+
         <a
           routerLink="/cart"
           routerLinkActive="active"
           ariaCurrentWhenActive="page"
-          class="action-icon-link"
-          aria-label="Shopping bag"
+          class="action-icon-link bag-link"
+          [attr.aria-label]="
+            cartCount() > 0 ? 'Shopping bag, ' + cartCount() + ' items' : 'Shopping bag'
+          "
           title="Shopping bag"
         >
           <svg
@@ -106,52 +217,21 @@
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            stroke-width="1.3"
+            stroke-width="1.2"
             aria-hidden="true"
           >
-            <rect x="3.5" y="7.5" width="17" height="13" rx="1.5" />
-            <path d="M8.5 7.5V6a3.5 3.5 0 0 1 7 0v1.5" />
+            <path d="M4.5 8h15l-1.2 12.5H5.7L4.5 8Z" />
+            <path d="M8.5 8V6.5a3.5 3.5 0 0 1 7 0V8" />
           </svg>
-        </a>
-
-        <div class="auth-wrapper">
-          @if (authService.isAuthenticated()) {
-            <div class="user-session-pill">
-              <span
-                class="user-email-label"
-                [title]="authService.currentUser()?.email || 'My account'"
-              >
-                {{ authService.currentUser()?.email }}
-              </span>
-              <button
-                type="button"
-                class="btn-auth-logout"
-                (click)="logout()"
-                aria-label="Sign out of account"
-              >
-                Sign out
-              </button>
-              <a
-                routerLink="/account"
-                routerLinkActive="active"
-                class="btn-auth-account"
-                aria-label="Manage your account"
-              >
-                Account
-              </a>
-            </div>
-          } @else {
-            <div class="guest-auth-actions">
-              <a routerLink="/login" routerLinkActive="active" class="btn-auth-signin">Sign in</a>
-              <a routerLink="/register" routerLinkActive="active" class="btn-auth-join">Join</a>
-            </div>
+          @if (cartCount() > 0) {
+            <span class="bag-count" aria-hidden="true">{{ cartCount() }}</span>
           }
-        </div>
+        </a>
       </div>
     </div>
 
     <!-- ---------- Mega menus ---------- -->
-    @for (menu of menus; track menu.id) {
+    @for (menu of menus(); track menu.id) {
       @if (menu.columns) {
         <div
           class="mega-panel"
@@ -164,7 +244,7 @@
         >
           <div class="container mega-inner">
             <div class="mega-intro" [style.--i]="0">
-              <p class="mega-intro-title">{{ menu.label }}</p>
+              <p class="mega-intro-label">{{ menu.label }}</p>
               @if (menu.intro) {
                 <p class="mega-intro-text">{{ menu.intro }}</p>
               }
@@ -176,9 +256,9 @@
                 >{{ menu.viewAll || 'View all' }} <span aria-hidden="true">→</span></a
               >
             </div>
-            @for (col of menu.columns; track col.title; let i = $index) {
+            @for (col of menu.columns; track $index; let i = $index) {
               <div class="mega-column" [style.--i]="i + 1">
-                <p class="mega-title">{{ col.title }}</p>
+                <p class="mega-title" [class.is-blank]="!col.title">{{ col.title || ' ' }}</p>
                 <ul class="mega-list">
                   @for (item of col.links; track item.label) {
                     <li>
@@ -227,18 +307,13 @@
     #mobileNavDrawer
     [class.is-open]="isMobileMenuOpen()"
     [attr.aria-hidden]="!isMobileMenuOpen()"
+    [attr.inert]="isMobileMenuOpen() ? null : ''"
     role="dialog"
     aria-modal="true"
     aria-label="Mobile navigation"
   >
     <div class="drawer-header">
-      <img
-        class="brand-logo drawer-logo"
-        src="/logo.png"
-        alt="Khel Akhel"
-        width="2988"
-        height="948"
-      />
+      <img class="drawer-logo" src="/logo-ink.png" alt="Khel Akhel" width="640" height="117" />
       <button
         type="button"
         class="drawer-close-btn"
@@ -259,7 +334,7 @@
         (click)="closeMobileMenu()"
         >Home</a
       >
-      @for (menu of menus; track menu.id) {
+      @for (menu of menus(); track menu.id; let mi = $index) {
         @if (menu.columns) {
           <div class="drawer-group" routerLinkActive="is-current">
             <button
@@ -275,7 +350,7 @@
                 viewBox="0 0 14 14"
                 fill="none"
                 stroke="currentColor"
-                stroke-width="1.3"
+                stroke-width="1.2"
                 aria-hidden="true"
               >
                 <path d="M7 1v12M1 7h12" />
@@ -296,7 +371,7 @@
                   >{{ menu.viewAll || 'View all' }}</a
                 >
               </li>
-              @for (col of menu.columns; track col.title) {
+              @for (col of menu.columns; track $index) {
                 @for (item of col.links; track item.label) {
                   <li>
                     <a
@@ -324,6 +399,14 @@
         }
       }
       <a
+        routerLink="/commissions"
+        class="drawer-nav-item"
+        routerLinkActive="active"
+        ariaCurrentWhenActive="page"
+        (click)="closeMobileMenu()"
+        >Commissions</a
+      >
+      <a
         routerLink="/wishlist"
         class="drawer-nav-item"
         routerLinkActive="active"
@@ -339,7 +422,6 @@
           <p class="drawer-user-meta">Signed in as</p>
           <p class="drawer-user-email">{{ authService.currentUser()?.email }}</p>
           <div class="drawer-user-actions">
-            <button type="button" class="btn-drawer-logout" (click)="logout()">Sign out</button>
             <a
               routerLink="/account"
               routerLinkActive="active"
@@ -348,12 +430,15 @@
             >
               Account
             </a>
+            <button type="button" class="btn-drawer-logout" (click)="logout()">Sign out</button>
           </div>
         </div>
       } @else {
         <div class="drawer-auth-grid">
           <a routerLink="/login" class="btn-drawer-login" (click)="closeMobileMenu()">Sign in</a>
-          <a routerLink="/register" class="btn-drawer-register" (click)="closeMobileMenu()">Join</a>
+          <a routerLink="/register" class="btn-drawer-register" (click)="closeMobileMenu()"
+            >Create an account</a
+          >
         </div>
       }
       <p class="drawer-daras-tag">A creative world by DARAS</p>
@@ -372,225 +457,184 @@
 
   <!-- =============================== FOOTER =============================== -->
   <footer class="storefront-footer">
-    <div class="footer-sheet">
-      <!-- 1. Promise band -->
-      <div class="footer-promises-band">
-        <ul class="container footer-promises" aria-label="Our promise">
-          <li class="promise-item">
-            <span class="promise-icon">
-              <svg
-                viewBox="0 0 40 40"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.2"
-                aria-hidden="true"
-              >
-                <path
-                  d="M13 30c-2-3-4-7-4-11a3 3 0 0 1 6 0v4M15 19v-7a2.5 2.5 0 0 1 5 0v9M20 12V9a2.5 2.5 0 0 1 5 0v12M25 13a2.5 2.5 0 0 1 5 0v9c0 6-4 10-9 10h-2c-3 0-5-1-6-2"
-                />
-              </svg>
-            </span>
-            <p class="promise-title">Made by hand</p>
-            <p class="promise-text">Shaped in the studio, so no two pieces are alike.</p>
-          </li>
-          <li class="promise-item">
-            <span class="promise-icon">
-              <svg
-                viewBox="0 0 40 40"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.2"
-                aria-hidden="true"
-              >
-                <path d="M6 13l14-7 14 7v14l-14 7-14-7z" />
-                <path d="M6 13l14 7 14-7M20 20v14M13 9.5l14 7" />
-              </svg>
-            </span>
-            <p class="promise-title">Wrapped with care</p>
-            <p class="promise-text">Packed in reusable cloth, shipped across India.</p>
-          </li>
-          <li class="promise-item">
-            <span class="promise-icon">
-              <svg
-                viewBox="0 0 40 40"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.2"
-                aria-hidden="true"
-              >
-                <rect x="9" y="17" width="22" height="16" rx="2" />
-                <path d="M14 17v-4a6 6 0 0 1 12 0v4M20 23v4" />
-              </svg>
-            </span>
-            <p class="promise-title">Secure payment</p>
-            <p class="promise-text">UPI, cards and net banking.</p>
-          </li>
-          <li class="promise-item">
-            <span class="promise-icon">
-              <svg
-                viewBox="0 0 40 40"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.2"
-                aria-hidden="true"
-              >
-                <path d="M20 6l2.8 8.6H32l-7.4 5.4 2.8 8.6L20 23.2l-7.4 5.4 2.8-8.6L8 14.6h9.2z" />
-              </svg>
-            </span>
-            <p class="promise-title">Made for you</p>
-            <p class="promise-text">Custom pieces and commissions on request.</p>
-          </li>
-        </ul>
-      </div>
+    <!-- The studio's promise, set as four quiet notes before the footer -->
+    <div class="footer-notes" aria-label="How we make and send">
+      <ul class="container footer-notes-list" role="list">
+        <li class="footer-note">
+          <svg viewBox="0 0 32 32" aria-hidden="true">
+            <path
+              d="M10 24c-1.6-2.4-3-5.6-3-8.8a2.4 2.4 0 0 1 4.8 0v3.2M11.8 15.2V9.6a2 2 0 0 1 4 0v7.2M15.8 9.6V7.2a2 2 0 0 1 4 0v9.6M19.8 10.4a2 2 0 0 1 4 0v7.2c0 4.8-3.2 8-7.2 8h-1.6c-2.4 0-4-.8-4.8-1.6"
+            />
+          </svg>
+          <p>
+            <span class="footer-note-title">Made by hand</span>Shaped in the studio, never twice the
+            same.
+          </p>
+        </li>
+        <li class="footer-note">
+          <svg viewBox="0 0 32 32" aria-hidden="true">
+            <path d="M5 11l11-5 11 5v11l-11 5-11-5z" />
+            <path d="M5 11l11 5 11-5M16 16v11" />
+          </svg>
+          <p>
+            <span class="footer-note-title">Wrapped in reusable cloth</span>Packed with care,
+            shipped across India.
+          </p>
+        </li>
+        <li class="footer-note">
+          <svg viewBox="0 0 32 32" aria-hidden="true">
+            <rect x="5" y="9" width="22" height="15" rx="1.5" />
+            <path d="M5 14h22M9 19.5h5" />
+          </svg>
+          <p>
+            <span class="footer-note-title">UPI, cards &amp; net banking</span>Secure payment,
+            whichever way suits you.
+          </p>
+        </li>
+        <li class="footer-note">
+          <svg viewBox="0 0 32 32" aria-hidden="true">
+            <path d="M16 5l2.6 7.8H27l-6.7 4.9 2.6 7.8L16 20.6l-6.9 4.9 2.6-7.8L5 12.8h8.4z" />
+          </svg>
+          <p>
+            <span class="footer-note-title">Commissions on request</span
+            ><a routerLink="/commissions">Make something together</a>
+          </p>
+        </li>
+      </ul>
+    </div>
 
-      <!-- 2. Brand + link columns -->
-      <div class="container footer-nav">
+    <div class="footer-body">
+      <div class="container footer-main">
+        <!-- Brand -->
         <div class="footer-brand">
           <a routerLink="/" class="footer-logo-link" aria-label="Khel Akhel home">
             <img
               class="footer-logo"
-              src="/logo.png"
+              src="/logo-light.png"
               alt="Khel Akhel"
-              width="2988"
-              height="948"
+              width="640"
+              height="117"
               loading="lazy"
             />
           </a>
-          <p class="footer-owner">
-            Objects, art and gatherings shaped by craft and play.
-            <span>A creative world by DARAS</span>
-          </p>
-          <ul class="footer-reach">
-            <li><a href="mailto:logingrewal@gmail.com">logingrewal&#64;gmail.com</a></li>
-            <li><a href="tel:+919888744113">+91 98887 44113</a></li>
-          </ul>
-          <div class="footer-social">
-            <a
-              href="https://www.instagram.com/daras.co.in/"
-              target="_blank"
-              rel="noopener"
-              aria-label="Instagram"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.4"
-                aria-hidden="true"
-              >
-                <rect x="3.5" y="3.5" width="17" height="17" rx="5" />
-                <circle cx="12" cy="12" r="4" />
-                <circle cx="17.3" cy="6.7" r=".9" fill="currentColor" stroke="none" />
-              </svg>
-            </a>
-            <a
-              href="https://www.youtube.com/@daras.nature"
-              target="_blank"
-              rel="noopener"
-              aria-label="YouTube"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.4"
-                aria-hidden="true"
-              >
-                <rect x="2.5" y="5.5" width="19" height="13" rx="4" />
-                <path d="m10 9 5 3-5 3Z" fill="currentColor" stroke="none" />
-              </svg>
-            </a>
-            <a href="mailto:logingrewal@gmail.com" aria-label="Email">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.4"
-                aria-hidden="true"
-              >
-                <rect x="3" y="5.5" width="18" height="13" rx="1" />
-                <path d="m3.5 6.5 8.5 6.5 8.5-6.5" />
-              </svg>
-            </a>
-          </div>
+          <p class="footer-owner">Objects, art and gatherings shaped by craft <em>and play.</em></p>
+          <p class="footer-daras">A creative world by DARAS</p>
         </div>
 
-        <nav class="links-group" aria-label="Shop">
-          <p class="links-label">Shop</p>
-          <ul class="links-list">
-            <li>
-              <a
-                routerLink="/products"
-                routerLinkActive="active"
-                [routerLinkActiveOptions]="exactMatch"
-                >Shop all</a
-              >
-            </li>
-            <li>
-              <a
-                routerLink="/products"
-                [queryParams]="{ category: 'art-prints' }"
-                routerLinkActive="active"
-                [routerLinkActiveOptions]="exactMatch"
-                >Art prints</a
-              >
-            </li>
-            <li>
-              <a
-                routerLink="/products"
-                [queryParams]="{ category: 'lamps' }"
-                routerLinkActive="active"
-                [routerLinkActiveOptions]="exactMatch"
-                >Lamps</a
-              >
-            </li>
-            <li>
-              <a
-                routerLink="/products"
-                [queryParams]="{ category: 'clothing' }"
-                routerLinkActive="active"
-                [routerLinkActiveOptions]="exactMatch"
-                >Clothing</a
-              >
-            </li>
-            <li>
-              <a
-                routerLink="/products"
-                [queryParams]="{ category: 'gifts' }"
-                routerLinkActive="active"
-                [routerLinkActiveOptions]="exactMatch"
-                >Gifts</a
-              >
-            </li>
-          </ul>
-        </nav>
+        <!-- Navigation -->
+        <div class="footer-nav">
+          <nav class="links-group" aria-label="Shop">
+            <p class="links-label">Shop</p>
+            <ul class="links-list">
+              <li>
+                <a
+                  routerLink="/products"
+                  routerLinkActive="active"
+                  [routerLinkActiveOptions]="exactMatch"
+                  >Shop all</a
+                >
+              </li>
+              @for (c of footerCategories(); track c.slug) {
+                <li>
+                  <a
+                    routerLink="/products"
+                    [queryParams]="{ category: c.slug }"
+                    routerLinkActive="active"
+                    [routerLinkActiveOptions]="exactMatch"
+                    >{{ c.name }}</a
+                  >
+                </li>
+              }
+            </ul>
+          </nav>
 
-        <nav class="links-group" aria-label="Explore">
-          <p class="links-label">Explore</p>
-          <ul class="links-list">
-            <li><a routerLink="/projects" routerLinkActive="active">Projects</a></li>
-            <li><a routerLink="/commissions" routerLinkActive="active">Commissions</a></li>
-            <li><a routerLink="/about" routerLinkActive="active">About</a></li>
-            <li><a routerLink="/contact" routerLinkActive="active">Contact</a></li>
-          </ul>
-        </nav>
+          <nav class="links-group" aria-label="Explore">
+            <p class="links-label">Explore</p>
+            <ul class="links-list">
+              <li><a routerLink="/projects" routerLinkActive="active">Projects</a></li>
+              <li><a routerLink="/commissions" routerLinkActive="active">Commissions</a></li>
+              <li><a routerLink="/about" routerLinkActive="active">About</a></li>
+              <li><a routerLink="/contact" routerLinkActive="active">Contact</a></li>
+            </ul>
+          </nav>
 
-        <nav class="links-group" aria-label="Quick links">
-          <p class="links-label">Quick links</p>
-          <ul class="links-list">
-            <li><a routerLink="/track-order" routerLinkActive="active">Track your order</a></li>
-            <li>
-              <a routerLink="/terms-conditions" routerLinkActive="active">Terms &amp; Conditions</a>
-            </li>
-            <li><a routerLink="/privacy-policy" routerLinkActive="active">Privacy policy</a></li>
-            <li><a routerLink="/faq" routerLinkActive="active">FAQs</a></li>
-          </ul>
-        </nav>
+          <nav class="links-group" aria-label="Help">
+            <p class="links-label">Help</p>
+            <ul class="links-list">
+              <li><a routerLink="/track-order" routerLinkActive="active">Track your order</a></li>
+              <li><a routerLink="/faq" routerLinkActive="active">FAQs</a></li>
+              <li>
+                <a routerLink="/terms-conditions" routerLinkActive="active"
+                  >Terms &amp; Conditions</a
+                >
+              </li>
+              <li><a routerLink="/privacy-policy" routerLinkActive="active">Privacy policy</a></li>
+            </ul>
+          </nav>
+
+          <div class="links-group footer-reach-group">
+            <p class="links-label">Write or call</p>
+            <ul class="footer-reach">
+              <li><a href="mailto:logingrewal@gmail.com">logingrewal&#64;gmail.com</a></li>
+              <li><a href="tel:+919888744113">+91 98887 44113</a></li>
+            </ul>
+            <div class="footer-social">
+              <a
+                href="https://www.instagram.com/daras.co.in/"
+                target="_blank"
+                rel="noopener"
+                aria-label="Instagram"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.3"
+                  aria-hidden="true"
+                >
+                  <rect x="3.5" y="3.5" width="17" height="17" rx="5" />
+                  <circle cx="12" cy="12" r="4" />
+                  <circle cx="17.3" cy="6.7" r=".9" fill="currentColor" stroke="none" />
+                </svg>
+              </a>
+              <a
+                href="https://www.youtube.com/@daras.nature"
+                target="_blank"
+                rel="noopener"
+                aria-label="YouTube"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.3"
+                  aria-hidden="true"
+                >
+                  <rect x="2.5" y="5.5" width="19" height="13" rx="4" />
+                  <path d="m10 9 5 3-5 3Z" fill="currentColor" stroke="none" />
+                </svg>
+              </a>
+              <a href="mailto:logingrewal@gmail.com" aria-label="Email">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.3"
+                  aria-hidden="true"
+                >
+                  <rect x="3" y="5.5" width="18" height="13" rx="1" />
+                  <path d="m3.5 6.5 8.5 6.5 8.5-6.5" />
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <!-- 3. Legal bar -->
+      <!-- Legal bar -->
       <div class="footer-legal">
         <div class="container footer-legal-inner">
+          <p class="legal-copy">© {{ currentYear }} Khel Akhel. All rights reserved.</p>
           <p class="legal-credit">
             Design &amp; Developed by
             <a
@@ -600,7 +644,6 @@
               >Henis Dcosta</a
             >
           </p>
-          <p class="legal-copy">© {{ currentYear }} Khel Akhel. All rights reserved.</p>
           <button type="button" class="legal-top" (click)="scrollToTop()">
             Back to top <span aria-hidden="true">↑</span>
           </button>

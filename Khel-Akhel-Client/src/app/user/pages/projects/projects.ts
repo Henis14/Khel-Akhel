@@ -102,7 +102,7 @@ export class ProjectsComponent {
         forTitle: this.isSameName(p.projectOrEventTitle, p.heading) ? '' : (p.projectOrEventTitle || '').trim(),
         gallery: p.imageUrls.map((url, i) => ({
           imageUrl: url,
-          originalFileName: `${p.heading} — photograph ${i + 1}`,
+          originalFileName: `${p.heading}, photograph ${i + 1}`,
           displayOrder: i + 1,
         })),
         paragraphs: this.toParagraphs(p.detailedDescription),

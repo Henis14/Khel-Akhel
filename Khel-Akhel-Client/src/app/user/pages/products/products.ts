@@ -60,6 +60,31 @@ export class UserProductsComponent implements OnInit {
     this.rows().reduce((sum, r) => sum + r.products.length, 0),
   );
 
+  /* ---------- browsing: category filter (client-side only) ---------- */
+  /** The category rows to show: the chosen one, or all of them */
+  readonly visibleRows = computed(() => {
+    const wanted = this.activeSlug();
+    const rows = wanted
+      ? this.rows().filter((r) => this.sameCategory(r.slug, wanted))
+      : this.rows();
+    return rows.length ? rows : this.rows();
+  });
+
+  /** True when the address asks for a category that exists */
+  readonly hasActiveCategory = computed(() => {
+    const wanted = this.activeSlug();
+    return !!wanted && this.rows().some((r) => this.sameCategory(r.slug, wanted));
+  });
+
+  showAll(): void {
+    this.activeSlug.set(null);
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { category: null },
+      replaceUrl: true,
+    });
+  }
+
   /** placeholder cards while loading */
   readonly skeletonRows = [0, 1];
   readonly skeletonCards = [0, 1, 2, 3];
@@ -175,14 +200,13 @@ export class UserProductsComponent implements OnInit {
     if (!wanted) return;
     const row = this.rows().find((r) => this.sameCategory(r.slug, wanted));
     if (!row) return;
-    const slug = row.slug;
-    // wait for the rows to render
+    // the grid now shows only that category: bring its top into view if we are below it
     setTimeout(() => {
-      const el = this.host.nativeElement.querySelector(`#shop-${CSS.escape(slug)}`);
+      const el = this.host.nativeElement.querySelector('#shopGrid');
       if (!el) return;
-      const offset = window.innerWidth <= 1100 ? 62 + 64 : 80 + 64; // header + chip bar
+      const offset = window.innerWidth <= 760 ? 60 + 56 : 72 + 64; // header + index bar
       const top = el.getBoundingClientRect().top + window.scrollY - offset;
-      window.scrollTo({ top, behavior: 'smooth' });
+      if (window.scrollY > top) window.scrollTo({ top, behavior: 'smooth' });
     });
   }
 

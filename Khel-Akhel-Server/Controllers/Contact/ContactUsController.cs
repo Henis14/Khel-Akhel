@@ -666,7 +666,7 @@ namespace Khel_Akhel_Server.Controllers.Contact
                     SET IsActive = @IsActive, ModifiedDate = GETDATE()
                     WHERE ID = @ID AND IsDeleted = 0;";
 
-                _db.ExecuteNonQuery(
+                await _db.ExecuteNonQueryAsync(
                     updateSql,
                     new[]
                     {
@@ -782,7 +782,7 @@ namespace Khel_Akhel_Server.Controllers.Contact
                     SET IsDeleted = 1, ModifiedDate = GETDATE()
                     WHERE ID = @ID AND IsDeleted = 0;";
 
-                _db.ExecuteNonQuery(
+                await _db.ExecuteNonQueryAsync(
                     deleteSql,
                     new[] { new SqlParameter("@ID", inquiryId) }
                 );

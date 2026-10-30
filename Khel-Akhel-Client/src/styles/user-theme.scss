@@ -1,198 +1,250 @@
+/* ==========================================================================
+   KHEL-AKHEL STOREFRONT THEME — "the studio notebook"
+   --------------------------------------------------------------------------
+   One ink (kattha, from the hand-drawn logo) on warm paper. A serif speaks,
+   a sans works. Hairlines instead of shadows. Square image corners.
+
+   Section 1 holds the new design tokens (--ka-*). Section 2 maps every older
+   --user-* name onto them so existing page styles keep working while pages
+   move over. Section 3 holds shared storefront building blocks (titles,
+   labels, buttons, fields, reveal) scoped to .user-layout-container so the
+   admin dashboard is never affected.
+   ========================================================================== */
+
 :root {
   /* ------------------------------------------------------------------------
-     1. Brand Color Palette
+     1. Design tokens
      ------------------------------------------------------------------------ */
-  /* Core Brand Colors */
-  --user-navy: #34392c;
-  --user-navy-hover: #25291f;
-  --user-navy-dark: #25251f;
-  --user-navy-light: #505746;
-  --user-navy-soft: rgba(52, 57, 44, 0.07);
 
-  --user-terracotta: #bd754f;
-  --user-terracotta-hover: #985b3d;
-  --user-terracotta-light: #c98a68;
-  --user-terracotta-soft: rgba(189, 117, 79, 0.09);
+  /* Colour: paper & ink */
+  --ka-paper: #faf8f3; /* page background */
+  --ka-limewash: #f1ede5; /* image wells, quiet bands, input fills */
+  --ka-hairline: #e5dfd5; /* rules and borders */
+  --ka-hairline-strong: #d3cbbe; /* borders that must read on limewash */
+  --ka-ink: #241d1a; /* text */
+  --ka-ink-soft: #5c534e; /* secondary text */
+  --ka-meta: #766d67; /* labels and dates on paper only */
 
-  --user-ochre: #d8c6a7;
-  --user-ochre-hover: #b49c75;
-  --user-ochre-light: #e3d5be;
-  --user-ochre-soft: rgba(216, 198, 167, 0.2);
+  /* Colour: brand voices */
+  --ka-kattha: #4a170e; /* the logo's ink: primary actions, footer */
+  --ka-kattha-deep: #2e0c06; /* pressed / hover on kattha */
+  --ka-kattha-soft: rgba(74, 23, 14, 0.06);
+  --ka-moss: #565a30; /* DARAS / nature: project kickers, success, in stock */
+  --ka-haldi: #e2b23f; /* spark only: ticks, dots, focus marks (never text on paper) */
+  --ka-clay: #a8573a; /* warm accent: hover, sale, saved */
+  --ka-alert: #a3372a;
 
-  --user-ivory: #fcfbf8;
-  --user-charcoal: #25251f;
-  --user-sage: #d8dfd0;
+  /* Colour on dark (kattha) ground */
+  --ka-on-dark: #faf8f3;
+  --ka-on-dark-soft: rgba(250, 248, 243, 0.72);
+  --ka-on-dark-rule: rgba(250, 248, 243, 0.16);
 
-  /* Khel Akhel brand: header & footer
-     Kattha maroon comes from the hand-drawn logo. Haldi is the one loud
-     colour. Rani + kesar are phulkari embroidery threads, used sparingly. */
-  --user-maroon: #45120a;
-  --user-maroon-soft: rgba(69, 18, 10, 0.08);
-  --user-haldi: #f2c230;
-  --user-rani: #b8336a;
-  --user-kesar: #e07b2e;
-  --user-gallery-white: #ffffff;
-  --user-limewash: #f7f4ee;
-  --user-cream: #f3ebdd;
-  --user-ink-slate: #574e4b;
-  --user-ink-mist: #8a817d;
-  --user-hairline: #eae3d8;
-  --user-scrim: rgba(26, 15, 12, 0.45);
+  /* Type families (loaded in src/index.html) */
+  --ka-serif: 'Cormorant Garamond', 'Cormorant', Garamond, 'Times New Roman', serif;
+  --ka-sans: 'Hanken Grotesk', 'Helvetica Neue', system-ui, -apple-system, 'Segoe UI', Roboto,
+    sans-serif;
+  --ka-gurmukhi: 'Baloo Paaji 2', 'Mukta Mahee', sans-serif;
+
+  /* Type scale (fluid) */
+  --ka-fs-statement: clamp(2.5rem, 1.4rem + 5vw, 6rem);
+  --ka-fs-h1: clamp(2.25rem, 1.5rem + 3.2vw, 4.25rem);
+  --ka-fs-h2: clamp(1.75rem, 1.3rem + 1.9vw, 2.75rem);
+  --ka-fs-h3: clamp(1.375rem, 1.2rem + 0.7vw, 1.75rem);
+  --ka-fs-item: clamp(1.125rem, 1.05rem + 0.35vw, 1.375rem);
+  --ka-fs-lede: clamp(1.0625rem, 1rem + 0.3vw, 1.25rem);
+  --ka-fs-body: 1rem;
+  --ka-fs-small: 0.875rem;
+  --ka-fs-label: clamp(0.6875rem, 0.66rem + 0.1vw, 0.75rem);
+  --ka-tracking-label: 0.14em;
+  --ka-measure: 62ch;
+
+  /* Space (one scale) */
+  --ka-s1: 4px;
+  --ka-s2: 8px;
+  --ka-s3: 12px;
+  --ka-s4: 16px;
+  --ka-s5: 24px;
+  --ka-s6: 40px;
+  --ka-s7: 64px;
+  --ka-s8: 96px;
+  --ka-s9: 160px;
+  --ka-section: clamp(64px, 10vw, 160px);
+
+  /* Grid */
+  --ka-max: 1440px;
+  --ka-gutter: clamp(20px, 4vw, 64px);
+  --ka-gap: clamp(16px, 1.8vw, 24px);
+
+  /* Shape & motion */
+  --ka-radius: 2px;
+  --ka-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ka-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
   /* ------------------------------------------------------------------------
-     2. Surface & Background Tokens
+     2. Older names, mapped onto the new tokens (do not use in new code)
      ------------------------------------------------------------------------ */
-  --user-bg: #fcfbf8;
-  --user-surface: #ffffff;
-  --user-surface-alt: #f3efe6;
-  --user-surface-elevated: #ffffff; /* Clean white elevated panels */
-  --user-surface-translucent: rgba(252, 251, 248, 0.97);
-  --user-surface-drawer: #fcfbf8;
+  --user-navy: var(--ka-kattha);
+  --user-navy-hover: var(--ka-kattha-deep);
+  --user-navy-dark: var(--ka-kattha-deep);
+  --user-navy-light: var(--ka-ink-soft);
+  --user-navy-soft: var(--ka-kattha-soft);
 
-  /* ------------------------------------------------------------------------
-     3. Typography & Text Color Tokens (WCAG AA / AAA Accessible)
-     ------------------------------------------------------------------------ */
-  --user-text-primary: var(--user-charcoal);
-  --user-text-secondary: #565c65; /* Secondary descriptive text */
-  --user-text-muted: #7e848d; /* Meta, captions, timestamps */
-  --user-text-subtle: #9c9990; /* Minimal decorative text */
-  --user-text-inverse: #ffffff; /* White on dark backgrounds */
-  --user-text-on-navy: #f5f1e8; /* Warm Ivory text on Deep Navy surfaces */
+  --user-terracotta: var(--ka-clay);
+  --user-terracotta-hover: #8c4630;
+  --user-terracotta-light: #c07a5c;
+  --user-terracotta-soft: rgba(168, 87, 58, 0.09);
+
+  --user-ochre: var(--ka-hairline-strong);
+  --user-ochre-hover: var(--ka-meta);
+  --user-ochre-light: var(--ka-hairline);
+  --user-ochre-soft: rgba(229, 223, 213, 0.4);
+
+  --user-ivory: var(--ka-paper);
+  --user-charcoal: var(--ka-ink);
+  --user-sage: var(--ka-limewash);
+
+  --user-maroon: var(--ka-kattha);
+  --user-maroon-soft: var(--ka-kattha-soft);
+  --user-haldi: var(--ka-haldi);
+  --user-rani: var(--ka-clay); /* rani retired from the interface: warm clay takes its place */
+  --user-kesar: var(--ka-clay);
+  --user-gallery-white: var(--ka-paper);
+  --user-limewash: var(--ka-limewash);
+  --user-cream: var(--ka-limewash);
+  --user-ink-slate: var(--ka-ink-soft);
+  --user-ink-mist: var(--ka-meta);
+  --user-hairline: var(--ka-hairline);
+  --user-scrim: rgba(20, 12, 9, 0.5);
+  --user-sepia: var(--ka-clay);
+  --user-font-calligraphy: var(--ka-serif);
+
+  --user-bg: var(--ka-paper);
+  --user-surface: var(--ka-paper);
+  --user-surface-alt: var(--ka-limewash);
+  --user-surface-elevated: var(--ka-paper);
+  --user-surface-translucent: rgba(250, 248, 243, 0.97);
+  --user-surface-drawer: var(--ka-paper);
+
+  --user-text-primary: var(--ka-ink);
+  --user-text-secondary: var(--ka-ink-soft);
+  --user-text-muted: var(--ka-meta);
+  --user-text-subtle: var(--ka-meta);
+  --user-text-inverse: var(--ka-on-dark);
+  --user-text-on-navy: var(--ka-on-dark);
   --user-text-on-terracotta: #ffffff;
 
-  /* Font Families (loaded from Google Fonts in src/index.html)
-     Urbanist: one clean geometric sans for everything, light for reading,
-     spaced capitals for navigation. Instrument Serif: poetic lines only. */
-  --user-font-serif: 'Instrument Serif', Georgia, 'Times New Roman', serif;
-  --user-font-sans: 'Urbanist', 'Futura', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --user-font-gurmukhi: 'Baloo Paaji 2', 'Mukta Mahee', sans-serif;
+  --user-font-serif: var(--ka-serif);
+  --user-font-sans: var(--ka-sans);
+  --user-font-gurmukhi: var(--ka-gurmukhi);
 
-  /* Font Weights */
   --user-fw-regular: 400;
   --user-fw-medium: 500;
   --user-fw-semibold: 600;
-  --user-fw-bold: 700;
+  --user-fw-bold: 600;
 
-  /* Restrained Type Scale */
-  --user-fs-display: clamp(2rem, 3.5vw + 1rem, 3.25rem);
-  --user-fs-h1: clamp(1.75rem, 2.4vw + 1rem, 2.5rem);
-  --user-fs-h2: clamp(1.35rem, 1.6vw + 0.8rem, 1.875rem);
-  --user-fs-h3: clamp(1.15rem, 1vw + 0.75rem, 1.35rem);
-  --user-fs-body: 1rem;
-  --user-fs-body-sm: 0.875rem;
+  --user-fs-display: var(--ka-fs-statement);
+  --user-fs-h1: var(--ka-fs-h1);
+  --user-fs-h2: var(--ka-fs-h2);
+  --user-fs-h3: var(--ka-fs-h3);
+  --user-fs-body: var(--ka-fs-body);
+  --user-fs-body-sm: var(--ka-fs-small);
   --user-fs-caption: 0.75rem;
-  --user-fs-button: 0.875rem;
+  --user-fs-button: 0.8125rem;
 
-  /* Storefront page scale: every customer page uses these, so titles,
-     eyebrows and intro text read the same from page to page.
-     Instrument Serif ships in one weight (400): never bold it. */
-  --user-fs-page-title: clamp(2.5rem, 5vw, 4.25rem); /* page h1 */
-  --user-fs-form-title: clamp(2rem, 3.4vw, 2.5rem); /* sign-in / form card h1 */
-  --user-fs-section-title: clamp(1.6rem, 2.6vw, 2.125rem); /* h2 inside a page */
-  --user-fs-card-title: 1.375rem; /* card / item heading */
-  --user-fs-lede: 1rem; /* intro paragraph under a title */
-  --user-fs-eyebrow: 0.75rem; /* spaced capitals */
-  --user-tracking-caps: 0.09em;
-  --user-lh-title: 1.02;
-  --user-lh-lede: 1.7;
+  --user-fs-page-title: var(--ka-fs-h1);
+  --user-fs-form-title: clamp(2.25rem, 1.8rem + 1.6vw, 3rem);
+  --user-fs-section-title: var(--ka-fs-h2);
+  --user-fs-card-title: var(--ka-fs-item);
+  --user-fs-lede: var(--ka-fs-lede);
+  --user-fs-eyebrow: var(--ka-fs-label);
+  --user-tracking-caps: var(--ka-tracking-label);
+  --user-lh-title: 1.04;
+  --user-lh-lede: 1.6;
 
-  /* Line Heights & Letter Spacing */
-  --user-lh-tight: 1.2;
-  --user-lh-heading: 1.3;
-  --user-lh-normal: 1.55;
+  --user-lh-tight: 1.15;
+  --user-lh-heading: 1.2;
+  --user-lh-normal: 1.6;
   --user-lh-relaxed: 1.7;
 
-  --user-tracking-tight: -0.02em;
+  --user-tracking-tight: -0.01em;
   --user-tracking-normal: 0;
   --user-tracking-wide: 0.05em;
   --user-tracking-wider: 0.12em;
   --user-tracking-widest: 0.2em;
 
-  /* ------------------------------------------------------------------------
-     4. Borders & Dividers
-     ------------------------------------------------------------------------ */
-  --user-border: #d9d3c6; /* Standard structural borders */
-  --user-border-subtle: #e8e2d6; /* Subtle dividers & card outlines */
-  --user-border-strong: #bfb5a3; /* Active or prominent borders */
-  --user-border-navy: rgba(31, 53, 87, 0.18);
-  --user-border-dark-section: rgba(245, 241, 232, 0.15); /* Dividers on navy */
+  --user-border: var(--ka-hairline-strong);
+  --user-border-subtle: var(--ka-hairline);
+  --user-border-strong: var(--ka-meta);
+  --user-border-navy: rgba(74, 23, 14, 0.18);
+  --user-border-dark-section: var(--ka-on-dark-rule);
 
-  /* ------------------------------------------------------------------------
-     5. Feedback & Semantic States
-     ------------------------------------------------------------------------ */
-  --user-success: #2d7370; /* Deep craft teal */
-  --user-success-bg: rgba(45, 115, 112, 0.12);
-  --user-success-border: rgba(45, 115, 112, 0.28);
+  --user-success: var(--ka-moss);
+  --user-success-bg: rgba(86, 90, 48, 0.1);
+  --user-success-border: rgba(86, 90, 48, 0.3);
+  --user-warning: #8a6416;
+  --user-warning-bg: rgba(226, 178, 63, 0.16);
+  --user-warning-border: rgba(226, 178, 63, 0.4);
+  --user-error: var(--ka-alert);
+  --user-error-bg: rgba(163, 55, 42, 0.08);
+  --user-error-border: rgba(163, 55, 42, 0.3);
+  --user-info: var(--ka-ink);
+  --user-info-bg: var(--ka-limewash);
+  --user-info-border: var(--ka-hairline-strong);
 
-  --user-warning: #b07b22; /* Muted amber */
-  --user-warning-bg: rgba(217, 164, 65, 0.14);
-  --user-warning-border: rgba(217, 164, 65, 0.3);
+  --user-disabled-bg: var(--ka-limewash);
+  --user-disabled-text: #9a928c;
+  --user-disabled-border: var(--ka-hairline);
 
-  --user-error: #a83f32; /* Crimson terracotta */
-  --user-error-bg: rgba(168, 63, 50, 0.12);
-  --user-error-border: rgba(168, 63, 50, 0.28);
+  --user-focus-ring: 0 0 0 2px var(--ka-paper), 0 0 0 3px var(--ka-ink);
+  --user-focus-ring-terracotta: 0 0 0 2px var(--ka-paper), 0 0 0 3px var(--ka-kattha);
 
-  --user-info: #1f3557; /* Deep navy */
-  --user-info-bg: rgba(31, 53, 87, 0.08);
-  --user-info-border: rgba(31, 53, 87, 0.2);
+  --user-space-3xs: var(--ka-s1);
+  --user-space-2xs: var(--ka-s2);
+  --user-space-xs: var(--ka-s3);
+  --user-space-sm: var(--ka-s4);
+  --user-space-md: var(--ka-s5);
+  --user-space-lg: 32px;
+  --user-space-xl: 48px;
+  --user-space-2xl: 72px;
+  --user-space-3xl: var(--ka-s8);
 
-  /* Disabled State Tokens */
-  --user-disabled-bg: #e8e4da;
-  --user-disabled-text: #9a978e;
-  --user-disabled-border: #d4cebf;
-
-  /* Focus & Interactive States */
-  --user-focus-ring: 0 0 0 3px rgba(31, 53, 87, 0.22);
-  --user-focus-ring-terracotta: 0 0 0 3px rgba(180, 81, 50, 0.28);
-
-  /* ------------------------------------------------------------------------
-     6. Spacing, Sizing & Layout Tokens
-     ------------------------------------------------------------------------ */
-  --user-space-3xs: 0.25rem; /* 4px */
-  --user-space-2xs: 0.5rem; /* 8px */
-  --user-space-xs: 0.75rem; /* 12px */
-  --user-space-sm: 1rem; /* 16px */
-  --user-space-md: 1.5rem; /* 24px */
-  --user-space-lg: 2rem; /* 32px */
-  --user-space-xl: 3rem; /* 48px */
-  --user-space-2xl: 4.5rem; /* 72px */
-  --user-space-3xl: 6rem; /* 96px */
-
-  /* Containers & Gutters */
-  --user-container-max: 1280px;
+  --user-container-max: var(--ka-max);
   --user-container-narrow: 920px;
-  --user-gutter: clamp(1rem, 3.5vw, 2.5rem);
+  --user-gutter: var(--ka-gutter);
 
-  /* Layout Heights */
-  --user-header-height: 80px;
+  --user-header-height: 72px;
   --user-header-height-mobile: 60px;
-  --user-mobile-drawer-width: min(340px, 86vw);
+  --user-mobile-drawer-width: 100vw;
 
-  /* Border Radii */
-  --user-radius-xs: 3px;
-  --user-radius-sm: 6px;
-  --user-radius-md: 10px;
-  --user-radius-lg: 16px;
+  --user-radius-xs: var(--ka-radius);
+  --user-radius-sm: var(--ka-radius);
+  --user-radius-md: var(--ka-radius);
+  --user-radius-lg: var(--ka-radius);
   --user-radius-pill: 9999px;
 
-  /* Elevation Shadows */
-  --user-shadow-xs: 0 1px 2px rgba(31, 53, 87, 0.04);
-  --user-shadow-sm: 0 2px 6px rgba(31, 53, 87, 0.06);
-  --user-shadow-md: 0 6px 16px -2px rgba(31, 53, 87, 0.08);
-  --user-shadow-lg: 0 14px 28px -4px rgba(31, 53, 87, 0.12);
-  --user-shadow-drawer: 8px 0 24px rgba(31, 53, 87, 0.15);
+  --user-shadow-xs: none;
+  --user-shadow-sm: none;
+  --user-shadow-md: 0 1px 0 var(--ka-hairline);
+  --user-shadow-lg: 0 24px 48px -24px rgba(36, 29, 26, 0.18);
+  --user-shadow-drawer: none;
 
-  /* Transitions */
-  --user-transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-  --user-transition-base: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  --user-transition-smooth: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  --user-transition-fast: 0.15s var(--ka-ease);
+  --user-transition-base: 0.25s var(--ka-ease);
+  --user-transition-smooth: 0.45s var(--ka-ease-out);
 
-  /* ------------------------------------------------------------------------
-     7. Backward Compatibility Bridges
-     ------------------------------------------------------------------------ */
-  --user-primary: var(--user-navy);
-  --user-primary-dark: var(--user-navy-dark);
-  --user-accent: var(--user-terracotta);
+  --user-primary: var(--ka-kattha);
+  --user-primary-dark: var(--ka-kattha-deep);
+  --user-accent: var(--ka-clay);
+}
+
+/* The admin dashboard shares a few components (e.g. the loader) that read
+   --user-* tokens. Pin those to their original values inside the admin so the
+   storefront redesign never changes how the dashboard looks. */
+app-admin-layout,
+app-admin-login {
+  --user-navy: #34392c;
+  --user-border: #d9d3c6;
+  --user-text-secondary: #565c65;
 }
 
 /* Smooth in-page scrolling (back to top, skip link, #anchors).
@@ -208,12 +260,14 @@ html {
 }
 
 /* ==========================================================================
-   Storefront Root Container Scoping
+   3. Storefront root and shared building blocks
    ========================================================================== */
 .user-layout-container {
-  font-family: var(--user-font-sans);
-  color: var(--user-text-primary);
-  background-color: var(--user-bg);
+  font-family: var(--ka-sans);
+  font-size: var(--ka-fs-body);
+  line-height: 1.6;
+  color: var(--ka-ink);
+  background-color: var(--ka-paper);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -222,6 +276,231 @@ html {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'kern', 'liga';
+
+  ::selection {
+    background: rgba(226, 178, 63, 0.38);
+    color: var(--ka-ink);
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  /* --- Page frame ------------------------------------------------------ */
+  .ka-wrap {
+    width: 100%;
+    max-width: var(--ka-max);
+    margin-inline: auto;
+    padding-inline: var(--ka-gutter);
+  }
+
+  /* --- Type ------------------------------------------------------------- */
+  .ka-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6em;
+    margin: 0;
+    font-family: var(--ka-sans);
+    font-size: var(--ka-fs-label);
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: var(--ka-tracking-label);
+    text-transform: uppercase;
+    color: var(--ka-meta);
+  }
+
+  .ka-num {
+    font-family: var(--ka-sans);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--ka-fs-label);
+    letter-spacing: 0.08em;
+    color: var(--ka-meta);
+  }
+
+  .ka-statement {
+    margin: 0;
+    font-family: var(--ka-serif);
+    font-size: var(--ka-fs-statement);
+    font-weight: 400;
+    font-style: italic;
+    line-height: 1;
+    letter-spacing: -0.015em;
+    color: var(--ka-ink);
+  }
+
+  .ka-h1,
+  .ka-h2,
+  .ka-h3 {
+    margin: 0;
+    font-family: var(--ka-serif);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    color: var(--ka-ink);
+    text-wrap: balance;
+
+    em {
+      font-style: italic;
+    }
+  }
+
+  .ka-h1 {
+    font-size: var(--ka-fs-h1);
+    line-height: 1.04;
+  }
+
+  .ka-h2 {
+    font-size: var(--ka-fs-h2);
+    line-height: 1.1;
+  }
+
+  .ka-h3 {
+    font-size: var(--ka-fs-h3);
+    line-height: 1.2;
+  }
+
+  .ka-lede {
+    margin: 0;
+    max-width: var(--ka-measure);
+    font-size: var(--ka-fs-lede);
+    font-weight: 300;
+    line-height: 1.6;
+    color: var(--ka-ink-soft);
+    text-wrap: pretty;
+  }
+
+  /* DARAS-style break  : : :  */
+  .ka-break {
+    display: block;
+    margin: 0;
+    font-family: var(--ka-sans);
+    font-size: 0.75rem;
+    letter-spacing: 0.6em;
+    color: var(--ka-meta);
+    text-align: left;
+    user-select: none;
+  }
+
+  /* --- Links & buttons ------------------------------------------------- */
+  .ka-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0 0 3px;
+    border: 0;
+    background: linear-gradient(currentColor, currentColor) 0 100% / 100% 1px no-repeat;
+    color: var(--ka-ink);
+    font-family: var(--ka-sans);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      background-size 0.45s var(--ka-ease),
+      color 0.2s ease;
+
+    .ka-arrow {
+      transition: transform 0.35s var(--ka-ease);
+    }
+
+    &:hover {
+      color: var(--ka-kattha);
+      background-size: 40% 1px;
+
+      .ka-arrow {
+        transform: translateX(4px);
+      }
+    }
+  }
+
+  .ka-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6em;
+    min-height: 48px;
+    padding: 0 28px;
+    border: 1px solid var(--ka-kattha);
+    border-radius: var(--ka-radius);
+    background: var(--ka-kattha);
+    color: var(--ka-on-dark);
+    font-family: var(--ka-sans);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      background-color 0.25s ease,
+      border-color 0.25s ease,
+      color 0.25s ease;
+
+    &:hover {
+      background: var(--ka-kattha-deep);
+      border-color: var(--ka-kattha-deep);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  .ka-btn--ghost {
+    background: transparent;
+    color: var(--ka-kattha);
+
+    &:hover {
+      background: var(--ka-kattha);
+      color: var(--ka-on-dark);
+    }
+  }
+
+  /* --- Image wells ----------------------------------------------------- */
+  .ka-frame {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    background: var(--ka-limewash);
+
+    > img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  /* --- Reveal on scroll (driven by the kaReveal directive) ------------- */
+  .ka-reveal {
+    opacity: 0;
+    transform: translateY(14px);
+    transition:
+      opacity 0.9s var(--ka-ease-out),
+      transform 0.9s var(--ka-ease-out);
+
+    &.is-revealed {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* the frame stays put (so it can be observed); its photograph settles in */
+  .ka-reveal-img > img:first-of-type {
+    opacity: 0;
+    transform: scale(1.06);
+    transition:
+      opacity 1s ease,
+      transform 1.6s var(--ka-ease-out);
+  }
+
+  .ka-reveal-img.is-revealed > img:first-of-type {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* Skip to main content accessibility link */
@@ -230,27 +509,26 @@ html {
   top: -100px;
   left: 1rem;
   z-index: 10000;
-  background-color: var(--user-navy);
-  color: #ffffff;
+  background-color: var(--ka-kattha);
+  color: var(--ka-on-dark);
   padding: 0.65rem 1.25rem;
   font-size: 0.875rem;
-  font-weight: var(--user-fw-semibold);
-  border-radius: var(--user-radius-sm);
+  font-weight: 500;
+  border-radius: var(--ka-radius);
   text-decoration: none;
-  box-shadow: var(--user-shadow-md);
   transition: top var(--user-transition-fast);
 
   &:focus {
     top: 1rem;
-    outline: 2px solid var(--user-ochre);
+    outline: 2px solid var(--ka-haldi);
     outline-offset: 2px;
   }
 }
 
 /* Focus visible utility */
 .user-layout-container :focus-visible {
-  outline: 2px solid var(--user-navy);
-  outline-offset: 2px;
+  outline: 1.5px solid var(--ka-ink);
+  outline-offset: 3px;
 }
 
 /* Reduced motion preference */
@@ -262,5 +540,11 @@ html {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  .user-layout-container .ka-reveal,
+  .user-layout-container .ka-reveal-img > img:first-of-type {
+    opacity: 1;
+    transform: none;
   }
 }

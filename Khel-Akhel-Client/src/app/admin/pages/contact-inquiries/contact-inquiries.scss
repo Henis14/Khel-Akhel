@@ -83,8 +83,8 @@
   gap: 0.75rem;
 
   &-primary {
-    grid-template-columns: 2fr 1fr;
-    align-items: flex-end;
+    grid-template-columns: minmax(0, 1fr) minmax(170px, 220px) auto;
+    align-items: end;
   }
 
   &-secondary {
@@ -133,6 +133,7 @@
 
 .filter-btn {
   display: inline-flex;
+  min-height: 38px;
   align-items: center;
   gap: 0.35rem;
 }
@@ -361,6 +362,7 @@
   max-height: 90vh;
   display: flex;
   flex-direction: column;
+  padding: 0;
   background: var(--admin-surface, #ffffff);
   border-radius: var(--admin-radius-lg, 16px);
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);

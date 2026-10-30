@@ -422,7 +422,7 @@ namespace Khel_Akhel_Server.BL.Services
                 SET IsDeleted = 1, ModifiedDate = GETDATE()
                 WHERE cart_id = @CartId AND product_id = @ProductId AND IsDeleted = 0";
 
-            int rows = _db.ExecuteNonQuery(removeSql, new[]
+            int rows = await _db.ExecuteNonQueryAsync(removeSql, new[]
             {
                 new SqlParameter("@CartId", cartId),
                 new SqlParameter("@ProductId", productId)
@@ -466,7 +466,7 @@ namespace Khel_Akhel_Server.BL.Services
                 SET IsDeleted = 1, ModifiedDate = GETDATE()
                 WHERE cart_id = @CartId AND IsDeleted = 0";
 
-            _db.ExecuteNonQuery(clearSql, new[]
+            await _db.ExecuteNonQueryAsync(clearSql, new[]
             {
                 new SqlParameter("@CartId", cartId)
             });

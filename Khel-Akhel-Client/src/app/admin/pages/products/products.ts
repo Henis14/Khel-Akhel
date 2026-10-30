@@ -290,7 +290,7 @@ export class ProductsComponent implements OnInit {
       const updatePayload: ProductUpdateRequest = {
         encryptedProductId: this.selectedProduct.encryptedProductId,
         encryptedCategoryId: this.productForm.value.encryptedCategoryId,
-        encryptedSubCategoryId: this.productForm.value.encryptedSubCategoryId || null,
+        encryptedSubCategoryId: this.productForm.value.encryptedSubCategoryId || '',
         productName: this.productForm.value.productName.trim(),
         sku: this.productForm.value.sku.trim(),
         shortDescription: this.productForm.value.shortDescription?.trim() || '',

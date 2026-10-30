@@ -328,3 +328,46 @@ BEGIN
         WHERE product_subcategory_id IS NOT NULL AND IsDeleted = 0;
 END
 GO
+
+GO
+
+-- Website statistics
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE name = 'UQ_drs_website_page_mst_PageKey'
+      AND object_id = OBJECT_ID('drs_website_page_mst')
+)
+BEGIN
+    CREATE UNIQUE NONCLUSTERED INDEX UQ_drs_website_page_mst_PageKey
+        ON drs_website_page_mst (PageKey)
+        WHERE IsDeleted = 0;
+END
+GO
+
+-- One counter row per page per day; also serves the "track" upsert lookup
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE name = 'UQ_drs_page_visit_daily_mst_page_VisitDate'
+      AND object_id = OBJECT_ID('drs_page_visit_daily_mst')
+)
+BEGIN
+    CREATE UNIQUE NONCLUSTERED INDEX UQ_drs_page_visit_daily_mst_page_VisitDate
+        ON drs_page_visit_daily_mst (page_id, VisitDate)
+        INCLUDE (VisitCount, UniqueVisitCount)
+        WHERE IsDeleted = 0;
+END
+GO
+
+-- Date-range reports (dashboard)
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE name = 'IX_drs_page_visit_daily_mst_VisitDate'
+      AND object_id = OBJECT_ID('drs_page_visit_daily_mst')
+)
+BEGIN
+    CREATE NONCLUSTERED INDEX IX_drs_page_visit_daily_mst_VisitDate
+        ON drs_page_visit_daily_mst (VisitDate)
+        INCLUDE (page_id, VisitCount, UniqueVisitCount)
+        WHERE IsDeleted = 0;
+END
+GO

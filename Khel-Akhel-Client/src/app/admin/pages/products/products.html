@@ -247,8 +247,8 @@
 
                             <div class="form-group col">
                 <label>SubCategory <span class="optional-hint" style="font-size: 0.75rem; color: #64748b; font-weight: normal;">(Optional)</span></label>
-                <select class="form-control" formControlName="encryptedSubCategoryId" [disabled]="modalSubCategories.length === 0">
-                  <option value="">{{ modalSubCategories.length === 0 ? '-- No SubCategories Available --' : '-- Optional: Select SubCategory --' }}</option>
+                <select class="form-control" formControlName="encryptedSubCategoryId">
+                  <option value="">{{ modalSubCategories.length === 0 ? 'No subcategories for this category' : 'None' }}</option>
                   @for (sub of modalSubCategories; track sub.encryptedSubCategoryId) {
                     <option [value]="sub.encryptedSubCategoryId">
                       {{ sub.subCategoryName }}

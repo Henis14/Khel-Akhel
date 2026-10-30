@@ -106,7 +106,6 @@
               >
                 <span class="topic-icon"><ng-container *ngTemplateOutlet="topicIcon; context: { $implicit: 'all' }" /></span>
                 <span class="topic-name">All questions</span>
-                <span class="topic-count">{{ faqs().length }}</span>
               </button>
             </li>
             @for (c of categories(); track c.name) {
@@ -119,7 +118,6 @@
                 >
                   <span class="topic-icon"><ng-container *ngTemplateOutlet="topicIcon; context: { $implicit: c.icon }" /></span>
                   <span class="topic-name">{{ c.name }}</span>
-                  <span class="topic-count">{{ counts().get(c.name) }}</span>
                 </button>
               </li>
             }
@@ -135,7 +133,7 @@
             @if (gi > 0) {
               <div class="faq-stitch" aria-hidden="true">
                 <span></span>
-                <svg viewBox="0 0 64 16" fill="none"><path d="M8 8 14 2l6 6-6 6Z" stroke="#b8336a" stroke-width="1.2" /><path d="M32 0l8 8-8 8-8-8Z" fill="#f2c230" /><path d="M44 8l6-6 6 6-6 6Z" stroke="#b8336a" stroke-width="1.2" /></svg>
+                <svg viewBox="0 0 64 16" fill="none"><path d="M8 8 14 2l6 6-6 6Z" stroke="#a8573a" stroke-width="1.2" /><path d="M32 0l8 8-8 8-8-8Z" fill="#e2b23f" /><path d="M44 8l6-6 6 6-6 6Z" stroke="#a8573a" stroke-width="1.2" /></svg>
                 <span></span>
               </div>
             }
@@ -143,7 +141,6 @@
               <div class="faq-group-head">
                 <span class="group-icon"><ng-container *ngTemplateOutlet="topicIcon; context: { $implicit: g.icon }" /></span>
                 <h2 class="faq-group-title">{{ g.name }}</h2>
-                <span class="group-count">{{ g.items.length }}</span>
               </div>
             }
             <ul class="faq-items" role="list">
@@ -157,7 +154,6 @@
                       [attr.aria-controls]="'a-' + f.encryptedFaqId"
                       (click)="toggle(f.encryptedFaqId)"
                     >
-                      <span class="faq-no" aria-hidden="true">{{ numbers().get(f.encryptedFaqId) }}</span>
                       <span class="faq-q-text">{{ f.question }}</span>
                       <span class="faq-icon" aria-hidden="true"></span>
                     </button>

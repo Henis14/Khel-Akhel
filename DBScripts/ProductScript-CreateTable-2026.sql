@@ -466,5 +466,35 @@ CREATE TABLE drs_password_reset_request_mst
         ModifiedDate DATETIME NULL
     );
 
+GO
 
+
+
+CREATE TABLE drs_website_page_mst (
+ID           BIGINT         IDENTITY (1, 1) NOT NULL PRIMARY KEY,
+PageKey      VARCHAR (50)   NOT NULL,
+PageName     NVARCHAR (100) NOT NULL,
+PagePath     NVARCHAR (200) NULL,
+DisplayOrder INT            DEFAULT 0 NOT NULL,
+IsActive     BIT            DEFAULT 1 NOT NULL,
+IsDeleted    BIT            DEFAULT 0 NOT NULL,
+CreatedDate  DATETIME       DEFAULT GETDATE() NOT NULL,
+ModifiedDate DATETIME       NULL
+);
+
+
+
+CREATE TABLE drs_page_visit_daily_mst (
+ID               BIGINT   IDENTITY (1, 1) NOT NULL PRIMARY KEY,
+page_id          BIGINT   NOT NULL,
+VisitDate        DATE     NOT NULL,
+VisitCount       INT      DEFAULT 0 NOT NULL,
+UniqueVisitCount INT      DEFAULT 0 NOT NULL,
+IsActive         BIT      DEFAULT 1 NOT NULL,
+IsDeleted        BIT      DEFAULT 0 NOT NULL,
+CreatedDate      DATETIME DEFAULT GETDATE() NOT NULL,
+ModifiedDate     DATETIME NULL,
+CONSTRAINT CK_drs_page_visit_daily_mst_VisitCount CHECK (VisitCount >= 0),
+CONSTRAINT CK_drs_page_visit_daily_mst_UniqueVisitCount CHECK (UniqueVisitCount >= 0 AND UniqueVisitCount <= VisitCount)
+);
 

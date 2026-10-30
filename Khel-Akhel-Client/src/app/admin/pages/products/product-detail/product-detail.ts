@@ -405,7 +405,7 @@ export class ProductDetailComponent implements OnInit {
     const payload: ProductUpdateRequest = {
       encryptedProductId: this.encryptedProductId,
       encryptedCategoryId: this.editForm.value.encryptedCategoryId,
-      encryptedSubCategoryId: this.editForm.value.encryptedSubCategoryId || null,
+      encryptedSubCategoryId: this.editForm.value.encryptedSubCategoryId || '',
       productName: this.editForm.value.productName.trim(),
       sku: this.editForm.value.sku.trim(),
       shortDescription: this.editForm.value.shortDescription?.trim() || '',

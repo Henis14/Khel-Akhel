@@ -1,49 +1,46 @@
-<main class="admin-login-shell">
-  <!-- LEFT ART PANEL -->
-  <section class="art-panel" aria-label="Khel-Akhel creative branding panel">
-    <!-- Layer 0: Background Layer -->
-    <div class="art-background">
-      <div class="art-panel__grain"></div>
+<main class="al-shell">
+  <!-- ============================ Brand panel ============================ -->
+  <section class="al-brand" aria-label="Khel Akhel studio dashboard">
+    <div class="al-brand-frame" aria-hidden="true"></div>
+
+    <img class="al-logo" src="/logo-light.png" alt="Khel Akhel" width="640" height="117" />
+
+    <div class="al-brand-copy">
+      <p class="al-brand-label">Studio dashboard</p>
+      <p class="al-brand-line">Where art becomes <em>an experience.</em></p>
     </div>
 
-    <!-- Layer 10: Content Safe Area (ALWAYS ABOVE DECORATIONS, NO OVERLAP) -->
-    <div class="art-content">
-      <div class="brand-header">
-        <h1 class="brand-title">KHEL AKHEL</h1>
-        <h2 class="brand-subtitle">ADMIN PORTAL</h2>
-        <p class="brand-tagline">Where art becomes an experience.</p>
-      </div>
-    </div>
+    <p class="al-brand-foot">A creative world by DARAS</p>
   </section>
 
-  <!-- RIGHT LOGIN PANEL -->
-  <section class="login-panel" aria-labelledby="admin-login-title">
-    <div class="login-card">
-      <div class="login-header">
-        <p class="eyebrow">ADMINISTRATIVE ACCESS</p>
-        <h2 id="admin-login-title">Sign In</h2>
-        <p class="subtitle">Enter your credentials to continue.</p>
-      </div>
+  <!-- ============================ Sign in ============================ -->
+  <section class="al-panel" aria-labelledby="admin-login-title">
+    <div class="al-card">
+      <header class="al-head">
+        <p class="al-eyebrow">Administrative access</p>
+        <h1 id="admin-login-title" class="al-title">Sign <em>in</em></h1>
+        <p class="al-subtitle">Enter your credentials to continue.</p>
+      </header>
 
       @if (errorMessage()) {
-        <div class="alert alert-danger">
+        <div class="al-alert" role="alert">
           {{ errorMessage() }}
         </div>
       }
 
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-        <div class="form-group">
-          <label for="userName">Email or Mobile Number</label>
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="al-form">
+        <div class="al-field">
+          <label for="userName">Email or mobile number</label>
           <input
             id="userName"
             type="text"
-            class="form-control"
+            class="al-input"
             [class.is-invalid]="f['userName'].touched && f['userName'].invalid"
             formControlName="userName"
             autocomplete="username"
           />
           @if (f['userName'].touched && f['userName'].invalid) {
-            <div class="invalid-feedback">
+            <div class="al-error">
               @if (f['userName'].errors?.['required']) {
                 <span>Email or mobile number is required.</span>
               }
@@ -51,33 +48,32 @@
           }
         </div>
 
-        <div class="form-group">
+        <div class="al-field">
           <label for="password">Password</label>
-          <div class="password-input-wrapper">
+          <div class="al-password">
             <input
               id="password"
               [type]="showPassword() ? 'text' : 'password'"
-              class="form-control password-input"
+              class="al-input"
               [class.is-invalid]="f['password'].touched && f['password'].invalid"
               formControlName="password"
               autocomplete="current-password"
             />
             <button
               type="button"
-              class="btn-toggle-password"
+              class="al-eye"
               (click)="togglePasswordVisibility()"
               [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
               [title]="showPassword() ? 'Hide password' : 'Show password'"
             >
               @if (!showPassword()) {
                 <svg
-                  class="eye-icon"
                   viewBox="0 0 24 24"
                   width="18"
                   height="18"
                   fill="none"
                   stroke="currentColor"
-                  stroke-width="2"
+                  stroke-width="1.5"
                   stroke-linecap="round"
                   stroke-linejoin="round"
                   aria-hidden="true"
@@ -87,13 +83,12 @@
                 </svg>
               } @else {
                 <svg
-                  class="eye-icon"
                   viewBox="0 0 24 24"
                   width="18"
                   height="18"
                   fill="none"
                   stroke="currentColor"
-                  stroke-width="2"
+                  stroke-width="1.5"
                   stroke-linecap="round"
                   stroke-linejoin="round"
                   aria-hidden="true"
@@ -107,7 +102,7 @@
             </button>
           </div>
           @if (f['password'].touched && f['password'].invalid) {
-            <div class="invalid-feedback">
+            <div class="al-error">
               @if (f['password'].errors?.['required']) {
                 <span>Password is required.</span>
               }
@@ -118,40 +113,53 @@
           }
         </div>
 
-        <div class="form-group captcha-group">
-          <label>Security CAPTCHA</label>
-          <div class="captcha-box-wrapper">
-            <div class="captcha-box" [class.loading]="captchaLoading()">
+        <div class="al-field">
+          <label for="captchaInput">Security code</label>
+          <div class="al-captcha">
+            <div class="al-captcha-box" [class.is-loading]="captchaLoading()">
               @if (captchaImage()) {
-                <img [src]="captchaImage()" alt="Security code" class="captcha-image" />
+                <img [src]="captchaImage()" alt="Security code" />
               } @else {
-                <span class="captcha-code">•••••</span>
+                <span class="al-captcha-dots">•••••</span>
               }
             </div>
             <button
               type="button"
-              class="btn-refresh-captcha"
+              class="al-refresh"
               (click)="loadCaptcha()"
               [disabled]="captchaLoading()"
               title="Refresh CAPTCHA"
+              aria-label="Get a new security code"
             >
-              <span class="refresh-icon" [class.spinning]="captchaLoading()">↻</span>
+              <svg
+                [class.is-spinning]="captchaLoading()"
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M20 11a8 8 0 1 0-2.3 5.7" />
+                <path d="M20 4v7h-7" />
+              </svg>
             </button>
+            <input
+              id="captchaInput"
+              type="text"
+              class="al-input al-captcha-input"
+              [class.is-invalid]="f['captcha'].touched && f['captcha'].invalid"
+              formControlName="captcha"
+              placeholder="Type the code"
+              maxlength="5"
+              autocomplete="off"
+            />
           </div>
-
-          <label for="captchaInput" class="captcha-input-label">Enter CAPTCHA</label>
-          <input
-            id="captchaInput"
-            type="text"
-            class="form-control captcha-input"
-            [class.is-invalid]="f['captcha'].touched && f['captcha'].invalid"
-            formControlName="captcha"
-            placeholder="Enter CAPTCHA"
-            maxlength="5"
-            autocomplete="off"
-          />
           @if (f['captcha'].touched && f['captcha'].invalid) {
-            <div class="invalid-feedback">
+            <div class="al-error">
               @if (f['captcha'].errors?.['required']) {
                 <span>CAPTCHA is required.</span>
               }
@@ -166,19 +174,16 @@
           }
         </div>
 
-        <button
-          type="submit"
-          class="btn btn-primary btn-block"
-          [disabled]="loading() || loginForm.invalid"
-        >
+        <button type="submit" class="al-submit" [disabled]="loading() || loginForm.invalid">
           <span>{{ loading() ? 'Signing In...' : 'Sign In' }}</span>
+          @if (!loading()) {
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          }
         </button>
 
-        <div class="card-footer-action" style="margin-top: 1.5rem; text-align: center">
-          <p class="admin-password-note" style="margin: 0; font-size: 0.8125rem; color: #64748b">
-            Forgot your admin password? Contact the system administrator.
-          </p>
-        </div>
+        <p class="al-note">Forgot your admin password? Contact the system administrator.</p>
       </form>
     </div>
   </section>

@@ -60,7 +60,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
 
         #region List Password Reset Requests
         [HttpGet("requests")]
-        public IActionResult GetRequests(
+        public async Task<IActionResult> GetRequests(
             [FromQuery] string status = "PENDING",
             [FromQuery] int pageIndex = 1,
             [FromQuery] int pageSize = 10,
@@ -76,7 +76,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                 if (pageSize < 1 || pageSize > 100) pageSize = 10;
 
                 // 1. Auto-mark expired tokens
-                _db.ExecuteNonQuery(@"
+                await _db.ExecuteNonQueryAsync(@"
                     UPDATE drs_password_reset_request_mst
                     SET Status = 'EXPIRED', ModifiedDate = GETDATE()
                     WHERE Status = 'LINK_ISSUED'
@@ -112,11 +112,11 @@ namespace Khel_Akhel_Server.Controllers.Auth
                     INNER JOIN drs_customer_mst c ON c.ID = r.customer_id
                     WHERE {whereClause}";
 
-                object? countObj = _db.ExecuteScalar(countQuery, parameters.ToArray());
+                object? countObj = await _db.ExecuteScalarAsync(countQuery, parameters.ToArray());
                 int totalRecords = countObj != null && countObj != DBNull.Value ? Convert.ToInt32(countObj) : 0;
 
                 // Query pending count badge
-                object? pendingCountObj = _db.ExecuteScalar(
+                object? pendingCountObj = await _db.ExecuteScalarAsync(
                     "SELECT COUNT(1) FROM drs_password_reset_request_mst WHERE Status = 'PENDING' AND IsDeleted = 0",
                     null
                 );
@@ -153,7 +153,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                     ORDER BY r.CreatedDate DESC
                     OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY";
 
-                DataTable dt = _db.ExecuteQuery(pagedQuery, parameters.ToArray());
+                DataTable dt = await _db.ExecuteQueryAsync(pagedQuery, parameters.ToArray());
 
                 var items = new List<PasswordResetRequestAdminDto>();
                 foreach (DataRow row in dt.Rows)
@@ -266,7 +266,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                     INNER JOIN drs_customer_mst c ON c.ID = r.customer_id
                     WHERE r.ID = @ID AND r.IsDeleted = 0";
 
-                DataTable dt = _db.ExecuteQuery(query, new[] { new SqlParameter("@ID", requestId) });
+                DataTable dt = await _db.ExecuteQueryAsync(query, new[] { new SqlParameter("@ID", requestId) });
                 if (dt.Rows.Count == 0)
                 {
                     sw.Stop();
@@ -459,7 +459,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                     INNER JOIN drs_customer_mst c ON c.ID = r.customer_id
                     WHERE r.ID = @ID AND r.IsDeleted = 0";
 
-                DataTable dt = _db.ExecuteQuery(query, new[] { new SqlParameter("@ID", requestId) });
+                DataTable dt = await _db.ExecuteQueryAsync(query, new[] { new SqlParameter("@ID", requestId) });
                 if (dt.Rows.Count == 0)
                 {
                     sw.Stop();
@@ -475,7 +475,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
 
                 long customerId = Convert.ToInt64(dt.Rows[0]["customer_id"]);
 
-                _db.ExecuteNonQuery(@"
+                await _db.ExecuteNonQueryAsync(@"
                     UPDATE drs_password_reset_request_mst
                     SET Status = 'REJECTED',
                         TokenHash = NULL,
@@ -572,7 +572,7 @@ namespace Khel_Akhel_Server.Controllers.Auth
                     FROM drs_customer_mst
                     WHERE ID = @ID AND IsDeleted = 0";
 
-                DataTable dt = _db.ExecuteQuery(custQuery, new[] { new SqlParameter("@ID", targetCustomerId) });
+                DataTable dt = await _db.ExecuteQueryAsync(custQuery, new[] { new SqlParameter("@ID", targetCustomerId) });
                 if (dt.Rows.Count == 0)
                 {
                     sw.Stop();

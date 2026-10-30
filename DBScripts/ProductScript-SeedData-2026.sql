@@ -309,3 +309,45 @@ WHERE NOT EXISTS (
 );
 GO
 
+
+-- Website statistics: storefront pages that are counted
+INSERT INTO drs_website_page_mst (
+    PageKey,
+    PageName,
+    PagePath,
+    DisplayOrder,
+    IsActive,
+    IsDeleted,
+    CreatedDate
+)
+SELECT seed.PageKey,
+       seed.PageName,
+       seed.PagePath,
+       seed.DisplayOrder,
+       1,
+       0,
+       GETDATE()
+FROM (VALUES
+    ('home', N'Home', N'/', 1),
+    ('shop', N'Shop', N'/products', 2),
+    ('product', N'Product views', NULL, 3),
+    ('projects', N'Projects', N'/projects', 4),
+    ('commissions', N'Commissions', N'/commissions', 5),
+    ('about', N'About', N'/about', 6),
+    ('contact', N'Contact', N'/contact', 7),
+    ('faq', N'FAQ', N'/faq', 8),
+    ('wishlist', N'Wishlist', N'/wishlist', 9),
+    ('account', N'My account', N'/account', 10),
+    ('login', N'Sign in', N'/login', 11),
+    ('register', N'Register', N'/register', 12),
+    ('track-order', N'Track order', N'/track-order', 13),
+    ('terms', N'Terms & conditions', N'/terms-conditions', 14),
+    ('privacy', N'Privacy policy', N'/privacy-policy', 15)
+) AS seed (PageKey, PageName, PagePath, DisplayOrder)
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM drs_website_page_mst AS existing
+    WHERE existing.PageKey = seed.PageKey
+      AND existing.IsDeleted = 0
+);
+GO

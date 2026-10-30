@@ -11,6 +11,7 @@ using static Khel_Akhel_Server.Models.CommonResponse;
 
 namespace Khel_Akhel_Server.Controllers.Product
 {
+    [InvalidatesPublicCache(PublicCacheRegions.Products)]
     [ApiController]
     [Route("api/product-image")]
     public class ProductImageController : ControllerBase

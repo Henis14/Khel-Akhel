@@ -116,3 +116,150 @@
     }
   }
 }
+
+
+/* ==========================================================================
+   Storefront 404: a quiet studio page (the admin keeps the card above)
+   ========================================================================== */
+.ka-404 {
+  display: flex;
+  min-height: 100vh;
+  min-height: 100dvh;
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(1.5rem, 4vw, 2.5rem) var(--ka-gutter, 24px) clamp(3rem, 8vw, 6rem);
+  color: var(--ka-ink, #241d1a);
+  background: var(--ka-paper, #faf8f3);
+  font-family: var(--ka-sans, sans-serif);
+  text-align: center;
+}
+
+.ka-404-logo {
+  transition: opacity 0.25s ease;
+
+  &:hover {
+    opacity: 0.75;
+  }
+
+  img {
+    display: block;
+    width: clamp(130px, 12vw, 170px);
+    height: auto;
+  }
+}
+
+.ka-404-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  max-width: 44rem;
+  padding-top: 2rem;
+}
+
+.ka-404-art {
+  width: min(240px, 60vw);
+  height: auto;
+  margin-bottom: 0.5rem;
+}
+
+.ka-404-path {
+  fill: none;
+  stroke: var(--ka-kattha, #4a170e);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-dasharray: 4 7;
+  animation: ka404-walk 14s linear infinite;
+}
+
+.ka-404-dot {
+  fill: var(--ka-haldi, #e2b23f);
+}
+
+@keyframes ka404-walk {
+  to {
+    stroke-dashoffset: -220;
+  }
+}
+
+.ka-404-label {
+  margin: 0;
+  font-size: var(--ka-fs-label, 0.75rem);
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ka-kattha, #4a170e);
+}
+
+.ka-404-title {
+  margin: 0;
+  font-family: var(--ka-serif, serif);
+  font-size: clamp(2.75rem, 1.6rem + 4.6vw, 6rem);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.02em;
+
+  em {
+    display: block;
+    font-style: italic;
+    color: var(--ka-kattha, #4a170e);
+  }
+}
+
+.ka-404-text {
+  max-width: 46ch;
+  margin: 0;
+  font-size: var(--ka-fs-lede, 1.125rem);
+  font-weight: 300;
+  line-height: 1.7;
+  color: var(--ka-ink-soft, #5c534e);
+}
+
+.ka-404-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 2rem;
+  margin-top: 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--ka-hairline, #e5dfd5);
+
+  a {
+    font-family: var(--ka-serif, serif);
+    font-size: clamp(1.375rem, 1.2rem + 0.6vw, 1.75rem);
+    color: var(--ka-ink, #241d1a);
+    text-decoration: none;
+    transition: color 0.2s ease;
+
+    &:hover {
+      font-style: italic;
+      color: var(--ka-kattha, #4a170e);
+    }
+  }
+}
+
+.ka-404-back {
+  margin-top: 0.75rem;
+  padding: 0.5rem 0;
+  border: 0;
+  color: var(--ka-ink-soft, #5c534e);
+  background: none;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--ka-kattha, #4a170e);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ka-404-path {
+    animation: none;
+  }
+}

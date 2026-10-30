@@ -243,3 +243,20 @@ BEGIN
         CHECK CONSTRAINT FK_drs_product_mst_product_subcategory_id;
 END
 GO
+
+GO
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.foreign_keys
+    WHERE name = 'FK_drs_page_visit_daily_mst_page_id'
+      AND parent_object_id = OBJECT_ID('drs_page_visit_daily_mst')
+)
+BEGIN
+    ALTER TABLE drs_page_visit_daily_mst WITH CHECK
+        ADD CONSTRAINT FK_drs_page_visit_daily_mst_page_id
+        FOREIGN KEY (page_id) REFERENCES drs_website_page_mst (ID);
+
+    ALTER TABLE drs_page_visit_daily_mst
+        CHECK CONSTRAINT FK_drs_page_visit_daily_mst_page_id;
+END
+GO

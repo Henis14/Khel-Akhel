@@ -11,6 +11,7 @@ using static Khel_Akhel_Server.Models.CommonResponse;
 
 namespace Khel_Akhel_Server.Controllers.Product
 {
+    [InvalidatesPublicCache(PublicCacheRegions.Products)]
     [ApiController]
     [Route("api/product")]
     public class ProductController : ControllerBase
@@ -73,6 +74,21 @@ namespace Khel_Akhel_Server.Controllers.Product
                     );
                 }
 
+                if (string.IsNullOrWhiteSpace(request.EncryptedCategoryId))
+                {
+                    sw.Stop();
+                    Logs.Warning("ProductCreate rejected | Category is missing");
+                    return BadRequest(
+                        new ApiResponse
+                        {
+                            Success = false,
+                            StatusCode = 400,
+                            Message = "VALIDATION_FAILED",
+                            Errors = new List<string> { "Product category is required." },
+                        }
+                    );
+                }
+
                 if (
                     !_encryption.TryDecrypt(request.EncryptedCategoryId, out long categoryId)
                     || categoryId <= 0
@@ -118,7 +134,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                         @"SELECT TOP 1 SubCategoryName, product_category_id
                           FROM drs_product_subcategory_mst WITH (NOLOCK)
                           WHERE ID = @SubCategoryID AND IsDeleted = 0 AND IsActive = 1";
-                    DataTable dtSubCat = _db.ExecuteQuery(
+                    DataTable dtSubCat = await _db.ExecuteQueryAsync(
                         checkSubCatQuery,
                         new[] { new SqlParameter("@SubCategoryID", decSubId) }
                     );
@@ -219,7 +235,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                     WHERE ID = @CategoryID AND IsDeleted = 0 AND IsActive = 1";
 
                 int categoryExists = Convert.ToInt32(
-                    _db.ExecuteScalar(
+                    await _db.ExecuteScalarAsync(
                         checkCategoryQuery,
                         new[] { new SqlParameter("@CategoryID", categoryId) }
                     ) ?? 0
@@ -250,7 +266,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                     WHERE SKU = @SKU AND IsDeleted = 0";
 
                 int skuExists = Convert.ToInt32(
-                    _db.ExecuteScalar(
+                    await _db.ExecuteScalarAsync(
                         checkSkuQuery,
                         new[] { new SqlParameter("@SKU", request.SKU) }
                     ) ?? 0
@@ -270,7 +286,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                     );
                 }
 
-                using SqlConnection con = _db.GetOpenConnection();
+                using SqlConnection con = await _db.GetOpenConnectionAsync();
                 using SqlTransaction tx = con.BeginTransaction();
 
                 try
@@ -278,7 +294,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                     string genCodeQuery =
                         "SELECT 'DRP' + RIGHT('000000' + CAST(NEXT VALUE FOR dbo.Seq_ProductCode AS VARCHAR(6)), 6);";
                     using SqlCommand genCmd = new(genCodeQuery, con, tx);
-                    string productCode = Convert.ToString(genCmd.ExecuteScalar()) ?? string.Empty;
+                    string productCode = Convert.ToString(await genCmd.ExecuteScalarAsync()) ?? string.Empty;
 
                     if (
                         !System.Text.RegularExpressions.Regex.IsMatch(productCode, @"^DRP[0-9]{6}$")
@@ -326,7 +342,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                         request.IsCustomerFavourite
                     );
 
-                    long productId = Convert.ToInt64(productCmd.ExecuteScalar());
+                    long productId = Convert.ToInt64(await productCmd.ExecuteScalarAsync());
 
                     // Create Initial Stock Record
                     string insertStockQuery =
@@ -338,7 +354,7 @@ namespace Khel_Akhel_Server.Controllers.Product
 
                     using SqlCommand stockCmd = new(insertStockQuery, con, tx);
                     stockCmd.Parameters.AddWithValue("@ProductId", productId);
-                    stockCmd.ExecuteNonQuery();
+                    await stockCmd.ExecuteNonQueryAsync();
 
                     tx.Commit();
 
@@ -469,7 +485,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                     FROM drs_product_mst WITH (NOLOCK)
                     WHERE ID = @ID AND IsDeleted = 0";
 
-                DataTable dt = _db.ExecuteQuery(
+                DataTable dt = await _db.ExecuteQueryAsync(
                     selectQuery,
                     new[] { new SqlParameter("@ID", productId) }
                 );
@@ -519,7 +535,34 @@ namespace Khel_Akhel_Server.Controllers.Product
                     newCategoryId = decCatId;
                 }
 
-                // Determine new SubCategory (Optional)
+                if (newCategoryId != currentCategoryId)
+                {
+                    int categoryActive = Convert.ToInt32(
+                        await _db.ExecuteScalarAsync(
+                            @"SELECT COUNT(1) FROM drs_product_category_mst WITH (NOLOCK)
+                              WHERE ID = @CategoryID AND IsDeleted = 0 AND IsActive = 1",
+                            new[] { new SqlParameter("@CategoryID", newCategoryId) }
+                        ) ?? 0
+                    );
+                    if (categoryActive == 0)
+                    {
+                        sw.Stop();
+                        Logs.Warning($"ProductUpdate rejected | Category not found or inactive | CategoryId:{newCategoryId}");
+                        return BadRequest(
+                            new ApiResponse
+                            {
+                                Success = false,
+                                StatusCode = 400,
+                                Message = "CATEGORY_NOT_FOUND",
+                                Errors = new List<string>
+                                {
+                                    "Specified product category does not exist or is inactive.",
+                                },
+                            }
+                        );
+                    }
+                }
+
                 long? newSubCategoryId = currentSubCategoryId;
                 if (request.EncryptedSubCategoryId != null)
                 {
@@ -527,49 +570,79 @@ namespace Khel_Akhel_Server.Controllers.Product
                     {
                         newSubCategoryId = null;
                     }
-                    else if (
-                        _encryption.TryDecrypt(request.EncryptedSubCategoryId, out long decSubId)
-                        && decSubId > 0
-                    )
+                    else
                     {
-                        string checkSub =
-                            "SELECT product_category_id FROM drs_product_subcategory_mst WITH (NOLOCK) WHERE ID = @ID AND IsDeleted = 0 AND IsActive = 1";
-                        DataTable dtSub = _db.ExecuteQuery(
-                            checkSub,
+                        if (
+                            !_encryption.TryDecrypt(request.EncryptedSubCategoryId, out long decSubId)
+                            || decSubId <= 0
+                        )
+                        {
+                            sw.Stop();
+                            Logs.Warning("ProductUpdate rejected | Invalid encrypted subcategory ID");
+                            return BadRequest(
+                                new ApiResponse
+                                {
+                                    Success = false,
+                                    StatusCode = 400,
+                                    Message = "INVALID_REQUEST",
+                                    Errors = new List<string> { "Invalid subcategory ID." },
+                                }
+                            );
+                        }
+
+                        DataTable dtSub = await _db.ExecuteQueryAsync(
+                            "SELECT product_category_id FROM drs_product_subcategory_mst WITH (NOLOCK) WHERE ID = @ID AND IsDeleted = 0 AND IsActive = 1",
                             new[] { new SqlParameter("@ID", decSubId) }
                         );
-                        if (
-                            dtSub.Rows.Count > 0
-                            && Convert.ToInt64(dtSub.Rows[0]["product_category_id"])
-                                == newCategoryId
-                        )
+                        if (dtSub.Rows.Count == 0)
                         {
-                            newSubCategoryId = decSubId;
+                            sw.Stop();
+                            Logs.Warning($"ProductUpdate rejected | Subcategory not found or inactive | SubCategoryId:{decSubId}");
+                            return BadRequest(
+                                new ApiResponse
+                                {
+                                    Success = false,
+                                    StatusCode = 400,
+                                    Message = "SUBCATEGORY_NOT_FOUND",
+                                    Errors = new List<string>
+                                    {
+                                        "Specified product subcategory does not exist or is inactive.",
+                                    },
+                                }
+                            );
                         }
-                        else
+                        if (Convert.ToInt64(dtSub.Rows[0]["product_category_id"]) != newCategoryId)
                         {
-                            newSubCategoryId = null;
+                            sw.Stop();
+                            Logs.Warning($"ProductUpdate rejected | Subcategory {decSubId} does not belong to Category {newCategoryId}");
+                            return BadRequest(
+                                new ApiResponse
+                                {
+                                    Success = false,
+                                    StatusCode = 400,
+                                    Message = "INVALID_CATEGORY_HIERARCHY",
+                                    Errors = new List<string>
+                                    {
+                                        "The selected SubCategory does not belong to the selected Category.",
+                                    },
+                                }
+                            );
                         }
+                        newSubCategoryId = decSubId;
                     }
                 }
-                else if (newCategoryId != currentCategoryId)
+                else if (newCategoryId != currentCategoryId && newSubCategoryId.HasValue)
                 {
-                    if (newSubCategoryId.HasValue)
+                    DataTable dtSub = await _db.ExecuteQueryAsync(
+                        "SELECT product_category_id FROM drs_product_subcategory_mst WITH (NOLOCK) WHERE ID = @ID AND IsDeleted = 0 AND IsActive = 1",
+                        new[] { new SqlParameter("@ID", newSubCategoryId.Value) }
+                    );
+                    if (
+                        dtSub.Rows.Count == 0
+                        || Convert.ToInt64(dtSub.Rows[0]["product_category_id"]) != newCategoryId
+                    )
                     {
-                        string checkSub =
-                            "SELECT product_category_id FROM drs_product_subcategory_mst WITH (NOLOCK) WHERE ID = @ID AND IsDeleted = 0 AND IsActive = 1";
-                        DataTable dtSub = _db.ExecuteQuery(
-                            checkSub,
-                            new[] { new SqlParameter("@ID", newSubCategoryId.Value) }
-                        );
-                        if (
-                            dtSub.Rows.Count == 0
-                            || Convert.ToInt64(dtSub.Rows[0]["product_category_id"])
-                                != newCategoryId
-                        )
-                        {
-                            newSubCategoryId = null;
-                        }
+                        newSubCategoryId = null;
                     }
                 }
 
@@ -644,7 +717,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                     string dupCode =
                         @"SELECT COUNT(1) FROM drs_product_mst WITH (NOLOCK) WHERE ProductCode = @Code AND ID <> @ID AND IsDeleted = 0";
                     int cDup = Convert.ToInt32(
-                        _db.ExecuteScalar(
+                        await _db.ExecuteScalarAsync(
                             dupCode,
                             new[]
                             {
@@ -679,7 +752,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                     string dupSku =
                         @"SELECT COUNT(1) FROM drs_product_mst WITH (NOLOCK) WHERE SKU = @SKU AND ID <> @ID AND IsDeleted = 0";
                     int sDup = Convert.ToInt32(
-                        _db.ExecuteScalar(
+                        await _db.ExecuteScalarAsync(
                             dupSku,
                             new[]
                             {
@@ -728,7 +801,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                         ModifiedDate = GETDATE()
                     WHERE ID = @ID AND IsDeleted = 0";
 
-                _db.ExecuteNonQuery(
+                await _db.ExecuteNonQueryAsync(
                     updateQuery,
                     new[]
                     {
@@ -868,7 +941,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                 string checkQuery =
                     @"SELECT COUNT(1) FROM drs_product_mst WITH (NOLOCK) WHERE ID = @ID AND IsDeleted = 0";
                 int exists = Convert.ToInt32(
-                    _db.ExecuteScalar(checkQuery, new[] { new SqlParameter("@ID", productId) }) ?? 0
+                    await _db.ExecuteScalarAsync(checkQuery, new[] { new SqlParameter("@ID", productId) }) ?? 0
                 );
 
                 if (exists == 0)
@@ -891,7 +964,7 @@ namespace Khel_Akhel_Server.Controllers.Product
 
                 string deleteQuery =
                     @"UPDATE drs_product_mst SET IsDeleted = 1, IsActive = 0, ModifiedDate = GETDATE() WHERE ID = @ID";
-                _db.ExecuteNonQuery(deleteQuery, new[] { new SqlParameter("@ID", productId) });
+                await _db.ExecuteNonQueryAsync(deleteQuery, new[] { new SqlParameter("@ID", productId) });
 
                 await _audit.InsertAuditAsync(
                     GetAuthenticatedUserId(),
@@ -937,9 +1010,10 @@ namespace Khel_Akhel_Server.Controllers.Product
         #endregion
 
         #region Get Product By Id API
+        [PublicResponseCache(PublicCacheRegions.Products, 60, SkipForAdmin = true)]
         [AllowAnonymous]
         [HttpGet("{encryptedId}")]
-        public IActionResult GetProductById([FromRoute] string encryptedId)
+        public async Task<IActionResult> GetProductById([FromRoute] string encryptedId)
         {
             Logs.Info("GetProductById API started");
             var sw = Stopwatch.StartNew();
@@ -975,11 +1049,16 @@ namespace Khel_Akhel_Server.Controllers.Product
                     LEFT JOIN drs_product_category_mst c WITH (NOLOCK) ON c.ID = p.product_category_id AND c.IsDeleted = 0
                     LEFT JOIN drs_product_subcategory_mst sc WITH (NOLOCK) ON sc.ID = p.product_subcategory_id AND sc.IsDeleted = 0
                     LEFT JOIN drs_product_stock_mst s WITH (NOLOCK) ON s.product_id = p.ID AND s.IsDeleted = 0
-                    WHERE p.ID = @ID AND p.IsDeleted = 0";
+                    WHERE p.ID = @ID AND p.IsDeleted = 0
+                      AND (p.IsActive = 1 OR @IncludeInactive = 1)";
 
-                DataTable dt = _db.ExecuteQuery(
+                DataTable dt = await _db.ExecuteQueryAsync(
                     query,
-                    new[] { new SqlParameter("@ID", productId) }
+                    new[]
+                    {
+                        new SqlParameter("@ID", productId),
+                        new SqlParameter("@IncludeInactive", User.IsInRole("Admin")),
+                    }
                 );
                 if (dt.Rows.Count == 0)
                 {
@@ -1001,7 +1080,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                 // Fetch Product Images
                 string imageQuery =
                     @"SELECT ImagePath FROM drs_product_image_mst WITH (NOLOCK) WHERE product_id = @ProductId AND IsDeleted = 0 ORDER BY IsDefault DESC, DisplayOrder ASC";
-                DataTable dtImages = _db.ExecuteQuery(
+                DataTable dtImages = await _db.ExecuteQueryAsync(
                     imageQuery,
                     new[] { new SqlParameter("@ProductId", productId) }
                 );
@@ -1076,10 +1155,11 @@ namespace Khel_Akhel_Server.Controllers.Product
         #endregion
 
         #region Get Product List API
+        [PublicResponseCache(PublicCacheRegions.Products, 60, SkipForAdmin = true)]
         [AllowAnonymous]
         [HttpGet("list")]
         [HttpPost("list")]
-        public IActionResult GetAllProduct(
+        public async Task<IActionResult> GetAllProduct(
             [FromQuery] ProductListRequest? queryRequest,
             [FromBody] ProductListRequest? bodyRequest
         )
@@ -1089,13 +1169,14 @@ namespace Khel_Akhel_Server.Controllers.Product
                 ?? queryRequest
                 ?? bodyRequest
                 ?? new ProductListRequest();
-            return FetchProducts(request);
+            return await FetchProducts(request);
         }
 
+        [PublicResponseCache(PublicCacheRegions.Products, 60, SkipForAdmin = true)]
         [AllowAnonymous]
         [HttpGet("search")]
         [HttpPost("search")]
-        public IActionResult SearchProducts(
+        public async Task<IActionResult> SearchProducts(
             [FromQuery] ProductListRequest? queryRequest,
             [FromBody] ProductListRequest? bodyRequest
         )
@@ -1105,10 +1186,10 @@ namespace Khel_Akhel_Server.Controllers.Product
                 ?? queryRequest
                 ?? bodyRequest
                 ?? new ProductListRequest();
-            return FetchProducts(request);
+            return await FetchProducts(request);
         }
 
-        private IActionResult FetchProducts(ProductListRequest request)
+        private async Task<IActionResult> FetchProducts(ProductListRequest request)
         {
             Logs.Info("FetchProducts API started");
             var sw = Stopwatch.StartNew();
@@ -1126,7 +1207,10 @@ namespace Khel_Akhel_Server.Controllers.Product
                     new SqlParameter("@PageSize", pageSize),
                 };
 
-                string whereClause = "WHERE p.IsDeleted = 0";
+                bool isAdmin = User.IsInRole("Admin");
+                string whereClause = isAdmin
+                    ? "WHERE p.IsDeleted = 0"
+                    : "WHERE p.IsDeleted = 0 AND p.IsActive = 1";
 
                 if (!string.IsNullOrWhiteSpace(request.EncryptedCategoryId))
                 {
@@ -1164,7 +1248,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                     parameters.Add(new SqlParameter("@MaxPrice", request.MaxPrice.Value));
                 }
 
-                if (request.IsActive.HasValue)
+                if (isAdmin && request.IsActive.HasValue)
                 {
                     whereClause += " AND p.IsActive = @IsActive";
                     parameters.Add(new SqlParameter("@IsActive", request.IsActive.Value));
@@ -1199,7 +1283,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                        LEFT JOIN drs_product_subcategory_mst sc WITH (NOLOCK) ON sc.ID = p.product_subcategory_id AND sc.IsDeleted = 0
                        {whereClause}";
                 int totalRecords = Convert.ToInt32(
-                    _db.ExecuteScalar(countQuery, parameters.ToArray()) ?? 0
+                    await _db.ExecuteScalarAsync(countQuery, parameters.ToArray()) ?? 0
                 );
 
                 string listQuery =
@@ -1217,7 +1301,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                     ORDER BY {orderByClause}
                     OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY";
 
-                DataTable dt = _db.ExecuteQuery(listQuery, parameters.ToArray());
+                DataTable dt = await _db.ExecuteQueryAsync(listQuery, parameters.ToArray());
 
                 var productList = new List<ProductResponse>();
                 foreach (DataRow row in dt.Rows)
@@ -1284,7 +1368,7 @@ namespace Khel_Akhel_Server.Controllers.Product
                              AND product_id IN ({string.Join(",", placeholders)})
                            ORDER BY product_id, IsDefault DESC, DisplayOrder ASC, ID ASC";
 
-                    DataTable dtImages = _db.ExecuteQuery(imagesQuery, imageParams.ToArray());
+                    DataTable dtImages = await _db.ExecuteQueryAsync(imagesQuery, imageParams.ToArray());
 
                     var imagesByProduct = new Dictionary<long, List<string>>();
                     foreach (DataRow imgRow in dtImages.Rows)

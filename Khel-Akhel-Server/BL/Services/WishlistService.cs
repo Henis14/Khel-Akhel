@@ -334,7 +334,7 @@ END CATCH
 END
 END";
 
-            _db.ExecuteNonQuery(
+            await _db.ExecuteNonQueryAsync(
                 upsertSql,
                 new[]
                 {
@@ -385,7 +385,7 @@ UPDATE drs_wishlist_item_mst
 SET IsDeleted = 1, ModifiedDate = GETDATE()
 WHERE wishlist_id = @WishlistId AND product_id = @ProductId AND IsDeleted = 0";
 
-            int rows = _db.ExecuteNonQuery(
+            int rows = await _db.ExecuteNonQueryAsync(
                 removeQuery,
                 new[]
                 {
@@ -437,7 +437,7 @@ UPDATE drs_wishlist_item_mst
 SET IsDeleted = 1, ModifiedDate = GETDATE()
 WHERE wishlist_id = @WishlistId AND IsDeleted = 0";
 
-            _db.ExecuteNonQuery(clearQuery, new[] { new SqlParameter("@WishlistId", wishlistId) });
+            await _db.ExecuteNonQueryAsync(clearQuery, new[] { new SqlParameter("@WishlistId", wishlistId) });
 
             await _audit.InsertAuditAsync(
                 customerId,

@@ -3,6 +3,7 @@ using System.Threading.RateLimiting;
 using Khel_Akhel_Server.BL.Common;
 using Khel_Akhel_Server.BL.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -10,6 +11,8 @@ using Microsoft.IdentityModel.Tokens;
 using static Khel_Akhel_Server.Models.CommonResponse;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.WebHost.ConfigureKestrel(options => options.AddServerHeader = false);
 
 // CLI Command: dotnet run -- set-password --email <email>
 if (args.Length > 0 && string.Equals(args[0], "set-password", StringComparison.OrdinalIgnoreCase))
@@ -203,6 +206,29 @@ builder.Services.AddRateLimiter(options =>
         }
     );
 
+    int pageVisitLimit = builder.Configuration.GetValue<int>("RateLimiting:PageVisitLimit", 120);
+    int pageVisitWindow = builder.Configuration.GetValue<int>(
+        "RateLimiting:PageVisitWindowMinutes",
+        1
+    );
+    options.AddPolicy(
+        "page-visit",
+        httpContext =>
+        {
+            string clientIp = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            return RateLimitPartition.GetFixedWindowLimiter(
+                partitionKey: clientIp,
+                factory: _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = pageVisitLimit,
+                    Window = TimeSpan.FromMinutes(pageVisitWindow),
+                    QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                    QueueLimit = 0,
+                }
+            );
+        }
+    );
+
     options.OnRejected = async (context, cancellationToken) =>
     {
         context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
@@ -246,6 +272,9 @@ builder.Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
 builder.Services.AddSingleton<ICaptchaService, CaptchaService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IWishlistService, WishlistService>();
+
+builder.Services.AddSingleton<IPageVisitService, PageVisitService>();
+builder.Services.AddHostedService<PageVisitFlushWorker>();
 
 // Fail-fast security secret validation at startup
 StartupSecurityValidator.Validate(builder.Configuration);
@@ -297,6 +326,29 @@ builder
             {
                 return Task.CompletedTask;
             },
+            OnChallenge = context =>
+            {
+                if (context.AuthenticateFailure is not SecurityTokenExpiredException)
+                {
+                    Logs.Warning(
+                        $"Unauthorized request | {context.Request.Method} {context.Request.Path} | IP:{context.HttpContext.Connection.RemoteIpAddress}"
+                    );
+                }
+                return Task.CompletedTask;
+            },
+            OnForbidden = context =>
+            {
+                string userId =
+                    context.Principal?.FindFirst("UserId")?.Value
+                    ?? context
+                        .Principal?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)
+                        ?.Value
+                    ?? "unknown";
+                Logs.Warning(
+                    $"Forbidden request | {context.Request.Method} {context.Request.Path} | UserId:{userId} | IP:{context.HttpContext.Connection.RemoteIpAddress}"
+                );
+                return Task.CompletedTask;
+            },
         };
     });
 
@@ -318,6 +370,26 @@ var app = builder.Build();
 
 app.UseForwardedHeaders();
 
+app.Use(
+    async (context, next) =>
+    {
+        context.Response.OnStarting(() =>
+        {
+            var headers = context.Response.Headers;
+            headers["X-Content-Type-Options"] = "nosniff";
+            headers["X-Frame-Options"] = "DENY";
+            headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+            if (context.Request.Path.StartsWithSegments("/api"))
+            {
+                headers["Content-Security-Policy"] = "default-src 'none'; frame-ancestors 'none'";
+                headers["Cache-Control"] = "no-store";
+            }
+            return Task.CompletedTask;
+        });
+        await next();
+    }
+);
+
 // Application startup logging & log maintenance
 Logs.CleanupOldLogs(45);
 Logs.Info($"===== APPLICATION STARTED ===== Environment: {app.Environment.EnvironmentName}");
@@ -334,6 +406,32 @@ else
 
 // CORS MUST be invoked before HttpsRedirection & Authentication
 app.UseCors("AngularPolicy");
+
+app.UseExceptionHandler(errorApp =>
+    errorApp.Run(async context =>
+    {
+        var exception = context.Features.Get<IExceptionHandlerFeature>()?.Error;
+        Logs.Error(
+            $"Unhandled exception | {context.Request.Method} {context.Request.Path} | TraceId:{context.TraceIdentifier}",
+            exception
+        );
+
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        context.Response.ContentType = "application/json";
+        await context.Response.WriteAsJsonAsync(
+            new ApiResponse
+            {
+                Success = false,
+                StatusCode = StatusCodes.Status500InternalServerError,
+                Message = "SERVER_ERROR",
+                Errors = new List<string>
+                {
+                    $"An internal server error occurred. Reference: {context.TraceIdentifier}",
+                },
+            }
+        );
+    })
+);
 
 // Handle BadHttpRequestException (e.g. 413 Payload Too Large from file size limits) in standard ApiResponse shape
 app.Use(

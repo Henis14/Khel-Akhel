@@ -5,7 +5,7 @@
     <h1 class="pj-title">Spaces, sets &amp; objects <em>made for play</em></h1>
     <p class="pj-lede">
       Festivals and stage sets, installations, lamps and furniture, wearable art, soundscapes and
-      circles of learning — the work of DARAS, made with many hands.
+      circles of learning. The work of DARAS, made with many hands.
     </p>
   </header>
 
@@ -20,7 +20,7 @@
           [attr.aria-pressed]="!activeType()"
           (click)="setType('')"
         >
-          All<sup>{{ projects().length }}</sup>
+          All
         </button>
         @for (d of disciplines(); track d.slug) {
           <button
@@ -30,7 +30,7 @@
             [attr.aria-pressed]="activeType() === d.slug"
             (click)="setType(d.slug)"
           >
-            {{ d.name }}<sup>{{ d.count }}</sup>
+            {{ d.name }}
           </button>
         }
       </div>
@@ -74,35 +74,52 @@
       @for (v of views(); track v.project.slug; let n = $index) {
         <section
           class="pj-wrap pj-project"
+          [class.is-flipped]="n % 2 === 1"
           [id]="'project-' + v.project.slug"
           [class.is-focus]="focusSlug() === v.project.slug"
           [attr.aria-labelledby]="'pj-title-' + v.project.slug"
         >
-          <!-- details: a quiet caption column that stays beside the photographs -->
-          <div class="pj-info">
-            <div class="pj-info-inner">
+          <!-- title spread across the page -->
+          <header class="pj-head">
+            @if (v.project.contentType || v.project.displayYear) {
               <p class="pj-kicker">
-                <span class="pj-num" aria-hidden="true">{{ (n + 1).toString().padStart(2, '0') }}</span>
-                <span class="pj-mark" aria-hidden="true"><i></i><i></i><i></i></span>
                 @if (v.project.contentType) {
                   <span>{{ v.project.contentType }}</span>
                 }
+                @if (v.project.contentType && v.project.displayYear) {
+                  <span class="pj-dot" aria-hidden="true"></span>
+                }
+                @if (v.project.displayYear) {
+                  <span>{{ v.project.displayYear }}</span>
+                }
               </p>
+            }
+            <h2 class="pj-name" [id]="'pj-title-' + v.project.slug">{{ v.project.heading }}</h2>
+            @if (v.sub) {
+              <p class="pj-sub">{{ v.sub }}</p>
+            }
+          </header>
 
-              <h2 class="pj-name" [id]="'pj-title-' + v.project.slug">{{ v.project.heading }}</h2>
+          <!-- photographs, in the layout chosen in admin -->
+          <div class="pj-photos">
+            @if (v.gallery.length) {
+              <app-gallery-renderer
+                class="pj-gallery"
+                [images]="v.gallery"
+                [layoutType]="v.project.layoutType"
+                [interactive]="true"
+                [sectionTitle]="v.project.heading"
+                [limit]="previewCount"
+                [gap]="10"
+              ></app-gallery-renderer>
+            }
+          </div>
 
-              @if (v.sub) {
-                <p class="pj-sub">{{ v.sub }}</p>
-              }
-
-              @if (v.project.displayYear || v.forTitle || v.project.location) {
+          <!-- the notes beside the photographs -->
+          <div class="pj-info">
+            <div class="pj-info-inner">
+              @if (v.forTitle || v.project.location) {
                 <dl class="pj-meta">
-                  @if (v.project.displayYear) {
-                    <div>
-                      <dt>When</dt>
-                      <dd>{{ v.project.displayYear }}</dd>
-                    </div>
-                  }
                   @if (v.forTitle) {
                     <div>
                       <dt>For</dt>
@@ -170,24 +187,6 @@
                 </a>
               }
             </div>
-          </div>
-
-          <!-- photographs, in the layout chosen in admin -->
-          <div class="pj-photos">
-            @if (v.gallery.length) {
-              <app-gallery-renderer
-                class="pj-gallery"
-                [images]="v.gallery"
-                [layoutType]="v.project.layoutType"
-                [interactive]="true"
-                [sectionTitle]="v.project.heading"
-                [limit]="previewCount"
-                [gap]="6"
-              ></app-gallery-renderer>
-              <p class="pj-photo-count">
-                {{ v.gallery.length }} {{ v.gallery.length === 1 ? 'photograph' : 'photographs' }}
-              </p>
-            }
           </div>
         </section>
       }

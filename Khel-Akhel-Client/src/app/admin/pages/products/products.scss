@@ -160,3 +160,40 @@
     }
   }
 }
+
+.modal-content {
+  max-width: 720px;
+  max-height: calc(100vh - 3rem);
+  background: var(--admin-surface, #ffffff);
+
+  form {
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 1.25rem;
+
+    .form-group.col {
+      min-width: 0;
+    }
+
+    .col-12 {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .form-group {
+    min-width: 0;
+    margin-bottom: 1.1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .modal-content .form-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -17,9 +17,10 @@ import {
   Validators,
 } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { map, startWith } from 'rxjs';
+import { catchError, defer, map, of, startWith } from 'rxjs';
 import { ApiService } from '../../../common/services/api.service';
 import { AuthService } from '../../../common/services/auth.service';
+import { UserProjectService } from '../../services/user-project.service';
 import { CustomValidators } from '../../../common/validators/custom.validators';
 import { REGEX_PATTERNS } from '../../../common/constants/regex.constants';
 import { validateImageFile } from '../../../common/utils/file-validation.util';
@@ -74,6 +75,10 @@ export class CommissionsComponent implements OnInit {
   private api = inject(ApiService);
   private auth = inject(AuthService);
   private destroyRef = inject(DestroyRef);
+  private projectService = inject(UserProjectService);
+
+  /** Up to three photographs from published projects, for the opening collage */
+  readonly photos = signal<string[]>([]);
 
   readonly maxImages = MAX_IMAGES;
   readonly maxWords = MAX_WORDS;
@@ -84,10 +89,7 @@ export class CommissionsComponent implements OnInit {
       '',
       [CustomValidators.requiredNonEmpty, Validators.minLength(2), Validators.maxLength(150)],
     ],
-    mobileNo: [
-      '',
-      [CustomValidators.requiredNonEmpty, Validators.pattern(REGEX_PATTERNS.MOBILE)],
-    ],
+    mobileNo: ['', [CustomValidators.requiredNonEmpty, Validators.pattern(REGEX_PATTERNS.MOBILE)]],
     email: [
       '',
       [
@@ -113,10 +115,7 @@ export class CommissionsComponent implements OnInit {
       ],
     ],
     keywords: ['', Validators.maxLength(500)],
-    captcha: [
-      '',
-      [CustomValidators.requiredNonEmpty, Validators.pattern(/^[A-Za-z0-9]{5}$/)],
-    ],
+    captcha: ['', [CustomValidators.requiredNonEmpty, Validators.pattern(/^[A-Za-z0-9]{5}$/)]],
     website: [''], // honeypot, stays empty for people
   });
 
@@ -154,6 +153,29 @@ export class CommissionsComponent implements OnInit {
     this.prefillFromAccount();
     this.loadCategories();
     this.loadCaptcha();
+    this.loadPhotos();
+  }
+
+  /** Photographs for the opening collage; the page works the same without them */
+  private loadPhotos(): void {
+    defer(() => this.projectService.getStoreProjects())
+      .pipe(
+        map((projects) =>
+          (projects || [])
+            .map((p) => p.imageUrls?.[0])
+            .filter((src): src is string => !!src)
+            .slice(0, 3),
+        ),
+        catchError(() => of([] as string[])),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((srcs) => this.photos.set(srcs));
+  }
+
+  /** "Start your brief" jumps to the form without changing the address */
+  scrollToBrief(event: Event): void {
+    event.preventDefault();
+    document.getElementById('cmBrief')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   private prefillFromAccount(): void {

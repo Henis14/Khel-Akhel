@@ -1,38 +1,88 @@
 <section class="cm">
-  <div class="container cm-grid">
-    <!-- ============================ Intro ============================ -->
-    <aside class="cm-intro">
+  <!-- ============================ Opening ============================ -->
+  <header class="container cm-hero">
+    <div class="cm-hero-copy">
       <p class="cm-eyebrow">Commissions</p>
       <h1 class="cm-title">Let's make something <em>together</em></h1>
       <p class="cm-lede">
         Festival sets, installations, interiors, murals and one-off pieces, shaped with you in the
-        DARAS studio. Share your idea and we will take it from there.
+        DARAS studio. Every commission begins with listening: to the place, the people and the story
+        it is for.
       </p>
+      <a class="cm-hero-link" href="#cmBrief" (click)="scrollToBrief($event)"
+        >Start your brief <span aria-hidden="true">↓</span></a
+      >
+    </div>
 
-      <ol class="cm-steps">
-        <li>
-          <span class="cm-step-no">01</span>
-          <div>
-            <p class="cm-step-title">Share your idea</p>
-            <p class="cm-step-text">A few lines, a place and a date. Sketches help.</p>
-          </div>
-        </li>
-        <li>
-          <span class="cm-step-no">02</span>
-          <div>
-            <p class="cm-step-title">We get in touch</p>
-            <p class="cm-step-text">Usually within two working days, to talk it through.</p>
-          </div>
-        </li>
-        <li>
-          <span class="cm-step-no">03</span>
-          <div>
-            <p class="cm-step-title">Design and make</p>
-            <p class="cm-step-text">From first drawing to the finished piece, step by step.</p>
-          </div>
-        </li>
-      </ol>
+    @if (photos().length) {
+      <div class="cm-collage" [class.is-single]="photos().length === 1" aria-hidden="true">
+        @for (src of photos(); track src; let i = $index) {
+          <span class="cm-collage-item cm-collage-item--{{ i + 1 }}"
+            ><img [src]="src" alt="" loading="lazy" decoding="async"
+          /></span>
+        }
+      </div>
+    } @else {
+      <svg class="cm-sketch" viewBox="0 0 320 320" aria-hidden="true">
+        <circle cx="160" cy="160" r="118" />
+        <path d="M70 214c38-10 62-52 90-52s48 34 90 46" />
+        <path d="M118 112c10-22 30-34 42-34s32 12 42 34" />
+        <circle cx="160" cy="160" r="6" />
+      </svg>
+    }
+  </header>
 
+  <!-- ============================ How it works ============================ -->
+  <div class="cm-how">
+    <ol class="container cm-steps" role="list">
+      <li>
+        <svg viewBox="0 0 40 40" aria-hidden="true">
+          <path d="M20 6a10 10 0 0 1 6 18v4H14v-4A10 10 0 0 1 20 6Z" />
+          <path d="M15 32h10M17 36h6" />
+        </svg>
+        <p class="cm-step-title">Share your idea</p>
+        <p class="cm-step-text">A few lines, a place and a date. Sketches and references help.</p>
+      </li>
+      <li>
+        <svg viewBox="0 0 40 40" aria-hidden="true">
+          <path d="M6 10h20v14H14l-6 5v-5H6z" />
+          <path d="M30 16h4v12h-2v4l-5-4H18" />
+        </svg>
+        <p class="cm-step-title">We get in touch</p>
+        <p class="cm-step-text">Usually within two working days, to talk it through together.</p>
+      </li>
+      <li>
+        <svg viewBox="0 0 40 40" aria-hidden="true">
+          <path d="M8 32 28 12l4 4-20 20H8z" />
+          <path d="M24 16l4 4M30 6l4 4-2 2-4-4z" />
+        </svg>
+        <p class="cm-step-title">Design and make</p>
+        <p class="cm-step-text">From first drawing to the finished piece, step by step with you.</p>
+      </li>
+    </ol>
+  </div>
+
+  <!-- ============================ What we make ============================ -->
+  @if (categories().length) {
+    <div class="container cm-makes">
+      <p class="cm-eyebrow">What we make</p>
+      <ul class="cm-makes-list" role="list">
+        @for (c of categories(); track c.encryptedCategoryId) {
+          <li>{{ c.categoryName }}</li>
+        }
+      </ul>
+    </div>
+  }
+
+  <!-- ============================ The brief ============================ -->
+  <div class="container cm-grid" id="cmBrief">
+    <aside class="cm-intro">
+      <p class="cm-eyebrow">The brief</p>
+      <p class="cm-intro-title">A few lines are <em>enough to begin.</em></p>
+      <p class="cm-intro-text">
+        Tell us what you have in mind, where it will live and when you need it. We will read every
+        word and write back to plan the next step.
+      </p>
       <div class="cm-reach">
         <p>Prefer to talk?</p>
         <a href="tel:+919888744113">+91 98887 44113</a>

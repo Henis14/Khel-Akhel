@@ -12,11 +12,18 @@ import { AdminContactInquiryService } from '../../services/admin-contact-inquiry
 import { BreadcrumbComponent } from '../../../common/components/breadcrumb/breadcrumb';
 import { BreadcrumbItem } from '../../../common/models/breadcrumb.model';
 import { AppLoaderComponent } from '../../../common/components/app-loader/app-loader';
+import { WebsiteStatisticsComponent } from './website-statistics/website-statistics';
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, BreadcrumbComponent, AppLoaderComponent],
+  imports: [
+    CommonModule,
+    RouterLink,
+    BreadcrumbComponent,
+    AppLoaderComponent,
+    WebsiteStatisticsComponent,
+  ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })

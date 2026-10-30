@@ -50,7 +50,7 @@
     </div>
   }
 
-  <!-- Compact Search & Filter Toolbar -->
+  <!-- Search & sort toolbar (applies live) -->
   <div class="filter-card card">
     <div class="filter-toolbar">
       <div class="filter-row filter-row-primary">
@@ -85,32 +85,15 @@
           >
             <option value="newest">Newest First</option>
             <option value="oldest">Oldest First</option>
-            <option value="name_asc">Name (A &rarr; Z)</option>
-            <option value="name_desc">Name (Z &rarr; A)</option>
           </select>
         </div>
-      </div>
 
-      <!-- Toolbar Actions Row -->
-      <div class="filter-row filter-row-secondary">
+        <!-- Reset -->
         <div class="filter-actions">
           <button
             type="button"
-            class="btn btn-primary btn-sm filter-btn"
-            title="Apply Filters"
-            (click)="applyFilters()"
-            [disabled]="loading"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-            </svg>
-            <span>Apply</span>
-          </button>
-
-          <button
-            type="button"
             class="btn btn-secondary btn-sm filter-btn"
-            title="Reset All Filters"
+            title="Reset search and sort"
             (click)="resetFilters()"
             [disabled]="loading || !hasActiveFilters"
           >

@@ -59,14 +59,13 @@
     </div>
   }
 
-  <!-- Compact Search & Filter Toolbar -->
+  <!-- Search & filters (apply live) -->
   <div class="filter-card card">
     <div class="filter-toolbar">
-      <!-- Row 1: Search, Category, Status -->
       <div class="filter-row filter-row-primary">
         <!-- Search Box -->
         <div class="filter-item search-item">
-          <label class="filter-label" for="search-input">Search Inquiries</label>
+          <label class="filter-label" for="search-input">Search</label>
           <div class="input-with-icon">
             <svg
               class="icon"
@@ -123,10 +122,7 @@
             }
           </select>
         </div>
-      </div>
 
-      <!-- Row 2: Sort By, Apply & Reset Buttons -->
-      <div class="filter-row filter-row-secondary">
         <!-- Sort By Dropdown -->
         <div class="filter-item sort-item">
           <label class="filter-label" for="sort-select">Sort By</label>
@@ -139,37 +135,15 @@
             <option value="newest">Newest First</option>
             <option value="oldest">Oldest First</option>
             <option value="timeline_asc">Timeline (Earliest)</option>
-            <option value="timeline_desc">Timeline (Latest)</option>
-            <option value="status">Status</option>
           </select>
         </div>
 
-        <!-- Filter Action Buttons -->
+        <!-- Reset -->
         <div class="filter-actions">
           <button
             type="button"
-            class="btn btn-primary btn-sm filter-btn"
-            title="Apply Filters"
-            (click)="applyFilters()"
-            [disabled]="loading"
-          >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-            </svg>
-            <span>Apply</span>
-          </button>
-
-          <button
-            type="button"
             class="btn btn-secondary btn-sm filter-btn"
-            title="Reset All Filters"
+            title="Reset search, filters and sort"
             (click)="resetFilters()"
             [disabled]="loading || !hasActiveFilters"
           >
@@ -188,8 +162,6 @@
           </button>
         </div>
       </div>
-
-      <!-- Date Range Validation Warning -->
     </div>
   </div>
 

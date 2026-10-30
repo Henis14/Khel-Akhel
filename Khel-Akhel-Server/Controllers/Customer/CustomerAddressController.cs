@@ -153,7 +153,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                 {
                     string checkCountryQuery =
                         "SELECT CountryName FROM dbo.drs_country_mst WITH (NOLOCK) WHERE ID = @ID AND IsActive = 1 AND IsDeleted = 0";
-                    object? countryNameObj = _db.ExecuteScalar(
+                    object? countryNameObj = await _db.ExecuteScalarAsync(
                         checkCountryQuery,
                         new[] { new SqlParameter("@ID", request.CountryId) }
                     );
@@ -175,7 +175,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                 {
                     string checkStateQuery =
                         "SELECT StateName FROM dbo.drs_state_mst WITH (NOLOCK) WHERE ID = @StateId AND country_id = @CountryId AND IsActive = 1 AND IsDeleted = 0";
-                    object? stateNameObj = _db.ExecuteScalar(
+                    object? stateNameObj = await _db.ExecuteScalarAsync(
                         checkStateQuery,
                         new[]
                         {
@@ -223,7 +223,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                     WHERE customer_id = @CustomerId AND IsDeleted = 0";
 
                 int existingCount = Convert.ToInt32(
-                    _db.ExecuteScalar(
+                    await _db.ExecuteScalarAsync(
                         countQuery,
                         new[] { new SqlParameter("@CustomerId", customerId) }
                     ) ?? 0
@@ -231,7 +231,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
 
                 bool setAsDefault = request.IsDefault || existingCount == 0;
 
-                using SqlConnection con = _db.GetOpenConnection();
+                using SqlConnection con = await _db.GetOpenConnectionAsync();
                 using SqlTransaction tx = con.BeginTransaction();
 
                 try
@@ -246,7 +246,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
 
                         using SqlCommand resetCmd = new(resetDefaultQuery, con, tx);
                         resetCmd.Parameters.AddWithValue("@CustomerId", customerId);
-                        resetCmd.ExecuteNonQuery();
+                        await resetCmd.ExecuteNonQueryAsync();
                     }
 
                     string insertQuery =
@@ -286,7 +286,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                     insertCmd.Parameters.AddWithValue("@Pincode", request.Pincode);
                     insertCmd.Parameters.AddWithValue("@IsDefault", setAsDefault);
 
-                    long addressId = Convert.ToInt64(insertCmd.ExecuteScalar());
+                    long addressId = Convert.ToInt64(await insertCmd.ExecuteScalarAsync());
                     tx.Commit();
 
                     string encryptedAddressId = _encryption.Encrypt(addressId);
@@ -420,7 +420,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                     FROM drs_customer_address_mst WITH (NOLOCK)
                     WHERE ID = @ID AND IsDeleted = 0";
 
-                DataTable dt = _db.ExecuteQuery(
+                DataTable dt = await _db.ExecuteQueryAsync(
                     fetchQuery,
                     new[] { new SqlParameter("@ID", addressId) }
                 );
@@ -559,7 +559,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                     {
                         string checkCountryQuery =
                             "SELECT CountryName FROM dbo.drs_country_mst WITH (NOLOCK) WHERE ID = @ID AND IsActive = 1 AND IsDeleted = 0";
-                        object? countryNameObj = _db.ExecuteScalar(
+                        object? countryNameObj = await _db.ExecuteScalarAsync(
                             checkCountryQuery,
                             new[] { new SqlParameter("@ID", request.CountryId.Value) }
                         );
@@ -582,7 +582,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                     {
                         string checkStateQuery =
                             "SELECT StateName FROM dbo.drs_state_mst WITH (NOLOCK) WHERE ID = @StateId AND country_id = @CountryId AND IsActive = 1 AND IsDeleted = 0";
-                        object? stateNameObj = _db.ExecuteScalar(
+                        object? stateNameObj = await _db.ExecuteScalarAsync(
                             checkStateQuery,
                             new[]
                             {
@@ -617,7 +617,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                     {
                         string checkCountryQuery =
                             "SELECT CountryName FROM dbo.drs_country_mst WITH (NOLOCK) WHERE ID = @ID AND IsActive = 1 AND IsDeleted = 0";
-                        object? countryNameObj = _db.ExecuteScalar(
+                        object? countryNameObj = await _db.ExecuteScalarAsync(
                             checkCountryQuery,
                             new[] { new SqlParameter("@ID", request.CountryId.Value) }
                         );
@@ -647,7 +647,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                     {
                         string checkStateQuery =
                             "SELECT StateName FROM dbo.drs_state_mst WITH (NOLOCK) WHERE ID = @StateId AND country_id = @CountryId AND IsActive = 1 AND IsDeleted = 0";
-                        object? stateNameObj = _db.ExecuteScalar(
+                        object? stateNameObj = await _db.ExecuteScalarAsync(
                             checkStateQuery,
                             new[]
                             {
@@ -681,7 +681,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                     );
                 }
 
-                using SqlConnection con = _db.GetOpenConnection();
+                using SqlConnection con = await _db.GetOpenConnectionAsync();
                 using SqlTransaction tx = con.BeginTransaction();
 
                 try
@@ -696,7 +696,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
 
                         using SqlCommand resetCmd = new(resetDefaultQuery, con, tx);
                         resetCmd.Parameters.AddWithValue("@CustomerId", ownerCustomerId);
-                        resetCmd.ExecuteNonQuery();
+                        await resetCmd.ExecuteNonQueryAsync();
                     }
 
                     string updateQuery =
@@ -741,7 +741,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                     updateCmd.Parameters.AddWithValue("@Pincode", newPincode);
                     updateCmd.Parameters.AddWithValue("@IsDefault", newIsDefault);
                     updateCmd.Parameters.AddWithValue("@ID", addressId);
-                    updateCmd.ExecuteNonQuery();
+                    await updateCmd.ExecuteNonQueryAsync();
 
                     tx.Commit();
 
@@ -826,7 +826,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
 
         #region Get Customer Address By Id API
         [HttpGet("{encryptedId}")]
-        public IActionResult GetCustomerAddressById([FromRoute] string encryptedId)
+        public async Task<IActionResult> GetCustomerAddressById([FromRoute] string encryptedId)
         {
             Logs.Info("GetCustomerAddressById API started");
             var sw = Stopwatch.StartNew();
@@ -859,7 +859,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                     FROM drs_customer_address_mst WITH (NOLOCK)
                     WHERE ID = @ID AND IsDeleted = 0";
 
-                DataTable dt = _db.ExecuteQuery(
+                DataTable dt = await _db.ExecuteQueryAsync(
                     query,
                     new[] { new SqlParameter("@ID", addressId) }
                 );
@@ -961,7 +961,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
 
         #region Get Customer Address List API
         [HttpGet("list")]
-        public IActionResult GetCustomerAddresses([FromQuery] string? encryptedCustomerId = null)
+        public async Task<IActionResult> GetCustomerAddresses([FromQuery] string? encryptedCustomerId = null)
         {
             Logs.Info("GetCustomerAddresses API started");
             var sw = Stopwatch.StartNew();
@@ -988,7 +988,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
                     WHERE customer_id = @CustomerId AND IsDeleted = 0
                     ORDER BY IsDefault DESC, ID DESC";
 
-                DataTable dt = _db.ExecuteQuery(
+                DataTable dt = await _db.ExecuteQueryAsync(
                     query,
                     new[] { new SqlParameter("@CustomerId", customerId) }
                 );
@@ -1104,7 +1104,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
 
                 string fetchQuery =
                     @"SELECT TOP 1 customer_id FROM drs_customer_address_mst WITH (NOLOCK) WHERE ID = @ID AND IsDeleted = 0";
-                DataTable dt = _db.ExecuteQuery(
+                DataTable dt = await _db.ExecuteQueryAsync(
                     fetchQuery,
                     new[] { new SqlParameter("@ID", addressId) }
                 );
@@ -1148,7 +1148,7 @@ namespace Khel_Akhel_Server.Controllers.Customer
 
                 string deleteQuery =
                     @"UPDATE drs_customer_address_mst SET IsDeleted = 1, IsActive = 0, ModifiedDate = GETDATE() WHERE ID = @ID";
-                _db.ExecuteNonQuery(deleteQuery, new[] { new SqlParameter("@ID", addressId) });
+                await _db.ExecuteNonQueryAsync(deleteQuery, new[] { new SqlParameter("@ID", addressId) });
 
                 await _audit.InsertAuditAsync(
                     customerId,
